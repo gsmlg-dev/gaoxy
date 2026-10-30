@@ -1,11 +1,12 @@
 # Adaptive resource budget acceptance
 
-Status: CORE repair14 and its independent review are accepted. All35 fresh
-final-source gates passed, including **900 canonical cases**, with zero
-failures, exclusions or skips and682 unchanged source inputs. Package/isolation,
-Phoenix, independent clients, standalone and optional QUIC checks also passed.
-Independent final12DoD/20-verification review accepts the source for authorized
-delivery. Commit, push, publication and public-artifact/runtime acceptance remain open.
+Status: implementation commit `4f39c9e49f6e7c2147bfaa3a8ca4ae7290506d28`
+is pushed. Its35 local gates passed, including **900 canonical cases**, but
+hosted E2E failed in the isolated-network fixture. The fixture-only CORE15
+repair and independent review are accepted, with89 original network gates
+passing. New exact-source hosted qualification, publication and public-artifact/
+runtime acceptance remain open. Application, test, dependency and version bytes
+remain identical to the locally qualified implementation.
 Earlier results below describe their own source checkpoints, including both
 preserved optional QUIC failures and the accepted scoped repair.
 The objective is the complete adaptive budget, dynamic H1/H2/H3 ownership,
@@ -25,6 +26,42 @@ On 2026-10-30 the user adds **24 hours** to that quota. The new fixed deadline
 is **2026-10-31 10:09:44 Asia/Shanghai** (UTC2026-10-31T02:09:44Z), preserving
 the original start and a total36-hour allowance. The earlier expiry and selected
 model-capacity interruption remain historical; no failure counter is reset.
+
+## Hosted qualification and fixture15 — 2026-10-30
+
+All five source workflows completed on `4f39c9e4`: static/build, unit,
+package/consumers and Linux/macOS portable HTTP smoke passed. E2E run
+`41029385382` failed only in isolated-network; its component and protocol jobs
+passed, while the manually gated release-client job remained skipped. The
+failure is preserved as FAIL; the later isolated-network steps did not execute.
+
+An exact local reproduction failed at the unchanged first two-second broadcast
+deadline. Diagnostic evidence shows `ip netns exec` replacing `/sys` and hiding
+the original cgroup mount. Admission correctly rejects the unavailable safety
+sample. The fixture now uses `nsenter --net` to enter only its own private
+network namespace, before its unchanged UID/GID drop and environment. Original
+cgroup visibility and actual Safety success were observed with UID1000/GID100
+and the private lo/eth0/eth1 topology. No production safety fallback is added.
+
+Only four inputs change: `integration/network/{fixture.py,release_gate.py,
+example_gate.py,README.md}`. All other678 of the frozen682 inputs are identical,
+including application/tests, assertions, count manifest, dependencies, workflows
+and versions. All35 original fixture assertions, deadlines, peers, topology and
+cleanup remain intact. The six original gates passed: inet IPv4=13, inet
+IPv4/IPv6=21, socket IPv4=13, socket IPv4/IPv6=20, production five-transport=11
+and custom-handler example=11, for **89 passing gates**. The original socket
+IPv6 unsupported scoped-send negative assertion remains unchanged. Strict dev/
+prod compilation, rebuilt release, inventory900 and scoped diff checks passed.
+
+The [fixture15 archive](evidence/adaptive-resource-budget/network-fixture15/archive-manifest.json)
+preserves original reproduction/diagnostic failures, passing receipts/logs,
+source maps, patch and terminal handoff. The
+[independent review](evidence/adaptive-resource-budget/network-fixture15-review/archive-manifest.json)
+accepts specification, source and evidence without actionable findings. CORE
+counters are Sol2/Astra15 compatibility recoveries; production repair14 stays
+unchanged. This accepts the fixture source only. A new commit/source bridge and
+all five hosted workflows on that exact SHA are required before guarded release.
+The old local900-case PASS and old hosted failure retain their own source scope.
 
 ## Final source qualification — 2026-10-30
 

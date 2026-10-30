@@ -139,7 +139,7 @@ def main():
         return 77
     fixture = Fixture()
     try:
-        for executable in ("ip", "setpriv", "openssl", "bash"):
+        for executable in ("ip", "nsenter", "setpriv", "openssl", "bash"):
             assert shutil.which(executable), "missing prerequisite: " + executable
         fixture.setup()
         run_release(fixture)

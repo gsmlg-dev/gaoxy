@@ -138,7 +138,10 @@ class Child:
                 environment.append(f"{key}={os.environ[key]}")
         if os.environ.get("CI"):
             environment.append("CI=true")
-        argv = fixture.privileged + ["ip", "netns", "exec", namespace] + drop + environment + command
+        # Enter only the fixture network namespace. `ip netns exec` also replaces
+        # /sys, hiding the cgroup mount needed for authoritative memory safety.
+        enter = [shutil.which("nsenter"), f"--net=/run/netns/{namespace}", "--"]
+        argv = fixture.privileged + enter + drop + environment + command
         self.process = subprocess.Popen(argv, cwd=ROOT, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                         stderr=subprocess.STDOUT, text=True, bufsize=1)
         self.lines = queue.Queue()
@@ -501,7 +504,7 @@ def main():
         return 77
     fixture = Fixture()
     try:
-        for executable in ("ip", "setpriv", "mix"):
+        for executable in ("ip", "nsenter", "setpriv", "mix"):
             if not shutil.which(executable):
                 raise RuntimeError("missing prerequisite: " + executable)
         try:

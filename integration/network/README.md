@@ -17,9 +17,14 @@ GAOXY_UDP_BACKEND=socket python3 integration/network/fixture.py --allow-privileg
 GAOXY_UDP_BACKEND=socket python3 integration/network/fixture.py --allow-privileged --ipv6
 ```
 
-Required prerequisites: Linux, `ip`, `setpriv`, Python, Mix and locked compiled
+Required prerequisites: Linux, `ip`, `nsenter`, `setpriv`, Python, Mix and locked compiled
 dependencies, root or passwordless sudo for namespace setup. Participant processes
-drop to the invoking UID/GID. Missing prerequisites, setup errors, packet failures
+enter only their fixture-owned network namespace with `nsenter --net`, then drop
+to the invoking UID/GID. Their original mount and cgroup namespaces remain intact
+so Gaoxy can observe the actual memory-controller limits and usage. Using
+`ip netns exec` would replace `/sys` and hide its cgroup mount, correctly causing
+memory-safety admission to fail closed. Packet isolation still comes from the
+private network namespaces and interfaces. Missing prerequisites, setup errors, packet failures
 and zero executed gates cannot pass. Exit 77 reports unavailable privilege/platform,
 and CI treats it as failure. Cleanup stops owned children and removes only the
 namespaces created by this invocation, even when a packet assertion fails.

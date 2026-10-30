@@ -33,7 +33,7 @@ The historical checkpoints below retain their actual status at execution time.
 | ARB-CORE-PREFLIGHT | Sol/Sol | Accepted read-only transition/provenance patch map | 0 | 0 | None |
 | ARB-CONFIG | Sol/Sol | Accepted specification/code review and fresh combined 147/0 | 0 | 0 | None |
 | ARB-PROTOCOL-PREFLIGHT | Sol/Sol | Accepted read-only hook map; same-token stream retention selected | 0 | 0 | None |
-| ARB-CORE | Sol/Astra | Accepted repair14/source review; final900/0 and unchanged optional4/0 PASS, with original caps/deadlines/proofs preserved | 2 | 14 | SOL_REPEATED_FAILURE |
+| ARB-CORE | Sol/Astra | Accepted production14 plus fixture-only compatibility15; original89 network gates PASS; new exact-source hosted qualification pending | 2 | 15 | SOL_REPEATED_FAILURE |
 | ARB-ENTRY | Sol/Sol | Gateway/JSON propagation accepted in combined 312/0 | 0 | 0 | None |
 | ARB-H1H2 | Sol/Astra | Accepted scoped378/0 and source review; final pinned868/0 passes, prior helper16/1 retained | 2 | 16 | SOL_REPEATED_FAILURE |
 | ARB-H1H2-REVIEW | Sol/Sol | Test-only repairs accepted; production review requests expired-start retirement repair | 0 | 0 | None |
@@ -54,8 +54,9 @@ The historical checkpoints below retain their actual status at execution time.
 | ARB-CORE-RELEASE-SPEC | Sol/Sol | Accepted fixed original raw TCP/TLS drain contract and bounded-repair invariants | 0 | 0 | None |
 | ARB-CORE-RELEASE-CODE | Sol/Sol | Frozen repair12 accepted; buffer/state/output findings resolved, terminal ownership and raw evidence verified | 0 | 0 | None |
 | ARB-FINAL-ACCEPTANCE | Sol/Sol | Final014 source accepted,12DoD/20verification audited and35 gates/682 input hashes verified; ready for authorized delivery | 0 | 0 | None |
+| ARB-NETWORK-FIXTURE15-REVIEW | Sol/Sol | Accepted four fixture inputs,678 unchanged inputs,35 original assertions and89 passing network gates; exact-SHA hosted rerun required | 0 | 0 | None |
 | ARB-VERSION | Sol/Sol | Accepted0.14.0 alignment; final source gates PASS and6Hex/tag/GitHubrelease live availability rechecked unused | 0 | 0 | None |
-| ARB-RELEASE | Coordinator/unassigned | Not started | 0 | 0 | None |
+| ARB-RELEASE | Coordinator/Coordinator | Implementation4f39c9e4 pushed; old hosted E2E FAIL preserved; fixture repair accepted, new CI/publication pending | 0 | 0 | None |
 
 ROUTE task=ARB-BASE agent=sol_worker reason=baseline-investigation
 ROUTE task=ARB-ARCH agent=astra_worker reason=PROJECT_ARCHITECTURE
@@ -621,8 +622,15 @@ source-consumer/standalone/Phoenix peer gates. Serialize shared build state.
   target0.14.0; current installation/release docs are aligned and historical
   acceptance evidence is preserved. Live six-Hex/tag/GitHub-release checks
   confirm the version unused before selecting the publication source.
-- [ ] Inspect final task-owned diff and commit conventionally on current branch.
-- [ ] Push verified commit and confirm remote SHA; retain exact-source CI statuses.
+- [x] Inspect and commit implementation conventionally on current branch:
+  `4f39c9e49f6e7c2147bfaa3a8ca4ae7290506d28`.
+- [x] Push implementation and confirm remote SHA. Its static/unit/package/
+  portable workflows pass; E2E isolated-network fails with other E2E jobs green.
+- [x] Diagnose and independently review fixture-only CORE15 repair, preserving
+  original assertions and failure evidence; all89 original network gates pass.
+- [ ] Commit/push the reviewed fixture repair, bind its exact source to prior
+  qualification with only four integration inputs changed, and require all five
+  source workflows to pass on the new SHA before publication.
 - [ ] Dispatch existing `release.yml` with version, current branch and full
   expected SHA. Preserve all publication guards and actual job dispositions.
 - [ ] Verify tag/source, GitHub assets/checksums, six Hex package versions/bytes,
