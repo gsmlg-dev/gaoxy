@@ -1,12 +1,12 @@
 # Adaptive resource budget
 
-Status: implementation and final source qualification accepted; publication pending.
+Status: implemented and published as0.14.0; source and public runtime qualified.
 Baseline: `a6a35438c0a153cd53c87c6a55c19a70a11fb75a` on `main`.
 The approved objective is adaptive memory accounting and soft admission across
 core, native H1/H2/H3, ListenerSet and Phoenix, followed by coordinated release.
-This document records the implemented contract. Final source evidence is in
-[the acceptance record](../acceptance/adaptive-resource-budget.md); public
-publication and downloaded-runtime acceptance remain separate pending gates.
+This document records the implemented contract. Source, publication and
+downloaded-runtime evidence are recorded separately in
+[the acceptance record](../acceptance/adaptive-resource-budget.md).
 
 ## Completion-credit recovery contract — 2026-10-29
 

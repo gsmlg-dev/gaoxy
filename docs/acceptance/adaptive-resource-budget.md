@@ -1,18 +1,18 @@
 # Adaptive resource budget acceptance
 
-Status: implementation `4f39c9e4` and fixture repair `e57fb086` are pushed.
-The implementation's35 local gates passed, including **900 canonical cases**;
-the repaired isolated-network fixture also passes in hosted CI. A subsequent
-standalone recovery test exposes a same-deadline ordering race. The test-only
-CORE16 synchronization and independent review are accepted, with original
-assertions and deadlines intact. New exact-source hosted qualification,
-publication and public-artifact/runtime acceptance remain open. Production,
-dependency and version bytes remain identical to the locally qualified source.
+Status: **COMPLETE: 0.14.0 published and independently verified** at
+`e3afc810481c396c63dff1f6f81230b456511016`. All five source workflows pass,
+including **900 canonical cases** with zero failures, exclusions or skips.
+The coordinated release, six public Hex distributions, eight GitHub assets
+and downloaded standalone13 checks pass. Source/specification/code and final
+independent delivery-evidence reviews are accepted. The inactive old-library
+directories and unexecuted specialist/native-platform slices remain explicitly
+disclosed below.
 Earlier results below describe their own source checkpoints, including both
 preserved optional QUIC failures and the accepted scoped repair.
 The objective is the complete adaptive budget, dynamic H1/H2/H3 ownership,
 Phoenix integration and coordinated release.
-Design and remaining tasks are recorded in
+Design and execution are recorded in
 [the design](../designs/adaptive-resource-budget.md) and
 [implementation plan](../plans/adaptive-resource-budget.md).
 
@@ -27,6 +27,90 @@ On 2026-10-30 the user adds **24 hours** to that quota. The new fixed deadline
 is **2026-10-31 10:09:44 Asia/Shanghai** (UTC2026-10-31T02:09:44Z), preserving
 the original start and a total36-hour allowance. The earlier expiry and selected
 model-capacity interruption remain historical; no failure counter is reset.
+
+## Publication and downloaded-runtime qualification — 2026-10-30
+
+The exact publication source is
+`e3afc810481c396c63dff1f6f81230b456511016`, pushed and read back from remote
+`main`. Five fresh source workflows pass on that SHA:
+
+| Workflow | Run | Result |
+| --- | --- | --- |
+| Static/build | [41034773881](https://github.com/gsmlg-dev/gaoxy/actions/runs/41034773881) | PASS |
+| Unit | [41034773788](https://github.com/gsmlg-dev/gaoxy/actions/runs/41034773788) | PASS390 |
+| E2E | [41034773764](https://github.com/gsmlg-dev/gaoxy/actions/runs/41034773764) | PASS component323/protocol187/network89 |
+| Package/consumers | [41034773758](https://github.com/gsmlg-dev/gaoxy/actions/runs/41034773758) | PASS |
+| Linux/macOS portable HTTP | [41034773863](https://github.com/gsmlg-dev/gaoxy/actions/runs/41034773863) | PASS one health request and stop per OS |
+
+The121 actual canonical summaries total900/0, with zero exclusions/skips.
+Source CI also passes staging12, built-package consumers7 plus production/
+release isolation, source-consumer3 cases, optional QUIC4, source-built core3,
+Phoenix27, independent clients10, unified H1/H2/H3 clients8, selected H2 RFC40
+and reverse-proxy6. These hosted counts retain their actual command scope;
+the earlier local source-consumer9 result belongs to its own checkpoint.
+The manually gated release-client E2E job remains skipped by its existing gate.
+The independent source-CI review authenticates all counts, raw logs and source
+identities without actionable findings.
+
+Immediately before publication, all six Hex versions, the tag and GitHub Release
+returned404; the source was clean, all682 input hashes matched and remote main
+equalled the reviewed SHA. One guarded dispatch ran
+[release41035876876](https://github.com/gsmlg-dev/gaoxy/actions/runs/41035876876)
+with version0.14.0 and that full `expected_sha`. It completed successfully,
+repeating publication-source qualification before uploading all six Hex packages,
+checking public tarball bytes, tagging the source, and running fresh published
+Hex-only consumers before creating
+[GitHub Release v0.14.0](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.14.0).
+
+The public verifier passes all eight asset digests/sizes, seven payload
+checksums, six Hex versions/requirements/non-retirement checks and151 derived
+regular `lib/`/`priv/` source-file byte comparisons. The Actions ZIP digest and
+all eight built payloads match the public assets. The remote tag equals the
+publication SHA, and the standalone boot/application versions match the selected
+cohort. This is source/metadata/byte equality evidence; cryptographic build
+attestation remains **NOT VERIFIED**.
+
+The standalone archive also contains inactive0.13.0 directories for `gaoxy`,
+`gaoxy_http`, `gaoxy_http3`, `gaoxy_proxy` and `gaoxy_server`. `start_erl.data`,
+the active `.rel`/`.app` files and `start.script` select0.14.0 for all five;
+the active `start.boot` contains their0.14.0 paths and no0.13.0, `gaoxy_test`,
+ExUnit or HPAX path. These extra production-library directories are a retained
+archive-hygiene limitation. Qualification establishes the active0.14.0 boot
+and dependency cohort, without claiming that the archive contains only current
+directories or that stale directories are loaded by the default boot.
+
+The actual downloaded Linux x86_64 executable passes **13 checks**: core3,
+Gateway7 and H3-3. All three process groups exit naturally; H3 release/origin
+exit0 and ports rebind. The runner uses the recorded process-local Nix library
+environment and system CA, with certificate/hostname verification enabled.
+Every682 input hash remains unchanged throughout artifact/runtime verification.
+The [delivery archive](evidence/adaptive-resource-budget/delivery014/archive-manifest.json)
+preserves original commands, environments, source maps, raw logs, public metadata,
+helper bytes and receipts. Large public payloads are identified by URL, size
+and SHA256 without adding executable archives to Git.
+
+The [final independent delivery review](evidence/adaptive-resource-budget/delivery-review014/archive-manifest.json)
+accepts all nine authentication groups: source identity, release execution,
+public packages/assets/Actions bytes, active standalone selection, downloaded
+runtime and cleanup, and preserved historical dispositions. It reports no
+blocking finding. The earlier delivery archive's review-pending label records
+its capture time; this later accepted review is separate and does not rewrite
+that evidence. The goal's implementation, ordinary verification, independent
+review, commit, push and coordinated release are complete.
+
+Native macOS/Windows memory-probe qualification and specialist pressure,
+slow-peer and sustained-load tests remain **NOT RUN**. Portable macOS HTTP smoke
+does not establish those memory-probe results. Separate OS processes require
+operator capacity partitioning; the implemented shared authority coordinates
+instances within one BEAM VM. No production deployment, operational data or
+certificates, Vault or public-management change was performed.
+
+The original35 local gates, two failed hosted candidates and cumulative repair
+counters retain their captured source/results. Fixture15 changes four network
+inputs and fixture16 changes one test; all677 other inputs, including all
+production/dependency/workflow/version bytes, match the original locally
+qualified implementation. Post-publication closeout documents may follow on
+main while `v0.14.0` continues to identify the immutable publication source.
 
 ## Hosted recovery timing and fixture16 — 2026-10-30
 
@@ -699,7 +783,10 @@ additional-round request. No repair, commit, push or release followed this run.
 Independent read-only review confirmed the counts, canonical-prefix/suffix
 selection, baseline comparisons and retained failure/authorization dispositions.
 
-| Requirement | Current evidence | Disposition |
+This matrix records the preceding frozen816-case checkpoint; current accepted
+source/publication results are recorded at the top of this document.
+
+| Requirement | Evidence at that checkpoint | Disposition at that checkpoint |
 | --- | --- | --- |
 | Effective physical/cgroup capacity; nested v1/v2, unlimited, malformed and overflow handling | Focused SystemMemory tests, Linux execution | PASS for implemented detection; native macOS/Windows execution NOT RUN |
 | Platform native probe ownership and bounded cancellation | Injected native facility and worker lifetime tests | PASS controlled cases; actual macOS/Windows native paths NOT RUN |

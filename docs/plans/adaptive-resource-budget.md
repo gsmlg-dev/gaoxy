@@ -8,6 +8,11 @@ or production deployment is authorized. Preserve unrelated work and immutable
 historical specialist evidence. Unchecked items are outstanding, not implied
 complete by a narrower passing test.
 
+Status: **COMPLETE**, released as0.14.0 from
+`e3afc810481c396c63dff1f6f81230b456511016`. Exact-source CI, guarded publication,
+public Hex/assets, downloaded runtime and independent delivery review pass.
+See [current acceptance and retained limitations](../acceptance/adaptive-resource-budget.md).
+
 ## Task routing and cumulative repair record
 
 Current authorization: on 2026-10-30 the user extends the original quota by
@@ -43,21 +48,21 @@ The historical checkpoints below retain their actual status at execution time.
 | ARB-H3-PREFLIGHT | Sol/Sol | Accepted read-only map; typed connection cleanup needs coordinated CORE ownership | 0 | 0 | None |
 | ARB-PHOENIX | Sol/Sol | Versioned27/0 component, clients10/0 and unified8/0 PASS; original3/1 retained | 1 | 0 | None |
 | ARB-PHOENIX-REVIEW | Sol/Sol | Accepted Phoenix candidate and public guide; stale Proxy moduledoc corrected/re-reviewed | 0 | 0 | None |
-| ARB-QUALIFY | Sol/Coordinator | All35 final014 gates PASS on682 frozen inputs: canonical900/0 plus package, Phoenix, clients, standalone, portable and optional QUIC | 0 | 0 | None |
+| ARB-QUALIFY | Sol/Coordinator | All35 final014 gates PASS; fresh exact-e3 source CI5/5 PASS with900/0 plus network89, package, Phoenix, clients and Linux/macOS portable | 0 | 0 | None |
 | ARB-QUALIFY-DIAG | Sol/Sol | Read-only helper/startup/lifetime classification; CORE startup ordering confirmed; no repairs | 0 | 0 | None |
-| ARB-RELEASE-PREFLIGHT | Sol/Sol | Accepted read-only gate map; provisional 0.14.0 requires live availability check | 0 | 0 | None |
+| ARB-RELEASE-PREFLIGHT | Sol/Sol | Accepted gate map; exact-e3 source/remote/CI and eight unused-version checks passed before the single guarded dispatch | 0 | 0 | None |
 | ARB-META-VERIFY | Sol/Sol | Accepted 36/0 isolated Python gate regressions; tested scripts and manifest unchanged | 0 | 0 | None |
-| ARB-RELEASE-NOTES-DRAFT | Sol/Sol | Audit-only 0.14.0 prose prepared; promotion waits for final acceptance and live version recheck | 0 | 0 | None |
-| ARB-RELEASE-VERIFIER | Sol/Sol | Parameterized audit tools reviewed; parent80/0 Python controls; actual new-release artifact/runtime verification NOT RUN | 0 | 0 | None |
-| ARB-ACCEPTANCE-AUDIT | Sol/Sol | 12 DoD and 20 verification rows mapped; ordinary finite connection-churn evidence missing, H3/final gates open | 0 | 0 | None |
+| ARB-RELEASE-NOTES-DRAFT | Sol/Sol | Accepted0.14.0 notes promoted and used by the successful GitHub Release | 0 | 0 | None |
+| ARB-RELEASE-VERIFIER | Sol/Sol | Reviewed helpers and80/0 controls; actual sixHex/eightasset/151sourcefile and downloaded13 checks pass with independent evidence review | 0 | 0 | None |
+| ARB-ACCEPTANCE-AUDIT | Sol/Sol | All12DoD/20verification rows audited; ordinary churn/H3/final source and public gates pass, native/specialist limits retained | 0 | 0 | None |
 | ARB-CHURN | Sol/Sol | Accepted16/0 including nine connection rounds; inventory868/120, strict compile/format pass, parent owns build lane | 1 | 0 | None |
 | ARB-CORE-RELEASE-SPEC | Sol/Sol | Accepted fixed original raw TCP/TLS drain contract and bounded-repair invariants | 0 | 0 | None |
 | ARB-CORE-RELEASE-CODE | Sol/Sol | Frozen repair12 accepted; buffer/state/output findings resolved, terminal ownership and raw evidence verified | 0 | 0 | None |
-| ARB-FINAL-ACCEPTANCE | Sol/Sol | Final014 source accepted,12DoD/20verification audited and35 gates/682 input hashes verified; ready for authorized delivery | 0 | 0 | None |
-| ARB-NETWORK-FIXTURE15-REVIEW | Sol/Sol | Accepted four fixture inputs,678 unchanged inputs,35 original assertions and89 passing network gates; exact-SHA hosted rerun required | 0 | 0 | None |
+| ARB-FINAL-ACCEPTANCE | Sol/Sol | Source12DoD/20verification, exact-e3 CI and final public-delivery review accepted; actual runtime13 checks PASS, limitations retained | 0 | 0 | None |
+| ARB-NETWORK-FIXTURE15-REVIEW | Sol/Sol | Accepted four fixture inputs,678 unchanged inputs and35 original assertions; all89 gates subsequently pass on exact-e3 hosted source | 0 | 0 | None |
 | ARB-STANDALONE-RECOVERY16-REVIEW | Sol/Sol | Accepted one test-only ordering barrier,681 unchanged inputs and11 passing receipts; original hosted2/1 remains FAIL | 0 | 0 | None |
-| ARB-VERSION | Sol/Sol | Accepted0.14.0 alignment; final source gates PASS and6Hex/tag/GitHubrelease live availability rechecked unused | 0 | 0 | None |
-| ARB-RELEASE | Coordinator/Coordinator | Implementation4f39c9e4 and fixture15 e57fb086 pushed; both original E2E failures preserved; fixture16 accepted, new CI/publication pending | 0 | 0 | None |
+| ARB-VERSION | Sol/Sol | All seven own manifests/six Hex packages align0.14.0; unused-version preflight and actual publication verified | 0 | 0 | None |
+| ARB-RELEASE | Coordinator/Coordinator | COMPLETE: e3afc810 pushed; source5/5, release41035876876, sixHex/eightassets/tag and downloaded13 checks independently verified | 0 | 0 | None |
 
 ROUTE task=ARB-BASE agent=sol_worker reason=baseline-investigation
 ROUTE task=ARB-ARCH agent=astra_worker reason=PROJECT_ARCHITECTURE
@@ -634,16 +639,21 @@ source-consumer/standalone/Phoenix peer gates. Serialize shared build state.
   E2E network/component pass but recovery timing fails2/1 in protocol.
 - [x] Diagnose equal-deadline ordering and independently review CORE16's single
   deterministic test barrier with all assertions/deadlines preserved.
-- [ ] Freshly verify, commit/push fixture16, bind its exact source with one test
+- [x] Freshly verify, commit/push fixture16, bind its exact source with one test
   input changed from e57fb086, and require all five source workflows to pass on
-  the new SHA before publication.
-- [ ] Dispatch existing `release.yml` with version, current branch and full
+  the new SHA before publication. Publication SHA:
+  `e3afc810481c396c63dff1f6f81230b456511016`; all five workflows pass.
+- [x] Dispatch existing `release.yml` with version, current branch and full
   expected SHA. Preserve all publication guards and actual job dispositions.
-- [ ] Verify tag/source, GitHub assets/checksums, six Hex package versions/bytes,
+  Run41035876876 succeeds and repeats900/0 before publication.
+- [x] Verify tag/source, GitHub assets/checksums, six Hex package versions/bytes,
   clean public consumers and downloaded standalone behavior.
-- [ ] Archive commands, source fingerprints, environment, counts, exits and raw
+  Actual public consumers7/0, eight assets/seven checksums,151 Hex source files
+  and13 downloaded runtime checks pass; inactive old directories are disclosed.
+- [x] Archive commands, source fingerprints, environment, counts, exits and raw
   evidence; report commit SHA, push result, release identifiers and remaining
   unverified limits. Do not declare this goal complete with outstanding rows.
+  Independent final public-delivery review accepts all nine authentication groups.
 
 No production restart/deployment, operational data/certificates, public
 management endpoint, Vault changes, browser gates, or specialist pressure/
