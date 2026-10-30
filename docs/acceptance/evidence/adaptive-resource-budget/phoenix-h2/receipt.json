@@ -1,0 +1,116 @@
+{
+  "task_id": "ARB-PHOENIX",
+  "status": "IMPLEMENTED_VERIFIED",
+  "assignment": "direct scope completion on existing Sol worker",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "branch": "main",
+  "baseline": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+  "captured_at": "2026-10-29T11:18:39.517224+00:00",
+  "platform": "Linux-6.18.48-x86_64-with-glibc2.42",
+  "sol_repair_rounds": 1,
+  "astra_repair_rounds": 0,
+  "repair_counter_note": "Inherited Phoenix relocation repair1; added acceptance test passed first execution, no new repair round. H1H2 and H3 counters unchanged.",
+  "changed_files": [
+    "examples/phoenix_native/test/resource_budget_test.exs"
+  ],
+  "source_sha256": {
+    "examples/phoenix_native/test/resource_budget_test.exs": "55813cc2739595c496c858d1f4f8d4aef82f98cea446850ecc78ecb779ed9a4c"
+  },
+  "source_manifest": "source-manifest.json",
+  "source_manifest_sha256": "e13963e0060a930245372101bf7cfab06416621af6f51d2778e582cb804d95fb",
+  "source_manifest_inputs": 93,
+  "preexisting_changes": "Existing untracked example resource_budget_test with explicit-policy mixed-listener two-Endpoint regression retained unchanged; unrelated source/docs/manifests/workflows preserved.",
+  "acceptance": [
+    "Real Phoenix.Endpoint via Gaoxy.PhoenixAdapter; resource_budget/max_bytes/max_active/limits/protocol overrides omitted",
+    "Public budget adaptive provenance; detected 50-percent soft/twice-soft hard or documented fallback; VM thresholds match",
+    "Two independently negotiated TLS H2 connections; streams1+3 and1 hold three distinct live Phoenix workers; public exact2connections/3requests/3h2streams and positive usage",
+    "Connection-scoped HPACK decoders verify exact200 status and Phoenix path payloads for all3responses; both connections serve further requests on streams5/3",
+    "Client closes followed by exact zero usage/connections/requests/h2streams/h3streams/pending_processes/leases and public cleanup_pending0",
+    "Existing explicit-policy mixed HTTP/HTTPS two-Endpoint assertions retained and pass"
+  ],
+  "commands": [
+    {
+      "command": "ELIXIR_ERL_OPTIONS='+S 2:2' MIX_ENV=test PHOENIX_NATIVE_H3=1 GAOXY_QUIC_PYTHON=/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python mix format test/resource_budget_test.exs",
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/examples/phoenix_native",
+      "exit": 0,
+      "status": "PASS",
+      "log": "format-write.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "ELIXIR_ERL_OPTIONS='+S 2:2' MIX_ENV=test PHOENIX_NATIVE_H3=1 GAOXY_QUIC_PYTHON=/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python python3 ../../scripts/check-tests.py test/resource_budget_test.exs --seed 0 --max-cases 1",
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/examples/phoenix_native",
+      "exit": 0,
+      "status": "PASS",
+      "log": "focused.log",
+      "log_sha256": "71316462e11ef38139729d50aacaf302d4d23f75217203cbfebdf92c0ac2fb83",
+      "tests": 2,
+      "failures": 0
+    },
+    {
+      "command": "ELIXIR_ERL_OPTIONS='+S 2:2' MIX_ENV=test PHOENIX_NATIVE_H3=1 GAOXY_QUIC_PYTHON=/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python mix compile --warnings-as-errors",
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/examples/phoenix_native",
+      "exit": 0,
+      "status": "PASS",
+      "log": "compile.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "ELIXIR_ERL_OPTIONS='+S 2:2' MIX_ENV=test PHOENIX_NATIVE_H3=1 GAOXY_QUIC_PYTHON=/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python python3 ../../scripts/check-tests.py test/resource_budget_test.exs test/body_test.exs test/stream_lifetime_test.exs test/websocket_default_capacity_test.exs test/websocket_phoenix_compatibility_test.exs test/websocket_configured_limits_test.exs --seed 0 --max-cases 1",
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/examples/phoenix_native",
+      "exit": 0,
+      "status": "PASS",
+      "log": "combined.log",
+      "log_sha256": "076bcb5bbf57fa5bd2b64ebbb99a528ef114410490676e2236364f4fabacbd22",
+      "tests": 18,
+      "failures": 0
+    },
+    {
+      "command": "ELIXIR_ERL_OPTIONS='+S 2:2' MIX_ENV=test PHOENIX_NATIVE_H3=1 GAOXY_QUIC_PYTHON=/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python mix format --check-formatted test/resource_budget_test.exs",
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/examples/phoenix_native",
+      "exit": 0,
+      "status": "PASS",
+      "log": "format-check.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "Python splitlines/rstrip check on owned untracked example test",
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+      "exit": 0,
+      "status": "PASS",
+      "log": "whitespace.log",
+      "log_sha256": "d5f2a15674a5f66a407d01778710e648de678e7dc1074a8d0fcaeb47ef178498"
+    }
+  ],
+  "independent_review": {
+    "reviewer": "/root",
+    "reviewed_source_sha256": "d83563dd2e909dedcc37807c20dc048bacb3b3b8b30dfaf495c6a426bb870c6a",
+    "outcome": "No actionable source findings before execution; only owned mix format changed candidate afterward; fresh combined18/0 executed. Final coordinator acceptance pending."
+  },
+  "tdd": "Test-only acceptance completion against existing behavior. No production edits or contrived RED; focused2/0 first execution.",
+  "operational_errors": [
+    {
+      "command": "First formatter launch with evidence directory created relative to example cwd",
+      "result": "Shell redirection failed before mix started: no such file or directory; exit1; corrected task root evidence path."
+    },
+    {
+      "command": "Remove only mistakenly created empty evidence directories",
+      "result": "Task-created empty subtree removed; parent .audit was nonempty and rmdir refused; existing contents preserved. No code/build/test failure."
+    }
+  ],
+  "lockfile_sha256": {
+    "examples/phoenix_native/mix.lock": "407763a6356f96f3f90651d5abb56998c132f148087fe84ca887fd78c8701d99"
+  },
+  "dependencies_changed": false,
+  "commands_terminal": true,
+  "source_writes_stopped": true,
+  "build_lane_returned_to_parent": true,
+  "not_run": [
+    "Forced RED against frozen production code",
+    "Whole-repository acceptance",
+    "Hosted CI",
+    "Specialist pressure/disconnect/load slices",
+    "Publication/deployment"
+  ],
+  "remaining": "Parent final acceptance/integrated qualification; no in-scope implementation blocker."
+}

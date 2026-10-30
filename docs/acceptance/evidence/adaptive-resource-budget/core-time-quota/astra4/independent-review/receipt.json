@@ -1,0 +1,118 @@
+{
+  "task_id": "ARB-CORE-REVIEW",
+  "status": "DONE",
+  "verdict": "SCOPED_ACCEPT",
+  "assignment": "independent read-only specification and code review of escalated CORE Astra4 recovery",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "branch": "main",
+  "baseline": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+  "completed_at": "2026-10-29T14:48:11.273255+00:00",
+  "findings": [],
+  "source_hashes_verified": {
+    "apps/gaoxy/lib/gaoxy/admission.ex": "803493f0667270684efa3704bc2e32574620d073cb3773ad1d5e3d9e3b965875",
+    "apps/gaoxy/lib/gaoxy/admission/accounting.ex": "28f5ae3fcf54889923d38d4d71653c950fb37f41cce21a27f3578b666733692b",
+    "apps/gaoxy/lib/gaoxy/resource_budget.ex": "c7791edb7d6d39d2a9bbcc3509194fd7eaa2f3b43ff9836b526717dfcb25c460",
+    "apps/gaoxy/lib/gaoxy/resource_budget/ledger.ex": "62c2ad48cc58b0f043a97275af4486a9df879d2a722a0b74ec0b7b60ad2b395f",
+    "apps/gaoxy/lib/gaoxy/service.ex": "8df20e4151d6c6c6f09fb3f40d0bfd590a3c2b17e9b5f7e9e7257477297a8385",
+    "apps/gaoxy/test/resource_budget_admission_test.exs": "2ca5cf8fc7ebc88c5796d4775719401cba60870b07aeb8a2690cd067a29e6091",
+    "apps/gaoxy/test/resource_budget_owner_test.exs": "bd5c942c874ff441db53bd2135fbcc8971899e4989ca1fdb67e2153babf98f8b",
+    "apps/gaoxy/test/staged_activation_test.exs": "b9904499c16eda2b16a3944505702a2e36d7ee8eff3371ebb0e71cdbd50a0427"
+  },
+  "task_diff_sha256_verified": "351a3d08ffbf94aaea237a2e031a21e41c7ebb55f15b287f65a8898ed2bd8373",
+  "candidate_raw_log_hashes_verified": {
+    ".audit/adaptive-resource-budget/core/time-quota/astra4-core-regressions.log": "b0c1ba00ea115d557c0c70d2109445086fe46bdc008659958202673e0b12cd55",
+    ".audit/adaptive-resource-budget/core/time-quota/astra4-strict-compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".audit/adaptive-resource-budget/core/time-quota/astra4-format.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".audit/adaptive-resource-budget/core/time-quota/astra4-whitespace.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "fresh_verification": {
+    "receipt": ".audit/adaptive-resource-budget/qualification/core-astra4-independent-review-268.json",
+    "receipt_sha256": "161079da42860cf8f75039e3c4359adc36ba39a27ad3ad3afe00d1876a103fac",
+    "command": [
+      "python3",
+      "scripts/check-tests.py",
+      "apps/gaoxy/test/resource_budget_admission_test.exs",
+      "apps/gaoxy/test/resource_budget_owner_test.exs",
+      "apps/gaoxy/test/resource_budget_safety_test.exs",
+      "apps/gaoxy/test/system_memory_test.exs",
+      "apps/gaoxy/test/system_memory_native_test.exs",
+      "apps/gaoxy/test/resource_budget_policy_test.exs",
+      "apps/gaoxy/test/admitted_spawn_test.exs",
+      "apps/gaoxy/test/admission_timeout_test.exs",
+      "apps/gaoxy/test/cleanup_attachment_test.exs",
+      "apps/gaoxy/test/lifecycle_ownership_test.exs",
+      "apps/gaoxy/test/lifecycle_participant_test.exs",
+      "apps/gaoxy/test/websocket_admission_test.exs",
+      "apps/gaoxy/test/websocket_accounting_test.exs",
+      "apps/gaoxy/test/staged_activation_test.exs",
+      "--seed",
+      "0",
+      "--max-cases",
+      "1"
+    ],
+    "environment": {
+      "MIX_ENV": "test",
+      "ELIXIR_ERL_OPTIONS": "+S 2:2",
+      "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+      "GAOXY_H2_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+      "GAOXY_CONSUMER_DEPS": "/home/gao/Workspace/gsmlg-opt/gaoxy/deps"
+    },
+    "exit": 0,
+    "tests": 268,
+    "failures": 0,
+    "excluded": 0,
+    "skipped": 0,
+    "source_changes": [],
+    "fingerprinted_paths": 679,
+    "final_fingerprint_changes": [],
+    "log": ".audit/adaptive-resource-budget/qualification/core-astra4-independent-review-268.log",
+    "log_sha256": "f35eee6b2de4ff5e66c03a1691936cbb8688dbaa352cdb1d9800df1f7af89ca3"
+  },
+  "manifest_counts": {
+    "unit": 377,
+    "component": 298,
+    "protocol": 149,
+    "Admission": 44,
+    "Owner": 56,
+    "staged": 11
+  },
+  "prior_test_lines_preserved": true,
+  "review_report_sha256": "22d87c71c4f5fb8526c12d919a0f9ebba290de93b84034034476defd0e9ee8e2",
+  "counters": {
+    "core_sol_repair_rounds": 2,
+    "core_astra_repair_rounds": 4,
+    "review_sol_repair_rounds": 0
+  },
+  "checks_not_repeated": {
+    "strict_compile": "candidate PASS verified by same current hashes and raw-log hash",
+    "scoped_format": "candidate PASS verified by same current hashes and raw-log hash",
+    "broader_H1_wire": "known13/3, outside scoped recovery"
+  },
+  "diagnostic_script_correction": "Initial static manifest cross-check wrongly assumed all fourteen selected regression files were active curated-manifest entries and raised KeyError for admitted_spawn_test.exs. Corrected read-only validation checked actual relevant scheduled counts and suite totals; no product/test execution failure.",
+  "allowed_writes": [
+    ".audit/adaptive-resource-budget/qualification/core-astra4-independent-review-268.log",
+    ".audit/adaptive-resource-budget/qualification/core-astra4-independent-review-268.json",
+    ".audit/adaptive-resource-budget/core/time-quota/independent-review/review.md",
+    ".audit/adaptive-resource-budget/core/time-quota/independent-review/receipt.json"
+  ],
+  "commands_terminal": true,
+  "temporary_processes_remaining": false,
+  "source_writes": false,
+  "build_lane_released": true,
+  "remaining_risks": [
+    "Protocol callers must truthfully relinquish retained resources before replenishing temporary credit",
+    "Separate H1/H2 and H3 recovery and full-goal qualification remain outstanding"
+  ],
+  "decisions_needed": [],
+  "preparation_failure_followup": {
+    "existing_regression": "apps/gaoxy/test/resource_budget_admission_test.exs:1320-1359",
+    "executed_in_fresh_268": true,
+    "conclusion": "No required acceptance gap: unchanged RejectPrepare regression now traverses post-gate failure branch and asserts zero ownership plus canonical services empty. Reconciler.finish rejects live gate; registration retirement rejects services with registered gates; RegistryPolicy.cancel unconditionally unregisters the service key before returning init failure. Direct gate PID/Registry lookup assertions are optional clarity improvements, not missing source proof.",
+    "source_refs": [
+      "apps/gaoxy/lib/gaoxy/service.ex:89-104",
+      "apps/gaoxy/lib/gaoxy/admission/reconciler.ex:8-27",
+      "apps/gaoxy/lib/gaoxy/resource_budget/ledger.ex:1160-1169",
+      "apps/gaoxy/lib/gaoxy/registry_policy.ex:103-110"
+    ]
+  }
+}

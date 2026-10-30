@@ -368,7 +368,8 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
 
     :ok = GenServer.stop(dead_gate)
     next = %{next | gate: dead_gate}
-    assert {:noproc, _} = catch_exit(Exchange.poll_connection(observe_recv(next), 100))
+    observed = observe_recv(next)
+    assert {:error, :closed, ^observed} = Exchange.poll_connection(observed, 100)
     refute_received {:poll_recv_charge, _}
     assert {:ok, "y"} = Hell.Socket.recv(exchange.socket, 1, 100)
   end
@@ -548,6 +549,12 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
   defp collect_updates(gate, lease, acc) do
     receive do
       {:trace, ^gate, :receive, {:"$gen_call", _from, {:update, ^lease, bytes}}} ->
+        collect_updates(gate, lease, [bytes | acc])
+
+      {:trace, ^gate, :receive,
+       {:"$gen_call", _from, {action, ^lease, bytes, operation, deadline}}}
+      when action in [:update_until, :repartition_until] and is_reference(operation) and
+             is_integer(deadline) ->
         collect_updates(gate, lease, [bytes | acc])
     after
       0 -> Enum.reverse(acc)

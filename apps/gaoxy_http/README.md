@@ -4,7 +4,7 @@
 HTTP/2 and WebSocket implementations. Gaoxy owns listener supervision and
 connection admission; Hell provides TCP and OTP TLS. Bandit is not required.
 
-Requires Elixir `~> 1.18`. Package version: **0.13.1**.
+Requires Elixir `~> 1.18`. Package version: **0.14.0**.
 
 TCP/TLS listeners accept validated `hell_options` for acceptor count and socket
 tuning. Put these inside each HTTP/HTTPS listener when using Phoenix or
@@ -17,15 +17,15 @@ and [Bandit migration example](https://github.com/gsmlg-dev/gaoxy/blob/main/docs
 For a Plug application, add:
 
 ```elixir
-{:gaoxy_http, "~> 0.13.1"}
+{:gaoxy_http, "~> 0.14.0"}
 ```
 
 For Phoenix, use both dependencies below, keeping your existing Phoenix,
 LiveView and application dependencies:
 
 ```elixir
-{:gaoxy_http, "~> 0.13.1"},
-{:websock_adapter, "~> 0.13.1", hex: :gaoxy_websock_adapter, override: true}
+{:gaoxy_http, "~> 0.14.0"},
+{:websock_adapter, "~> 0.14.0", hex: :gaoxy_websock_adapter, override: true}
 ```
 
 `gaoxy_websock_adapter` is the Hex package name; its OTP application and module
@@ -167,7 +167,7 @@ ALPN automatically; normally leave `:alpn` unset.
 
 ```elixir
 http_limits: %{max_body_bytes: 16_777_216, request_timeout: 120_000},
-limits: %{max_active: 128, max_bytes: 536_870_912}
+limits: %{max_connections: 128, max_requests: 512, max_streams: 1_024}
 ```
 
 The default request body ceiling is 8 MiB, header ceiling 32 KiB, and whole
@@ -186,9 +186,14 @@ effect. A listener default uses `http_limits: %{stream_timeout: :infinity}`.
 The default `stream_timeout: :request` retains the configured request lifetime,
 including infinity when explicitly selected on a supported listener. See the
 [streaming guide](https://github.com/gsmlg-dev/gaoxy/blob/main/docs/streaming-responses.md)
-for cancellation and shutdown. H1's default service byte budget is 1 MiB; selecting
-H2 raises the omitted `max_bytes` default to 256 MiB. These are resource
-budgets, not preallocated buffers or guarantees that a request will be admitted.
+for cancellation and shutdown. Memory admission uses one adaptive VM pool:
+soft is 50% of effective physical/cgroup capacity and hard is twice soft, with
+a 256/512 MiB fallback. Usage above soft through hard remains admissible with
+rate-limited warnings. Explicit legacy `max_bytes`/`max_active` stay undoubled
+hard caps; omitted historical numeric profiles do not impose aggregate caps.
+An Endpoint or ListenerSet can select one top-level `resource_budget` threshold
+pair. See the [resource budget guide](https://github.com/gsmlg-dev/gaoxy/blob/main/docs/resource-budget.md)
+for ownership, quotas, inspection and compatibility.
 H2 defaults to 32 concurrent streams per connection; resource admission also
 applies. See the migration guide's complete option and limit tables before
 lowering H2 budgets or raising parser limits.

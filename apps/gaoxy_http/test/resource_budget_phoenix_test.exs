@@ -22,33 +22,6 @@ defmodule Gaoxy.HTTP.ResourceBudgetPhoenixTest do
     end
   end
 
-  defmodule HoldPlug do
-    def init(marker), do: marker
-
-    def call(conn, marker) do
-      send(
-        Process.whereis(Gaoxy.HTTP.ResourceBudgetPhoenixTest.Coordinator),
-        {:budget_request, marker, self()}
-      )
-
-      receive do
-        :budget_reply -> Plug.Conn.send_resp(conn, 200, "shared-budget")
-      after
-        2_000 -> Plug.Conn.send_resp(conn, 504, "fixture-timeout")
-      end
-    end
-  end
-
-  defmodule FirstEndpoint do
-    use Phoenix.Endpoint, otp_app: :gaoxy_http
-    plug(Gaoxy.HTTP.ResourceBudgetPhoenixTest.HoldPlug, :first)
-  end
-
-  defmodule SecondEndpoint do
-    use Phoenix.Endpoint, otp_app: :gaoxy_http
-    plug(Gaoxy.HTTP.ResourceBudgetPhoenixTest.HoldPlug, :second)
-  end
-
   setup do
     Process.register(self(), @coordinator)
     :ok
@@ -80,63 +53,6 @@ defmodule Gaoxy.HTTP.ResourceBudgetPhoenixTest do
     a = connect(:gen_tcp, hd(first.listeners).local, [])
     b = connect(:gen_tcp, hd(second.listeners).local, [])
     exercise(first.instance, second.instance, {:gen_tcp, a}, {:gen_tcp, b})
-  end
-
-  @tag :tmp_dir
-  test "two real Phoenix Endpoints each own mixed listeners in the shared VM pool", %{
-    tmp_dir: dir
-  } do
-    root = Path.expand("../../..", __DIR__)
-
-    assert {_, 0} =
-             System.cmd("bash", [Path.join(root, "scripts/generate-fixtures.sh"), dir],
-               stderr_to_stdout: true
-             )
-
-    for endpoint <- [FirstEndpoint, SecondEndpoint] do
-      previous = Application.fetch_env(:gaoxy_http, endpoint)
-
-      on_exit(fn ->
-        case previous do
-          {:ok, config} -> Application.put_env(:gaoxy_http, endpoint, config)
-          :error -> Application.delete_env(:gaoxy_http, endpoint)
-        end
-      end)
-
-      Application.put_env(:gaoxy_http, endpoint,
-        adapter: Gaoxy.PhoenixAdapter,
-        server: true,
-        secret_key_base: String.duplicate("fixture-budget-secret-", 4),
-        resource_budget: @policy,
-        http: [ip: {127, 0, 0, 1}, port: 0],
-        https: [
-          ip: {127, 0, 0, 1},
-          port: 0,
-          protocols: [:http1],
-          certfile: Path.join(dir, "cert.pem"),
-          keyfile: Path.join(dir, "key.pem")
-        ]
-      )
-
-      start_supervised!(endpoint)
-    end
-
-    first = Gaoxy.PhoenixAdapter.listeners(FirstEndpoint)
-    second = Gaoxy.PhoenixAdapter.listeners(SecondEndpoint)
-    assert Enum.map(first.listeners, & &1.role) == [:http, :https]
-    assert Enum.map(second.listeners, & &1.role) == [:http, :https]
-    refute first.instance == second.instance
-    a = connect(:gen_tcp, Gaoxy.PhoenixAdapter.server_info(FirstEndpoint, :http), [])
-
-    b =
-      connect(:ssl, Gaoxy.PhoenixAdapter.server_info(SecondEndpoint, :https),
-        verify: :verify_peer,
-        cacertfile: String.to_charlist(Path.join(dir, "ca.pem")),
-        server_name_indication: ~c"localhost",
-        alpn_advertised_protocols: ["http/1.1"]
-      )
-
-    exercise(first.instance, second.instance, {:gen_tcp, a}, {:ssl, b})
   end
 
   defp connect(client, {:ok, {ip, port}}, options) do

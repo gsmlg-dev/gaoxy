@@ -1,0 +1,438 @@
+--- before/apps/gaoxy/lib/gaoxy/admission.ex
++++ apps/gaoxy/lib/gaoxy/admission.ex
+@@ -16,6 +16,16 @@
+       :gen_server.send_request(
+         gate,
+         {:spawn_request, parent_lease, token, bytes, deadline, mfa, metadata}
++      )
++
++  # The original response alias scopes this optional proof to this attempt.
++  # Only expiry before any reservation can return :not_reserved. Ordinary
++  # errors (including activation expiry) never prove absent resource ownership.
++  def spawn_request(gate, parent_lease, token, bytes, deadline, mfa, metadata, :phase_receipt),
++    do:
++      :gen_server.send_request(
++        gate,
++        {:spawn_request, parent_lease, token, bytes, deadline, mfa, metadata, :phase_receipt}
+       )
+ 
+   def update_until(gate, lease, accounting, operation, deadline),
+@@ -151,6 +161,8 @@
+          update_pending: nil,
+          bytes: 0,
+          high_water: 0,
++         temporary_high_water: 0,
++         usage_high_water: 0,
+          transport_high_water: 0,
+          websocket_high_water: 0,
+          rejected: 0
+@@ -163,9 +175,22 @@
+   @impl true
+   def handle_call(
+         {:spawn_request, parent_lease, token, bytes, deadline, mfa, metadata},
++        from,
++        state
++      ),
++      do:
++        handle_call(
++          {:spawn_request, parent_lease, token, bytes, deadline, mfa, metadata, :legacy},
++          from,
++          state
++        )
++
++  def handle_call(
++        {:spawn_request, parent_lease, token, bytes, deadline, mfa, metadata, reply_mode},
+         {owner, _} = from,
+         state
+-      ) do
++      )
++      when reply_mode in [:legacy, :phase_receipt] do
+     cond do
+       not parent_owned?(state, parent_lease, owner) ->
+         {:reply, {:error, :stale_generation}, state}
+@@ -178,8 +203,17 @@
+       state.mode != :ready ->
+         reject(state, spawn_mode(state.mode))
+ 
++      reply_mode == :phase_receipt and
++          (state.update_pending != nil or
++             match?(%{pending: pending} when not is_nil(pending), state.budget)) ->
++        reject(state, :budget_pending)
++
+       not is_integer(deadline) or deadline <= Lifecycle.now() ->
+-        reject(state, :deadline_exceeded)
++        {:reply, error, state} = reject(state, :deadline_exceeded)
++
++        if reply_mode == :phase_receipt and is_integer(deadline),
++          do: {:reply, {:error, {:not_reserved, token, :deadline_exceeded}}, state},
++          else: {:reply, error, state}
+ 
+       true ->
+         ref = make_ref()
+@@ -839,8 +873,12 @@
+      %{
+        active: map_size(state.leases),
+        cleanup_pending: map_size(state.cleanups),
+-       retained_bytes: state.bytes,
++       retained_bytes: accounting.retained_bytes,
++       temporary_bytes: accounting.temporary_bytes,
++       usage: accounting.usage,
+        retained_high_water: state.high_water,
++       temporary_high_water: state.temporary_high_water,
++       usage_high_water: state.usage_high_water,
+        transport_bytes: accounting.transport_bytes,
+        websocket_bytes: accounting.websocket_bytes,
+        transport_high_water: state.transport_high_water,
+@@ -1495,17 +1533,28 @@
+   defp sample(state) do
+     accounting = Accounting.totals(state.leases, state.cleanups)
+ 
+-    Telemetry.emit(
+-      :work,
+-      Map.merge(accounting, %{active: map_size(state.leases), retained_bytes: state.bytes}),
+-      state.scope
+-    )
+-
+-    %{
++    state = %{
+       state
+-      | high_water: max(state.high_water, state.bytes),
++      | high_water: max(state.high_water, accounting.retained_bytes),
++        temporary_high_water: max(state.temporary_high_water, accounting.temporary_bytes),
++        usage_high_water: max(state.usage_high_water, accounting.usage),
+         transport_high_water: max(state.transport_high_water, accounting.transport_bytes),
+         websocket_high_water: max(state.websocket_high_water, accounting.websocket_bytes)
+     }
++
++    Telemetry.emit(
++      :work,
++      Map.merge(accounting, %{
++        active: map_size(state.leases),
++        retained_high_water: state.high_water,
++        temporary_high_water: state.temporary_high_water,
++        usage_high_water: state.usage_high_water,
++        transport_high_water: state.transport_high_water,
++        websocket_high_water: state.websocket_high_water
++      }),
++      state.scope
++    )
++
++    state
+   end
+ end
+--- before/apps/gaoxy/lib/gaoxy/admission/accounting.ex
++++ apps/gaoxy/lib/gaoxy/admission/accounting.ex
+@@ -66,18 +66,31 @@
+ 
+   def totals(leases, cleanups) do
+     initial = %{
+-      transport_bytes: Enum.reduce(cleanups, 0, fn {_, cleanup}, sum -> sum + cleanup.bytes end),
+-      websocket_bytes: 0
++      transport_bytes: 0,
++      websocket_bytes: 0,
++      retained_bytes: 0,
++      temporary_bytes: 0,
++      usage: 0
+     }
+ 
+-    Enum.reduce(leases, initial, fn {_, lease}, totals ->
+-      accounting = categories(lease)
++    leases
++    |> Enum.reduce(initial, &sum_accounting/2)
++    |> then(&Enum.reduce(cleanups, &1, fn row, totals -> sum_accounting(row, totals) end))
++  end
+ 
+-      %{
+-        transport_bytes: totals.transport_bytes + accounting.transport_bytes,
+-        websocket_bytes: totals.websocket_bytes + accounting.websocket_bytes
+-      }
+-    end)
++  defp sum_accounting({_, row}, totals) do
++    categories = categories(row)
++    # Scalar legacy rows have no temporary classification. Guardian rows use
++    # their original accounting until receipt AND actual terminal completion.
++    ownership = Map.get(row, :accounting, %{retained_bytes: row.bytes, temporary_bytes: 0})
++
++    %{
++      transport_bytes: totals.transport_bytes + categories.transport_bytes,
++      websocket_bytes: totals.websocket_bytes + categories.websocket_bytes,
++      retained_bytes: totals.retained_bytes + ownership.retained_bytes,
++      temporary_bytes: totals.temporary_bytes + ownership.temporary_bytes,
++      usage: totals.usage + ownership.retained_bytes + ownership.temporary_bytes
++    }
+   end
+ 
+   def validate(leases, cleanups, old, replacement, max_bytes) do
+--- before/apps/gaoxy/test/resource_budget_admission_test.exs
++++ apps/gaoxy/test/resource_budget_admission_test.exs
+@@ -100,6 +100,270 @@
+     assert :ok = Admission.update(a, lease, 20)
+     assert {:ok, _} = Admission.acquire(c, 81)
+     assert %{usage: 101} = snapshot(b)
++  end
++
++  test "status and work telemetry distinguish retained temporary and total high waters" do
++    b = budget()
++    g = gate(b)
++    handler = make_ref()
++    observer = self()
++    scope = :sys.get_state(g).scope
++
++    :ok =
++      :telemetry.attach(
++        handler,
++        [:gaoxy, :work],
++        fn _, measurements, metadata, _ ->
++          if metadata.service == scope.service, do: send(observer, {:work, measurements})
++        end,
++        nil
++      )
++
++    on_exit(fn -> :telemetry.detach(handler) end)
++
++    assert {:ok, lease} =
++             Admission.acquire(g, %{retained_bytes: 20, temporary_bytes: 80, transport_bytes: 100})
++
++    assert %{
++             retained_bytes: 20,
++             temporary_bytes: 80,
++             usage: 100,
++             retained_high_water: 20,
++             temporary_high_water: 80,
++             usage_high_water: 100,
++             transport_bytes: 100
++           } = Admission.status(g)
++
++    assert_receive {:work,
++                    %{
++                      retained_bytes: 20,
++                      temporary_bytes: 80,
++                      usage: 100,
++                      retained_high_water: 20,
++                      temporary_high_water: 80,
++                      usage_high_water: 100
++                    }}
++
++    assert :ok =
++             Admission.repartition_until(
++               g,
++               lease,
++               %{retained_bytes: 70, temporary_bytes: 30},
++               make_ref(),
++               deadline()
++             )
++
++    assert %{
++             retained_bytes: 70,
++             temporary_bytes: 30,
++             usage: 100,
++             retained_high_water: 70,
++             temporary_high_water: 80,
++             usage_high_water: 100
++           } = Admission.status(g)
++
++    assert :ok =
++             Admission.repartition_until(
++               g,
++               lease,
++               %{retained_bytes: 0, temporary_bytes: 100},
++               make_ref(),
++               deadline()
++             )
++
++    assert %{
++             retained_bytes: 0,
++             temporary_bytes: 100,
++             usage: 100,
++             retained_high_water: 70,
++             temporary_high_water: 100,
++             usage_high_water: 100
++           } = Admission.status(g)
++
++    assert :sys.get_state(g).bytes == 100
++    assert :sys.get_state(g).leases[lease].bytes == 100
++    assert {:error, :memory_hard_limit} = Admission.acquire(g, 101)
++    assert %{usage: 100} = snapshot(b)
++  end
++
++  test "guardian retained metrics survive receipt until the actual terminal boundary" do
++    b = budget()
++    g = gate(b)
++    accounting = %{retained_bytes: 20, temporary_bytes: 80, transport_bytes: 100}
++    assert {:ok, lease} = Admission.acquire(g, accounting, drain_notify: true)
++    limit = deadline()
++    assert :ok = Admission.begin_request(g, lease, accounting, limit)
++    guardian = spawn(fn -> receive do: (:finish -> :ok) end)
++    on_exit(fn -> if Process.alive?(guardian), do: Process.exit(guardian, :kill) end)
++    token = make_ref()
++    assert :ok = Admission.attach_cleanup(g, self(), lease, guardian, 5, limit, token)
++
++    assert %{retained_bytes: 25, temporary_bytes: 80, usage: 105, cleanup_pending: 1} =
++             Admission.status(g)
++
++    assert :ok = Admission.complete_cleanup(g, token)
++
++    assert %{retained_bytes: 25, temporary_bytes: 80, usage: 105, cleanup_pending: 1} =
++             Admission.status(g)
++
++    send(guardian, :finish)
++    eventually(fn -> Admission.status(g).cleanup_pending == 0 end)
++
++    assert %{
++             retained_bytes: 20,
++             temporary_bytes: 80,
++             usage: 100,
++             retained_high_water: 25,
++             usage_high_water: 105
++           } = Admission.status(g)
++
++    assert %{usage: 100} = snapshot(b)
++  end
++
++  defp phase_spawn(g, parent, token, limit) do
++    apply(Admission, :spawn_request, [
++      g,
++      parent,
++      token,
++      20,
++      limit,
++      {__MODULE__, :token_worker, [self(), token]},
++      [kind: :h2_stream, memberships: %{h2_stream: {parent, 1}, request: token}],
++      :phase_receipt
++    ])
++  end
++
++  test "phase receipt proves only authenticated valid-token pre-reserve expiry" do
++    b = budget()
++    g = gate(b)
++    assert {:ok, parent} = Admission.acquire(g, 0)
++    token = make_ref()
++    expired = deadline() - 2000
++    request = phase_spawn(g, parent, token, expired)
++
++    assert {:reply, {:error, {:not_reserved, ^token, :deadline_exceeded}}} =
++             :gen_server.receive_response(request, 1000)
++
++    assert %{usage: 0, leases: 1, h2_streams: 0} = snapshot(b)
++    assert :sys.get_state(g).spawns == %{}
++    refute_receive {:token_worker_started, _, _}, 0
++    legacy = token_spawn(g, parent, make_ref(), :h2_stream, expired)
++    assert {:reply, {:error, :deadline_exceeded}} = :gen_server.receive_response(legacy, 1000)
++    invalid = phase_spawn(g, parent, :invalid, expired)
++
++    assert {:reply, {:error, :invalid_spawn_request}} =
++             :gen_server.receive_response(invalid, 1000)
++
++    foreign =
++      Task.async(fn ->
++        :gen_server.receive_response(phase_spawn(g, parent, make_ref(), expired), 1000)
++      end)
++
++    assert {:reply, {:error, :stale_generation}} = Task.await(foreign)
++  end
++
++  test "live retained and recently retired spawn tokens cannot receive absence proofs" do
++    Process.flag(:trap_exit, true)
++    b = budget()
++    g = gate(b)
++    assert {:ok, parent} = Admission.acquire(g, 0)
++    token = make_ref()
++    request = phase_spawn(g, parent, token, deadline())
++    assert {:reply, {:ok, worker, lease}} = :gen_server.receive_response(request, 1000)
++    assert_receive {:token_worker_started, ^worker, ^token}
++    duplicate = phase_spawn(g, parent, token, deadline() - 2000)
++
++    assert {:reply, {:error, :invalid_spawn_request}} =
++             :gen_server.receive_response(duplicate, 1000)
++
++    send(worker, :finish)
++    eventually(fn -> :sys.get_state(g).spawns == %{} end)
++    retained = phase_spawn(g, parent, token, deadline() - 2000)
++
++    assert {:reply, {:error, :invalid_spawn_request}} =
++             :gen_server.receive_response(retained, 1000)
++
++    assert :ok = Admission.end_stream(g, parent, :h2_stream, 1, deadline())
++    assert :ok = Admission.finish_stream_resources(g, parent, lease, make_ref(), deadline())
++    eventually(fn -> snapshot(b).usage == 0 end)
++    retired = phase_spawn(g, parent, token, deadline() - 2000)
++
++    assert {:reply, {:error, :invalid_spawn_request}} =
++             :gen_server.receive_response(retired, 1000)
++  end
++
++  test "pending canonical reservation cannot be mistaken for definite absence" do
++    b = {server, _} = budget()
++    g = gate(b)
++    assert {:ok, parent} = Admission.acquire(g, 0)
++    token = make_ref()
++    assert :ok = :sys.suspend(server)
++
++    try do
++      request = phase_spawn(g, parent, token, System.monotonic_time(:millisecond) + 20)
++      assert {:reply, {:error, :budget_timeout}} = :gen_server.receive_response(request, 1000)
++      assert :sys.get_state(g).budget.pending != nil
++      retry = phase_spawn(g, parent, token, deadline() - 2000)
++      assert {:reply, {:error, :budget_pending}} = :gen_server.receive_response(retry, 1000)
++    after
++      :ok = :sys.resume(server)
++    end
++
++    eventually(fn -> :sys.get_state(g).budget.pending == nil end)
++    assert %{usage: 0, leases: 1} = snapshot(b)
++  end
++
++  test "phase receipt preserves ambiguous post-reserve activation expiry ownership" do
++    Process.flag(:trap_exit, true)
++    b = budget()
++    g = gate(b)
++    assert {:ok, parent} = Admission.acquire(g, 0)
++    token = make_ref()
++    barrier = make_ref()
++    observer = self()
++
++    debug = fn
++      :armed, {:noreply, state}, _ ->
++        case state.spawns[token] do
++          %{worker: worker} ->
++            send(observer, {:spawn_bound, barrier, worker})
++
++            # Keep the real activation ahead of the later watchdog/DOWN/EXIT
++            # messages so this exercises activation expiry, not worker failure.
++            receive do
++              {:release_bound, ^barrier} -> :done
++            after
++              1000 -> exit(:bound_barrier_timeout)
++            end
++
++          _ ->
++            :armed
++        end
++
++      current, _, _ ->
++        current
++    end
++
++    assert :ok = :sys.install(g, {barrier, debug, :armed})
++    request = phase_spawn(g, parent, token, System.monotonic_time(:millisecond) + 200)
++    assert_receive {:spawn_bound, ^barrier, worker}, 1000
++    monitor = Process.monitor(worker)
++
++    try do
++      assert %{usage: 20, h2_streams: 1} = snapshot(b)
++      assert_receive {:DOWN, ^monitor, :process, ^worker, :normal}, 1000
++    after
++      send(g, {:release_bound, barrier})
++    end
++
++    assert {:reply, {:error, :deadline_exceeded}} = :gen_server.receive_response(request, 1000)
++    eventually(fn -> :sys.get_state(g).spawns == %{} end)
++    assert %{usage: 20, h2_streams: 1} = snapshot(b)
++    assert :ok = Admission.end_stream(g, parent, :h2_stream, 1, deadline())
++    assert %{usage: 20} = snapshot(b)
++    assert :ok = Admission.finish_spawn_resources(g, parent, token, make_ref(), deadline())
++    eventually(fn -> snapshot(b).usage == 0 end)
++    refute_receive {:token_worker_started, _, _}, 0
+   end
+ 
+   test "request completion removes quota and watchdog without releasing connection bytes" do

@@ -1,0 +1,1771 @@
+--- before/apps/gaoxy/lib/gaoxy/admission.ex
++++ apps/gaoxy/lib/gaoxy/admission.ex
+@@ -71,6 +71,9 @@
+   def begin_callback(gate, lease, bytes, deadline),
+     do: GenServer.call(gate, {:begin_callback, lease, bytes, deadline})
+ 
++  def begin_native_cleanup(gate, lease, bytes, deadline),
++    do: GenServer.call(gate, {:begin_native_cleanup, lease, bytes, deadline}, 100)
++
+   # Transfer the returned state/output into retained ownership before sending.
+   # The callback watchdog cannot also own a progressing output batch.
+   def end_websocket_callback(gate, lease, accounting),
+@@ -138,6 +141,20 @@
+       )
+ 
+   def complete_cleanup(gate, token), do: GenServer.call(gate, {:complete_cleanup, token}, 50)
++
++  def reserve_native(gate, owner, lease, token, native, overhead, deadline),
++    do:
++      GenServer.call(
++        gate,
++        {:reserve_native, owner, lease, token, native, overhead, deadline},
++        100
++      )
++
++  def split_native(gate, token, guardian, deadline),
++    do: GenServer.call(gate, {:split_native, token, guardian, deadline}, 100)
++
++  def update_native(gate, lease, native, deadline),
++    do: GenServer.call(gate, {:update_native, lease, native, deadline}, 100)
+ 
+   @impl true
+   def init({limits, scope}) do
+@@ -525,7 +542,13 @@
+   end
+ 
+   def handle_call({action, ref, bytes, deadline}, {pid, _}, state)
+-      when action in [:begin_request, :begin_callback, :upgrade, :begin_stream] do
++      when action in [
++             :begin_request,
++             :begin_callback,
++             :begin_native_cleanup,
++             :upgrade,
++             :begin_stream
++           ] do
+     case state.leases[ref] do
+       %{pid: ^pid} = lease ->
+         deadline =
+@@ -536,6 +559,14 @@
+         replacement = replace_accounting(state, lease, bytes, action == :upgrade)
+ 
+         cond do
++          action == :begin_native_cleanup and
++              (not Map.get(lease, :native_connection, false) or
++                 not is_integer(bytes) or bytes > lease.bytes) ->
++            reject(state, :invalid_native_cleanup)
++
++          action == :begin_native_cleanup and state.mode not in [:ready, :draining] ->
++            reject(state, state.mode)
++
+           action in [:upgrade, :begin_stream] and
+               (not lease.request_active or not lease.drain_notify) ->
+             reject(state, :inactive_request)
+@@ -593,6 +624,198 @@
+ 
+       _ ->
+         {:reply, {:error, :stale_generation}, state}
++    end
++  end
++
++  def handle_call(
++        {:reserve_native, owner, ref, token, native, overhead, deadline},
++        {service, _},
++        %{service: service} = state
++      )
++      when is_pid(service) do
++    with true <-
++           (is_pid(owner) and is_reference(ref) and is_reference(token) and
++              not Map.has_key?(state.cleanups, token)) || {:error, :invalid_native_reservation},
++         true <-
++           (is_integer(native) and native >= 0 and is_integer(overhead) and overhead > 0) ||
++             {:error, :byte_limit},
++         {:ok, accounting} <-
++           Gaoxy.ResourceBudget.normalize_accounting(%{
++             retained_bytes: native + overhead,
++             temporary_bytes: 0,
++             transport_bytes: native + overhead,
++             websocket_bytes: 0,
++             memberships: %{connection: token},
++             pending_processes: 1
++           }),
++         :ok <- local_reserve_check(state, accounting) do
++      commit = fn state, receipt, _late ->
++        cleanup = %{
++          pid: service,
++          monitor: nil,
++          bytes: native + overhead,
++          native_bytes: native,
++          overhead: overhead,
++          native_owner: owner,
++          native_phase: :pending,
++          lease: ref,
++          receipt: false,
++          accounting: accounting,
++          budget_owner: service,
++          down_seen: false,
++          down_reason: nil
++        }
++
++        cleanup = Budget.receipt(cleanup, receipt)
++        send(service, {:gaoxy_native_reserved, token, receipt})
++
++        sample(%{
++          state
++          | cleanups: Map.put(state.cleanups, token, cleanup),
++            bytes: state.bytes + cleanup.bytes
++        })
++      end
++
++      rejected = fn state, reason ->
++        send(service, {:gaoxy_native_rejected, token, reason})
++        state
++      end
++
++      reply_mutation(
++        Budget.run(state, :reserve_native, [service, accounting], deadline, commit, rejected)
++      )
++    else
++      {:error, reason} -> reject(state, reason)
++    end
++  end
++
++  def handle_call({:reserve_native, _, _, _, _, _, _}, _, state),
++    do: {:reply, {:error, :unauthorized_service}, state}
++
++  def handle_call(
++        {:split_native, token, guardian, deadline},
++        {service, _},
++        %{service: service} = state
++      )
++      when is_pid(service) do
++    case state.cleanups[token] do
++      %{native_phase: :pending} = cleanup when is_pid(guardian) ->
++        if guardian != cleanup.native_owner and Process.alive?(guardian) do
++          # Bind the terminal observer before the canonical split. If the split
++          # fails or its receipt is delayed, the Service-pinned reservation is
++          # still releasable only by this guardian's exact terminal handshake.
++          cleanup = %{
++            cleanup
++            | pid: guardian,
++              monitor: Process.monitor(guardian),
++              native_phase: :splitting
++          }
++
++          state = put_in(state.cleanups[token], cleanup)
++
++          args =
++            if state.budget,
++              do: [
++                cleanup.budget_receipt.token,
++                cleanup.budget_receipt.revision,
++                guardian,
++                cleanup.native_owner
++              ],
++              else: []
++
++          commit = fn state, receipts, _late ->
++            cleanup = state.cleanups[token]
++            owner = cleanup.native_owner
++            if state.budget, do: Process.link(owner)
++            {:ok, empty} = Gaoxy.ResourceBudget.normalize_accounting(0)
++
++            lease = %{
++              pid: owner,
++              monitor: Process.monitor(owner),
++              bytes: 0,
++              token: nil,
++              timer: nil,
++              send: nil,
++              drain_notify: false,
++              request_active: false,
++              cleanup: token,
++              deadline: nil,
++              accounting: empty,
++              kind: :transport,
++              native_connection: true,
++              budget_owner: owner,
++              down_seen: false,
++              exit_seen: false
++            }
++
++            lease = Budget.receipt(lease, receipts && receipts.callback)
++
++            cleanup = %{
++              cleanup
++              | native_phase: :active,
++                budget_owner: guardian,
++                accounting: %{cleanup.accounting | pending_processes: 0}
++            }
++
++            cleanup = Budget.receipt(cleanup, receipts && receipts.native)
++
++            send(
++              service,
++              {:gaoxy_native_activated, token, cleanup.lease, receipts && receipts.native}
++            )
++
++            sample(%{
++              state
++              | cleanups: Map.put(state.cleanups, token, cleanup),
++                leases: Map.put(state.leases, cleanup.lease, lease)
++            })
++          end
++
++          rejected = fn state, reason ->
++            send(service, {:gaoxy_native_split_failed, token, reason})
++            state
++          end
++
++          reply_mutation(Budget.run(state, :split_native, args, deadline, commit, rejected))
++        else
++          reject(state, :invalid_guardian)
++        end
++
++      _ ->
++        reject(state, :stale_cleanup)
++    end
++  end
++
++  def handle_call({:split_native, _, _, _}, _, state),
++    do: {:reply, {:error, :unauthorized_service}, state}
++
++  def handle_call({:update_native, ref, native, deadline}, {owner, _}, state) do
++    with %{pid: ^owner, cleanup: token} <- state.leases[ref],
++         %{native_phase: :active} = cleanup <- state.cleanups[token],
++         true <- (is_integer(native) and native >= 0) || {:error, :byte_limit},
++         {:ok, replacement} <- replace_accounting(state, cleanup, native + cleanup.overhead) do
++      args = if state.budget, do: Budget.arguments(cleanup, replacement.accounting), else: []
++
++      commit = fn state, receipt, _ ->
++        current = state.cleanups[token]
++
++        replacement =
++          current
++          |> Map.merge(Map.take(replacement, [:bytes, :accounting]))
++          |> Map.put(:native_bytes, native)
++          |> Budget.receipt(receipt)
++
++        sample(%{
++          state
++          | cleanups: Map.put(state.cleanups, token, replacement),
++            bytes: state.bytes - current.bytes + replacement.bytes
++        })
++      end
++
++      reply_mutation(Budget.run(state, :replace, args, deadline, commit))
++    else
++      {:error, reason} -> reject(state, reason)
++      _ -> reject(state, :stale_cleanup)
+     end
+   end
+ 
+--- before/apps/gaoxy/lib/gaoxy/quic.ex
++++ apps/gaoxy/lib/gaoxy/quic.ex
+@@ -13,7 +13,7 @@
+   defmodule Connection do
+     @moduledoc false
+     @enforce_keys [:handle, :gate, :lease, :limits, :scope]
+-    defstruct @enforce_keys ++ [:service, :instance]
++    defstruct @enforce_keys ++ [:service, :instance, :native_cleanup]
+   end
+ 
+   defmodule Stream do
+--- before/apps/gaoxy/lib/gaoxy/quic_bridge.ex
++++ apps/gaoxy/lib/gaoxy/quic_bridge.ex
+@@ -1,7 +1,7 @@
+ defmodule Gaoxy.QUICBridge do
+   @moduledoc false
+   @behaviour Abyss.QUIC.Handler
+-  alias Gaoxy.{Admission, Lifecycle, QUIC}
++  alias Gaoxy.{Admission, Lifecycle, QUIC, Service}
+ 
+   @native_byte_metrics [
+     :queued_bytes,
+@@ -15,24 +15,22 @@
+   def init(handle, metadata, %{spec: spec, gate: gate, scope: scope} = context) do
+     deadline = Lifecycle.deadline(spec.limits.callback_timeout)
+ 
++    connection = %QUIC.Connection{
++      handle: handle,
++      gate: gate,
++      lease: make_ref(),
++      limits: spec.limits,
++      scope: scope,
++      service: Map.get(context, :service),
++      instance: Map.get(context, :instance)
++    }
++
+     with {:ok, native} <- native_bytes({:ok, metadata}),
+-         {:ok, lease} <-
+-           Admission.acquire(gate, 0,
+-             kind: :connection,
+-             memberships: %{connection: make_ref()},
+-             deadline: deadline
+-           ),
++         {:ok, lease, cleanup} <-
++           Service.acquire_native(connection.service, connection, native, deadline),
+          true <- Lifecycle.remaining(deadline) > 0 || {:error, :deadline_exceeded},
+-         :ok <- Admission.begin_callback(gate, lease, native, deadline) do
+-      connection = %QUIC.Connection{
+-        handle: handle,
+-        gate: gate,
+-        lease: lease,
+-        limits: spec.limits,
+-        scope: scope,
+-        service: Map.get(context, :service),
+-        instance: Map.get(context, :instance)
+-      }
++         :ok <- Admission.begin_callback(gate, lease, 0, deadline) do
++      connection = %{connection | lease: lease, native_cleanup: cleanup}
+ 
+       with {:ok, app} <- spec.handler.init(connection, metadata, spec.handler_options),
+            {:ok, bytes} <- retain(connection, app, native, deadline) do
+@@ -47,11 +45,12 @@
+     closed = match?({:closed, _}, event)
+ 
+     with {:ok, before_native} <- inspect_native(connection, deadline, closed),
++         :ok <- update_native(connection, before_native, deadline),
+          :ok <-
+            Admission.begin_callback(
+              connection.gate,
+              connection.lease,
+-             :erlang.external_size(app) + before_native,
++             :erlang.external_size(app),
+              deadline
+            ) do
+       case state.spec.handler.handle_event(event(event, connection), app) do
+@@ -86,7 +85,7 @@
+       # terminal pair releases it; unavailable inspection never becomes zero.
+       deadline = Lifecycle.deadline(state.connection.limits.callback_timeout)
+ 
+-      case Admission.begin_callback(
++      case Admission.begin_native_cleanup(
+              state.connection.gate,
+              state.connection.lease,
+              state.accounted_bytes,
+@@ -126,10 +125,12 @@
+ 
+   def native_bytes(_), do: {:error, :native_resources_unavailable}
+ 
+-  # A public closed notification is a terminal receipt, rather than a failed
+-  # inspection. No datagram payload API is exposed by this stream facade.
+-  defp inspect_native(_connection, deadline, true) do
+-    if Lifecycle.remaining(deadline) > 0, do: {:ok, 0}, else: {:error, :deadline_exceeded}
++  # A callback notification only asks the independent observer to inspect the
++  # original handle. It cannot refund native memory or connection membership.
++  defp inspect_native(connection, deadline, true) do
++    {guardian, token} = connection.native_cleanup
++    send(guardian, {:gaoxy_native_closed, token})
++    if Lifecycle.remaining(deadline) > 0, do: {:ok, :closed}, else: {:error, :deadline_exceeded}
+   end
+ 
+   defp inspect_native(connection, deadline, false) do
+@@ -148,7 +149,6 @@
+ 
+   defp retain(connection, app, native, deadline) do
+     size = :erlang.external_size(app)
+-    bytes = size + native
+ 
+     cond do
+       Lifecycle.remaining(deadline) == 0 ->
+@@ -158,12 +158,15 @@
+         {:error, :state_limit}
+ 
+       true ->
+-        # Scalar replacement preserves the connection membership and normalizes
+-        # to retained=transport, temporary=websocket=0 in canonical accounting.
+-        case Admission.end_request(connection.gate, connection.lease, bytes, deadline) do
+-          :ok -> {:ok, bytes}
+-          error -> error
++        with :ok <- update_native(connection, native, deadline),
++             :ok <- Admission.end_request(connection.gate, connection.lease, size, deadline) do
++          {:ok, size}
+         end
+     end
+   end
++
++  defp update_native(_, :closed, _), do: :ok
++
++  defp update_native(connection, native, deadline),
++    do: Admission.update_native(connection.gate, connection.lease, native, deadline)
+ end
+--- before/apps/gaoxy/lib/gaoxy/quic_cleanup.ex
++++ apps/gaoxy/lib/gaoxy/quic_cleanup.ex
+@@ -0,0 +1,93 @@
++defmodule Gaoxy.QUICCleanup do
++  @moduledoc false
++  use GenServer
++  alias Gaoxy.{Lifecycle, QUIC, Service}
++
++  def prepare(connection, owner, token) do
++    %{
++      connection: connection,
++      owner: owner,
++      token: token,
++      owner_monitor: make_ref(),
++      service_monitor: make_ref(),
++      probe: &QUIC.info/1,
++      active: false,
++      deadline: nil,
++      timer: make_ref()
++    }
++  end
++
++  def start_link(state), do: GenServer.start_link(__MODULE__, state)
++
++  @impl true
++  def init(state) do
++    Process.flag(:trap_exit, true)
++
++    {:ok,
++     %{
++       state
++       | owner_monitor: Process.monitor(state.owner),
++         service_monitor: Process.monitor(state.connection.service),
++         timer: nil
++     }}
++  end
++
++  @impl true
++  def handle_info({:gaoxy_cleanup_activate, token}, %{token: token} = state) do
++    state = %{state | active: true}
++    {:noreply, schedule(state)}
++  end
++
++  def handle_info({:gaoxy_cleanup_cancel, token, _, deadline}, %{token: token} = state),
++    do: {:noreply, state |> Map.put(:active, true) |> trigger(deadline)}
++
++  def handle_info({:gaoxy_native_closed, token}, %{token: token} = state),
++    do: {:noreply, trigger(state, cleanup_deadline(state))}
++
++  def handle_info({:DOWN, monitor, :process, _, _}, %{owner_monitor: monitor} = state),
++    do: {:noreply, trigger(state, cleanup_deadline(state))}
++
++  def handle_info({:DOWN, monitor, :process, _, _}, %{service_monitor: monitor} = state),
++    do: {:stop, :service_unavailable, state}
++
++  def handle_info({:EXIT, service, _}, %{connection: %{service: service}} = state),
++    do: {:noreply, trigger(state, cleanup_deadline(state))}
++
++  def handle_info(:probe, %{active: true, deadline: deadline} = state)
++      when is_integer(deadline) do
++    # This supported public call may itself wait five seconds. It must run in
++    # this funded observer, never in Service or Admission's critical handlers.
++    result = Lifecycle.protect(fn -> state.probe.(state.connection) end)
++    state = %{state | timer: nil}
++
++    cond do
++      result == {:error, :closed} ->
++        case Service.complete_cleanup(state.connection.service, state.token) do
++          :ok -> {:stop, :normal, state}
++          _ -> {:stop, :cleanup_receipt_unconfirmed, state}
++        end
++
++      Lifecycle.remaining(state.deadline) == 0 ->
++        {:stop, :native_termination_unconfirmed, state}
++
++      true ->
++        {:noreply, schedule(state)}
++    end
++  end
++
++  def handle_info(_, state), do: {:noreply, state}
++
++  defp trigger(state, deadline) do
++    deadline = if state.deadline, do: min(state.deadline, deadline), else: deadline
++    schedule(%{state | deadline: deadline})
++  end
++
++  defp schedule(%{active: true, deadline: deadline, timer: nil} = state)
++       when is_integer(deadline),
++       do: %{state | timer: Process.send_after(self(), :probe, 1)}
++
++  defp schedule(state), do: state
++
++  defp cleanup_deadline(state),
++    do: Lifecycle.deadline(state.connection.limits.drain_timeout + Lifecycle.cleanup_headroom())
++end
+--- before/apps/gaoxy/lib/gaoxy/resource_budget.ex
++++ apps/gaoxy/lib/gaoxy/resource_budget.ex
+@@ -64,6 +64,15 @@
+   def reserve(client, owner, kind, accounting, operation, deadline),
+     do: mutation(client, operation, deadline, {:reserve, owner, kind, accounting})
+ 
++  @doc false
++  def reserve_native(client, service, accounting, operation, deadline),
++    do: mutation(client, operation, deadline, {:reserve_native, service, accounting})
++
++  @doc false
++  def split_native(client, token, revision, guardian, callback, operation, deadline),
++    do:
++      mutation(client, operation, deadline, {:split_native, token, revision, guardian, callback})
++
+   def replace(client, token, revision, accounting, operation, deadline),
+     do: mutation(client, operation, deadline, {:replace, token, revision, accounting})
+ 
+--- before/apps/gaoxy/lib/gaoxy/resource_budget/ledger.ex
++++ apps/gaoxy/lib/gaoxy/resource_budget/ledger.ex
+@@ -586,6 +586,83 @@
+             else: state
+ 
+         {{:ok, %{operation: sequence, status: :committed}}, state}
++    end
++  end
++
++  defp execute(state, client, gate, {:reserve_native, service, input}, actor, sequence) do
++    with true <-
++           (actor == gate.owner and service == state.services[gate.service].owner and
++              Process.alive?(service)) || {:error, :unauthorized_owner},
++         {:ok, accounting} <- Gaoxy.ResourceBudget.normalize_accounting(input),
++         true <-
++           (Map.keys(accounting.memberships) == [:connection] and
++              accounting.pending_processes == 1) || {:error, :invalid_membership} do
++      row = %{
++        token: {state.epoch, client.generation, sequence},
++        revision: 1,
++        gate: client.generation,
++        service: gate.service,
++        instance: state.services[gate.service].instance,
++        owner: service,
++        kind: :guardian,
++        accounting: accounting,
++        native_pending: true
++      }
++
++      commit(state, client, gate, nil, row, true, sequence)
++    end
++  end
++
++  defp execute(
++         state,
++         client,
++         gate,
++         {:split_native, token, revision, guardian, callback},
++         actor,
++         sequence
++       ) do
++    with true <- actor == gate.owner || {:error, :unauthorized_owner},
++         {:ok, row} <- fetch(state.allocations, token, :closed_allocation),
++         true <- row.gate == client.generation || {:error, :unknown_generation},
++         true <- row.revision == revision || {:error, :stale_revision},
++         true <- Map.get(row, :native_pending, false) || {:error, :invalid_operation},
++         true <-
++           (is_pid(guardian) and is_pid(callback) and guardian != callback and
++              Process.alive?(guardian)) || {:error, :invalid_owner} do
++      native = %{
++        row
++        | owner: guardian,
++          revision: revision + 1,
++          native_pending: false,
++          accounting: %{row.accounting | pending_processes: 0}
++      }
++
++      {:ok, empty} = Gaoxy.ResourceBudget.normalize_accounting(0)
++
++      app = %{
++        token: {state.epoch, client.generation, sequence},
++        revision: 1,
++        gate: row.gate,
++        service: row.service,
++        instance: row.instance,
++        owner: callback,
++        kind: :transport,
++        accounting: empty
++      }
++
++      changed = state |> change_row(row, native) |> change_row(nil, app)
++
++      # A new ordinary lease must obey max_active even though bytes and the
++      # actual connection membership are only transferred, never duplicated.
++      with :ok <- growth_checks(state, changed, gate) do
++        changed = transitions(state, changed, [row.instance], row.service)
++
++        receipt = fn row ->
++          %{token: row.token, revision: row.revision, operation: sequence, status: :committed}
++        end
++
++        {{:ok, %{native: receipt.(native), callback: receipt.(app)}}, changed}
++      end
+     end
+   end
+ 
+--- before/apps/gaoxy/lib/gaoxy/service.ex
++++ apps/gaoxy/lib/gaoxy/service.ex
+@@ -15,6 +15,9 @@
+ 
+   def complete_cleanup(service, token),
+     do: Lifecycle.call(service, {:complete_cleanup, token}, Lifecycle.deadline(1_000))
++
++  def acquire_native(service, connection, native, deadline),
++    do: Lifecycle.call(service, {:acquire_native, connection, native, deadline}, deadline)
+ 
+   def child_spec({table, _live, id, _scope} = args) do
+     [{^id, spec}] = :ets.lookup(table, id)
+@@ -219,6 +222,57 @@
+   end
+ 
+   @impl true
++  def handle_call({:acquire_native, connection, native, deadline}, {owner, _} = from, state)
++      when connection.gate == state.gate and connection.service == self() do
++    if state.mode == :ready and is_integer(deadline) and Lifecycle.remaining(deadline) > 0 do
++      token = make_ref()
++      prepared = Gaoxy.QUICCleanup.prepare(connection, owner, token)
++
++      cleanup = %{
++        guardian: self(),
++        monitor: nil,
++        receipt: false,
++        allocation: nil,
++        native: %{prepared: prepared, from: from, deadline: deadline, phase: :reserving}
++      }
++
++      state = put_in(state.cleanups[token], cleanup)
++
++      result =
++        Lifecycle.protect(fn ->
++          Admission.reserve_native(
++            state.gate,
++            owner,
++            connection.lease,
++            token,
++            native,
++            :erlang.external_size(prepared),
++            deadline
++          )
++        end)
++
++      case result do
++        :ok ->
++          {:noreply, state}
++
++        {:error, reason} when reason in [:budget_timeout, :budget_unavailable] ->
++          {:reply, {:error, reason}, put_in(state.cleanups[token].native.from, nil)}
++
++        {:error, {:exit, _}} ->
++          {:reply, {:error, :native_reservation_unconfirmed}, fail_gate(state)}
++
++        error ->
++          {:reply, error, %{state | cleanups: Map.delete(state.cleanups, token)}}
++      end
++    else
++      {:reply, {:error, if(state.mode == :ready, do: :deadline_exceeded, else: state.mode)},
++       state}
++    end
++  end
++
++  def handle_call({:acquire_native, _, _, _}, _, state),
++    do: {:reply, {:error, :stale_generation}, state}
++
+   def handle_call({:attach_cleanup, _, _, _, _, _}, _, %{mode: mode} = state)
+       when mode != :ready,
+       do: {:reply, {:error, mode}, state}
+@@ -591,6 +645,117 @@
+     end
+   end
+ 
++  def handle_info({:gaoxy_native_reserved, token, receipt}, state) do
++    case state.cleanups[token] do
++      %{native: %{phase: :reserving} = native} = cleanup ->
++        cleanup = %{cleanup | allocation: receipt && receipt.token}
++
++        case Gaoxy.QUICCleanup.start_link(native.prepared) do
++          {:ok, guardian} ->
++            cleanup = %{
++              cleanup
++              | guardian: guardian,
++                monitor: Process.monitor(guardian),
++                native: %{native | phase: :splitting}
++            }
++
++            state = put_in(state.cleanups[token], cleanup)
++            # An expired init cannot enter the handler, but its already-funded
++            # cleanup must still be activated under a fresh cleanup deadline.
++            deadline =
++              if Lifecycle.remaining(native.deadline) > 0,
++                do: native.deadline,
++                else: Lifecycle.deadline(Lifecycle.cleanup_headroom())
++
++            result =
++              Lifecycle.protect(fn ->
++                Admission.split_native(state.gate, token, guardian, deadline)
++              end)
++
++            case result do
++              :ok ->
++                {:noreply, state}
++
++              {:error, reason} when reason in [:budget_timeout, :budget_unavailable] ->
++                {:noreply, state}
++
++              error ->
++                send(self(), {:gaoxy_native_split_failed, token, error})
++                {:noreply, state}
++            end
++
++          {:error, _} ->
++            native_reply(native, {:error, :worker_capacity})
++            {:noreply, fail_gate(%{state | cleanup_failed: :native_guardian_unavailable})}
++        end
++
++      _ ->
++        {:noreply, state}
++    end
++  end
++
++  def handle_info({:gaoxy_native_activated, token, lease, receipt}, state) do
++    case state.cleanups[token] do
++      %{native: native} = cleanup ->
++        send(cleanup.guardian, {:gaoxy_cleanup_activate, token})
++
++        result =
++          if Lifecycle.remaining(native.deadline) > 0 and state.mode == :ready,
++            do: {:ok, lease, {cleanup.guardian, token}},
++            else: {:error, :deadline_exceeded}
++
++        native_reply(native, result)
++
++        if match?({:error, _}, result),
++          do:
++            send(
++              cleanup.guardian,
++              {:gaoxy_cleanup_cancel, token, :init_expired,
++               Lifecycle.deadline(Lifecycle.cleanup_headroom())}
++            )
++
++        cleanup = %{
++          cleanup
++          | allocation: receipt && receipt.token,
++            native: %{native | from: nil, phase: :active}
++        }
++
++        {:noreply, put_in(state.cleanups[token], cleanup)}
++
++      _ ->
++        {:noreply, state}
++    end
++  end
++
++  def handle_info({:gaoxy_native_split_failed, token, reason}, state) do
++    case state.cleanups[token] do
++      %{native: native} = cleanup ->
++        native_reply(native, {:error, reason})
++
++        send(
++          cleanup.guardian,
++          {:gaoxy_cleanup_cancel, token, :init_failed,
++           Lifecycle.deadline(Lifecycle.cleanup_headroom())}
++        )
++
++        {:noreply, put_in(state.cleanups[token].native.from, nil)}
++
++      _ ->
++        {:noreply, state}
++    end
++  end
++
++  def handle_info({:gaoxy_native_rejected, token, reason}, state) do
++    case state.cleanups[token] do
++      %{native: %{phase: :reserving} = native} ->
++        native_reply(native, {:error, reason})
++        {:noreply, %{state | cleanups: Map.delete(state.cleanups, token)}}
++
++      _ ->
++        {:noreply, state}
++    end
++  end
++
+   def handle_info({:gaoxy_cleanup_budget, token, receipt}, state) do
+     state =
+       case state.cleanups[token] do
+@@ -615,6 +780,9 @@
+     do: {:stop, {:backend_failed, reason}, state}
+ 
+   def handle_info(_, state), do: {:noreply, state}
++
++  defp native_reply(%{from: nil}, _), do: :ok
++  defp native_reply(%{from: from}, result), do: GenServer.reply(from, result)
+ 
+   @impl true
+   def terminate(_, state) do
+--- before/apps/gaoxy/test/quic_context_test.exs
++++ apps/gaoxy/test/quic_context_test.exs
+@@ -1,5 +1,5 @@
+ defmodule Gaoxy.QUICContextTest do
+-  use ExUnit.Case, async: true
++  use ExUnit.Case, async: false
+   alias Gaoxy.{Admission, QUICBridge}
+ 
+   defmodule Handler do
+@@ -9,18 +9,165 @@
+     end
+   end
+ 
++  defmodule ContextOwner do
++    use Hell.Handler
++    def validate_options(options), do: {:ok, options}
++
++    def handle_connection(_, state) do
++      send(state.spec.handler_options.owner, {:native_context, state})
++      {:continue, state}
++    end
++  end
++
++  test "callback death retains native byte ownership and connection quota until exact closed proof" do
++    {:ok, runtime} =
++      Gaoxy.start_link(
++        services: [
++          %{
++            id: :native_fixture,
++            transport: :tcp,
++            handler_mode: :native,
++            handler: ContextOwner,
++            handler_options: %{owner: self()},
++            limits: %{max_connections: 1, drain_timeout: 2_000}
++          }
++        ]
++      )
++
++    {:ok, {ip, port}} = Gaoxy.info(runtime, :native_fixture).local
++    {:ok, socket} = :gen_tcp.connect(ip, port, [:binary, active: false], 1_000)
++
++    on_exit(fn ->
++      :gen_tcp.close(socket)
++      if Process.alive?(runtime), do: Gaoxy.stop(runtime, 3_000)
++    end)
++
++    assert_receive {:native_context, context}, 1_000
++
++    metadata = %{
++      resources: %{
++        queued_bytes: 10,
++        ready_bytes: 20,
++        receive_buffered_bytes: 30,
++        io_queue_bytes: 40,
++        operation_result_bytes: 50
++      }
++    }
++
++    {:ok, proof} = Agent.start(fn -> {:ok, metadata} end)
++
++    on_exit(fn ->
++      if Process.alive?(proof) do
++        Agent.update(proof, fn _ -> {:error, :closed} end)
++        Process.sleep(10)
++        Agent.stop(proof)
++      end
++    end)
++
++    observer = self()
++    context = %{context | spec: %{context.spec | handler: Handler, handler_options: observer}}
++
++    callback =
++      spawn(fn ->
++        {:ok, state} = QUICBridge.init(:controlled_native_handle, metadata, context)
++        send(observer, {:bridge_ready, self(), state})
++
++        receive do
++          :finish -> :ok
++        end
++      end)
++
++    on_exit(fn -> if Process.alive?(callback), do: Process.exit(callback, :kill) end)
++    assert_receive {:bridge_ready, ^callback, _}, 1_000
++    assert %{active_connections: 1, active_requests: 0} = Gaoxy.resource_budget(runtime)
++    # Only our guardian's public observation seam is controlled; no engine PID
++    # or private QUIC state is extracted or suspended. On the old implementation
++    # no guardian exists and the native charge disappears on callback DOWN.
++    for {_, cleanup} <- :sys.get_state(context.service).cleanups do
++      :sys.replace_state(cleanup.guardian, fn state ->
++        Map.put(state, :probe, fn connection ->
++          assert connection.handle == :controlled_native_handle
++          result = Agent.get(proof, & &1)
++          send(observer, {:native_probe, result})
++          result
++        end)
++      end)
++    end
++
++    monitor = Process.monitor(callback)
++    Process.exit(callback, :kill)
++    assert_receive {:DOWN, ^monitor, :process, ^callback, :killed}, 1_000
++    eventually(fn -> Admission.status(context.gate).active == 0 end)
++    budget = Gaoxy.resource_budget(runtime)
++    assert budget.usage >= 150
++    assert budget.active_connections == 1
++    assert budget.active_requests == 0
++    assert %{cleanup_pending: 1} = Admission.status(context.gate)
++
++    assert {:error, :connection_limit} =
++             Admission.acquire(context.gate, 0,
++               kind: :connection,
++               memberships: %{connection: make_ref()}
++             )
++
++    for unconfirmed <- [
++          {:error, :timeout},
++          {:error, {:closed, :timeout}},
++          :ok,
++          {:ok, %{resources: %{queued_bytes: 0}}},
++          {:error, :unavailable}
++        ] do
++      Agent.update(proof, fn _ -> unconfirmed end)
++      assert_receive {:native_probe, ^unconfirmed}, 1_000
++      assert %{active_connections: 1, usage: retained} = Gaoxy.resource_budget(runtime)
++      assert retained >= 150
++      assert %{cleanup_pending: 1} = Admission.status(context.gate)
++    end
++
++    Agent.update(proof, fn _ -> {:error, :closed} end)
++
++    eventually(fn ->
++      budget = Gaoxy.resource_budget(runtime)
++      budget.usage == 0 and budget.active_connections == 0 and budget.leases == 0
++    end)
++
++    assert %{cleanup_pending: 0} = Admission.status(context.gate)
++    assert :sys.get_state(context.service).cleanup_failed == nil
++  end
++
++  defp eventually(fun, deadline \\ nil) do
++    deadline = deadline || Gaoxy.Lifecycle.deadline(2_000)
++
++    unless fun.() do
++      assert Gaoxy.Lifecycle.remaining(deadline) > 0
++      Process.sleep(1)
++      eventually(fun, deadline)
++    end
++  end
++
+   test "QUIC callback receives runtime owners separately from telemetry identity" do
+-    limits = %{max_active: 4, max_bytes: 1_048_576, max_state: 65_536, callback_timeout: 5_000}
+-    scope = %{service: :listener, instance: make_ref(), generation: make_ref()}
+-    gate = start_supervised!({Admission, {limits, Map.put(scope, :service_pid, self())}})
+-
+-    context = %{
+-      spec: %{handler: Handler, handler_options: self(), limits: limits},
+-      gate: gate,
+-      scope: scope,
+-      service: self(),
+-      instance: self()
+-    }
++    {:ok, runtime} =
++      Gaoxy.start_link(
++        services: [
++          %{
++            id: :context_fixture,
++            transport: :tcp,
++            handler_mode: :native,
++            handler: ContextOwner,
++            handler_options: %{owner: self()}
++          }
++        ]
++      )
++
++    {:ok, {ip, port}} = Gaoxy.info(runtime, :context_fixture).local
++    {:ok, socket} = :gen_tcp.connect(ip, port, [:binary, active: false], 1_000)
++    assert_receive {:native_context, context}, 1_000
++    context = %{context | spec: %{context.spec | handler: Handler, handler_options: self()}}
++
++    on_exit(fn ->
++      :gen_tcp.close(socket)
++      if Process.alive?(runtime), do: Gaoxy.stop(runtime, 2_000)
++    end)
+ 
+     assert {:ok, state} =
+              QUICBridge.init(
+@@ -38,10 +185,14 @@
+              )
+ 
+     assert_receive {:quic_context, connection}
+-    assert Map.get(connection, :service) == self()
+-    assert Map.get(connection, :instance) == self()
+-    assert connection.scope == scope
++    assert Map.get(connection, :service) == context.service
++    assert Map.get(connection, :instance) == context.instance
++    assert connection.scope == context.scope
+     assert state.connection == connection
++    {guardian, token} = connection.native_cleanup
++    :sys.replace_state(guardian, &Map.put(&1, :probe, fn _ -> {:error, :closed} end))
++    send(guardian, {:gaoxy_native_closed, token})
++    eventually(fn -> Admission.status(context.gate).cleanup_pending == 0 end)
+   end
+ 
+   test "QUIC keepalive rejects unbounded and duplicate operation options before backend access" do
+--- before/apps/gaoxy/test/resource_budget_admission_test.exs
++++ apps/gaoxy/test/resource_budget_admission_test.exs
+@@ -81,6 +81,315 @@
+   end
+ 
+   defp snapshot({server, instance}), do: ResourceBudget.snapshot(server, instance)
++
++  test "native reservation survives callback death before its split and releases by guardian proof" do
++    b = budget()
++    g = gate(b, %{max_connections: 1})
++    owner = native_process()
++    guardian = native_process()
++    token = make_ref()
++    lease = make_ref()
++    assert :ok = Admission.reserve_native(g, owner, lease, token, 150, 10, deadline())
++    assert_receive {:gaoxy_native_reserved, ^token, _}
++    stop_native(owner, :kill)
++
++    assert %{usage: 160, active_connections: 1, active_requests: 0, pending_processes: 1} =
++             snapshot(b)
++
++    assert %{active: 0, cleanup_pending: 1} = Admission.status(g)
++    assert :ok = Admission.split_native(g, token, guardian, deadline())
++    assert_receive {:gaoxy_native_activated, ^token, ^lease, _}
++    eventually(fn -> Admission.status(g).active == 0 end)
++    assert %{usage: 160, active_connections: 1, pending_processes: 0} = snapshot(b)
++
++    assert {:error, :connection_limit} =
++             Admission.acquire(g, 0, kind: :connection, memberships: %{connection: make_ref()})
++
++    assert :ok = Admission.complete_cleanup(g, token)
++    stop_native(guardian, :normal)
++    eventually(fn -> snapshot(b).usage == 0 end)
++    assert %{active_connections: 0, leases: 0} = snapshot(b)
++  end
++
++  test "native terminal proof before callback death refunds only native ownership" do
++    b = budget()
++    g = gate(b)
++    token = make_ref()
++    lease = make_ref()
++    guardian = native_process()
++    assert :ok = Admission.reserve_native(g, self(), lease, token, 100, 10, deadline())
++    assert :ok = Admission.split_native(g, token, guardian, deadline())
++    assert :ok = Admission.end_request(g, lease, 30, deadline())
++    assert :ok = Admission.update_native(g, lease, 120, deadline())
++    assert %{usage: 160, active_connections: 1, active_requests: 0} = snapshot(b)
++    assert :ok = Admission.complete_cleanup(g, token)
++    assert %{usage: 160} = snapshot(b)
++    stop_native(guardian, :normal)
++    eventually(fn -> snapshot(b).usage == 30 end)
++    assert %{active_connections: 0, leases: 1} = snapshot(b)
++    assert %{active: 1, cleanup_pending: 0} = Admission.status(g)
++  end
++
++  test "native registration and updates reject unauthenticated, duplicate and expired attempts" do
++    b = budget()
++    g = gate(b)
++    token = make_ref()
++    lease = make_ref()
++    guardian = native_process()
++
++    assert {:error, :unauthorized_service} =
++             Task.async(fn ->
++               Admission.reserve_native(g, self(), lease, token, 10, 10, deadline())
++             end)
++             |> Task.await()
++
++    assert {:error, :deadline_exceeded} =
++             Admission.reserve_native(g, self(), lease, token, 10, 10, deadline() - 2_000)
++
++    assert %{usage: 0, leases: 0} = snapshot(b)
++    assert :ok = Admission.reserve_native(g, self(), lease, token, 10, 10, deadline())
++
++    assert {:error, :invalid_native_reservation} =
++             Admission.reserve_native(g, self(), lease, token, 10, 10, deadline())
++
++    assert {:error, :unauthorized_service} =
++             Task.async(fn ->
++               Admission.split_native(g, token, guardian, deadline())
++             end)
++             |> Task.await()
++
++    assert :ok = Admission.split_native(g, token, guardian, deadline())
++    assert {:error, :stale_cleanup} = Admission.split_native(g, token, guardian, deadline())
++
++    assert {:error, :stale_cleanup} =
++             Task.async(fn ->
++               Admission.update_native(g, lease, 0, deadline())
++             end)
++             |> Task.await()
++
++    assert {:error, :deadline_exceeded} = Admission.update_native(g, lease, 0, deadline() - 2_000)
++
++    assert {:error, :unauthorized_service} =
++             Task.async(fn ->
++               Admission.complete_cleanup(g, token)
++             end)
++             |> Task.await()
++
++    assert %{usage: 20, active_connections: 1, leases: 2} = snapshot(b)
++    assert :ok = Admission.complete_cleanup(g, token)
++    stop_native(guardian, :normal)
++    eventually(fn -> snapshot(b).usage == 0 end)
++  end
++
++  test "native split enforces max_active without losing its pinned connection or bytes" do
++    b = budget()
++    g = gate(b, %{max_active: 1})
++    assert {:ok, _} = Admission.acquire(g, 10)
++    token = make_ref()
++    lease = make_ref()
++    guardian = native_process()
++    assert :ok = Admission.reserve_native(g, self(), lease, token, 100, 10, deadline())
++    assert {:error, :active_limit} = Admission.split_native(g, token, guardian, deadline())
++    assert %{usage: 120, active_connections: 1, pending_processes: 1, leases: 2} = snapshot(b)
++    assert %{active: 1, cleanup_pending: 1} = Admission.status(g)
++    assert :ok = Admission.complete_cleanup(g, token)
++    stop_native(guardian, :normal)
++    eventually(fn -> snapshot(b).usage == 10 end)
++    assert %{active_connections: 0, pending_processes: 0} = snapshot(b)
++  end
++
++  test "guardian loss never refunds the native charge or connection quota" do
++    b = budget()
++    g = gate(b)
++    token = make_ref()
++    guardian = native_process()
++    assert :ok = Admission.reserve_native(g, self(), make_ref(), token, 100, 10, deadline())
++    assert :ok = Admission.split_native(g, token, guardian, deadline())
++    stop_native(guardian, :kill)
++    eventually(fn -> :sys.get_state(g).mode == :failed end)
++    assert %{usage: 110, active_connections: 1, leases: 2} = snapshot(b)
++    assert %{cleanup_pending: 1} = Admission.status(g)
++  end
++
++  test "a timed-out native reservation that later commits stays pinned after callback death" do
++    {server, _} = b = budget()
++    g = gate(b)
++    owner = native_process()
++    guardian = native_process()
++    token = make_ref()
++    lease = make_ref()
++    observer = self()
++    ledger = :sys.get_state(server).ledger
++    frozen_now = System.monotonic_time(:millisecond)
++    barrier = make_ref()
++    # Control only our Ledger clock/commit barrier. The API wait clock still
++    # expires, while the canonical clock remains before the original deadline.
++    :sys.replace_state(ledger, fn state ->
++      %{
++        state
++        | now: fn ->
++            unless Process.get(barrier) do
++              Process.put(barrier, true)
++              send(observer, {:native_commit_held, self()})
++
++              receive do
++                :release_native_commit -> :ok
++              end
++            end
++
++            frozen_now
++          end
++      }
++    end)
++
++    try do
++      assert {:error, :budget_timeout} =
++               Admission.reserve_native(g, owner, lease, token, 100, 10, deadline())
++
++      assert_receive {:native_commit_held, ledger_pid}
++      stop_native(owner, :kill)
++      send(ledger_pid, :release_native_commit)
++      assert_receive {:gaoxy_native_reserved, ^token, _}, 1_000
++      assert %{usage: 110, active_connections: 1, pending_processes: 1} = snapshot(b)
++      assert :ok = Admission.split_native(g, token, guardian, deadline())
++      eventually(fn -> Admission.status(g).active == 0 end)
++      assert %{usage: 110, active_connections: 1} = snapshot(b)
++      assert :ok = Admission.complete_cleanup(g, token)
++      stop_native(guardian, :normal)
++      eventually(fn -> snapshot(b).usage == 0 end)
++    after
++      send(GenServer.whereis(ledger), :release_native_commit)
++    end
++  end
++
++  test "ambiguous native split retains the same obligation through late commit and callback death" do
++    {server, _} = b = budget()
++    g = gate(b)
++    owner = native_process()
++    guardian = native_process()
++    token = make_ref()
++    lease = make_ref()
++    assert :ok = Admission.reserve_native(g, owner, lease, token, 100, 10, deadline())
++    hold_native_commit(server)
++    assert {:error, :budget_timeout} = Admission.split_native(g, token, guardian, deadline())
++    assert_receive {:native_commit_held, ledger}, 1_000
++    stop_native(owner, :kill)
++    assert %{cleanup_pending: 1} = Admission.status(g)
++    send(ledger, :release_native_commit)
++    assert_receive {:gaoxy_native_activated, ^token, ^lease, _}, 1_000
++    eventually(fn -> Admission.status(g).active == 0 end)
++    assert %{usage: 110, active_connections: 1, pending_processes: 0, leases: 1} = snapshot(b)
++    assert :ok = Admission.complete_cleanup(g, token)
++    stop_native(guardian, :normal)
++    eventually(fn -> snapshot(b).usage == 0 end)
++  end
++
++  test "a guardian lost before registration cannot drop the Service-pinned native reservation" do
++    b = budget()
++    g = gate(b)
++    guardian = native_process()
++    token = make_ref()
++    assert :ok = Admission.reserve_native(g, self(), make_ref(), token, 100, 10, deadline())
++    stop_native(guardian, :kill)
++    assert {:error, :invalid_guardian} = Admission.split_native(g, token, guardian, deadline())
++    assert %{usage: 110, active_connections: 1, pending_processes: 1, leases: 1} = snapshot(b)
++    assert %{active: 0, cleanup_pending: 1} = Admission.status(g)
++  end
++
++  test "a late native measurement commit preserves the received guardian terminal pair" do
++    {server, _} = b = budget()
++    g = gate(b)
++    guardian = native_process()
++    token = make_ref()
++    lease = make_ref()
++    assert :ok = Admission.reserve_native(g, self(), lease, token, 100, 10, deadline())
++    assert :ok = Admission.split_native(g, token, guardian, deadline())
++    hold_native_commit(server)
++    assert {:error, :budget_timeout} = Admission.update_native(g, lease, 120, deadline())
++    assert_receive {:native_commit_held, ledger}, 1_000
++    assert :ok = Admission.complete_cleanup(g, token)
++    stop_native(guardian, :normal)
++    eventually(fn -> :sys.get_state(g).cleanups[token].down_seen end)
++    send(ledger, :release_native_commit)
++    eventually(fn -> snapshot(b).usage == 0 end)
++    assert %{active_connections: 0, leases: 1} = snapshot(b)
++    assert %{cleanup_pending: 0} = Admission.status(g)
++  end
++
++  test "native termination may use paid callback state during drain but cannot admit growth" do
++    b = budget()
++    g = gate(b)
++    assert {:ok, ordinary} = Admission.acquire(g, 10)
++
++    assert {:error, :invalid_native_cleanup} =
++             Admission.begin_native_cleanup(g, ordinary, 10, deadline())
++
++    guardian = native_process()
++    token = make_ref()
++    lease = make_ref()
++    assert :ok = Admission.reserve_native(g, self(), lease, token, 10, 10, deadline())
++    assert :ok = Admission.split_native(g, token, guardian, deadline())
++    assert :ok = Admission.end_request(g, lease, 10, deadline())
++    assert :ok = Admission.drain(g, deadline())
++    assert {:error, :draining} = Admission.begin_callback(g, lease, 10, deadline())
++
++    assert {:error, :invalid_native_cleanup} =
++             Admission.begin_native_cleanup(g, lease, 11, deadline())
++
++    assert :ok = Admission.begin_native_cleanup(g, lease, 10, deadline())
++    assert %{usage: 40, active_connections: 1, active_requests: 0} = snapshot(b)
++    assert :ok = Admission.complete_cleanup(g, token)
++    stop_native(guardian, :normal)
++    eventually(fn -> snapshot(b).usage == 20 end)
++  end
++
++  defp hold_native_commit(server) do
++    observer = self()
++    ledger = :sys.get_state(server).ledger
++    frozen_now = System.monotonic_time(:millisecond)
++    barrier = make_ref()
++
++    :sys.replace_state(ledger, fn state ->
++      %{
++        state
++        | now: fn ->
++            unless Process.get(barrier) do
++              Process.put(barrier, true)
++              send(observer, {:native_commit_held, self()})
++
++              receive do
++                :release_native_commit -> :ok
++              end
++            end
++
++            frozen_now
++          end
++      }
++    end)
++
++    on_exit(fn ->
++      if pid = GenServer.whereis(ledger), do: send(pid, :release_native_commit)
++    end)
++  end
++
++  defp native_process do
++    pid =
++      spawn(fn ->
++        receive do
++          :stop -> :ok
++        end
++      end)
++
++    on_exit(fn -> if Process.alive?(pid), do: Process.exit(pid, :kill) end)
++    pid
++  end
++
++  defp stop_native(pid, reason) do
++    monitor = Process.monitor(pid)
++    if reason == :normal, do: send(pid, :stop), else: Process.exit(pid, reason)
++    expected = if reason == :kill, do: :killed, else: reason
++    assert_receive {:DOWN, ^monitor, :process, ^pid, ^expected}, 1_000
++  end
+ 
+   test "production budget ignores omitted numeric legacy caps and commits before acknowledgment" do
+     b = budget()
+--- before/apps/gaoxy/test/resource_budget_owner_test.exs
++++ apps/gaoxy/test/resource_budget_owner_test.exs
+@@ -110,6 +110,169 @@
+       memberships: memberships,
+       pending_processes: 0
+     }
++
++  test "typed native split preserves totals and exact receipts while fencing stale and foreign mutations" do
++    {_, server} = setup_budget()
++    {instance, client} = scope(server, %{}, %{max_connections: 1, max_active: 1})
++
++    guardian =
++      spawn(fn ->
++        receive do
++          :stop -> :ok
++        end
++      end)
++
++    on_exit(fn -> if Process.alive?(guardian), do: Process.exit(guardian, :kill) end)
++    input = %{accounting(100, %{connection: make_ref()}) | pending_processes: 1}
++
++    assert {:error, :invalid_membership} =
++             Budget.reserve(client, self(), :guardian, input, 1, deadline())
++
++    assert {:ok, pending} = Budget.reserve_native(client, self(), input, 2, deadline())
++    assert {:ok, ^pending} = Budget.reserve_native(client, self(), input, 2, 0)
++
++    assert %{
++             usage: 100,
++             active_connections: 1,
++             active_requests: 0,
++             pending_processes: 1,
++             leases: 1
++           } = snapshot(server, instance)
++
++    expired = System.monotonic_time(:millisecond) - 1
++
++    assert {:error, :deadline_exceeded} =
++             Budget.split_native(
++               client,
++               pending.token,
++               pending.revision,
++               guardian,
++               self(),
++               3,
++               expired
++             )
++
++    assert {:ok, split} =
++             Budget.split_native(
++               client,
++               pending.token,
++               pending.revision,
++               guardian,
++               self(),
++               4,
++               deadline()
++             )
++
++    assert {:ok, ^split} =
++             Budget.split_native(
++               client,
++               pending.token,
++               pending.revision,
++               guardian,
++               self(),
++               4,
++               expired
++             )
++
++    assert split.native.token == pending.token
++    assert split.callback.token != pending.token
++
++    assert %{
++             usage: 100,
++             active_connections: 1,
++             active_requests: 0,
++             pending_processes: 0,
++             leases: 2
++           } = snapshot(server, instance)
++
++    assert {:error, :stale_revision} =
++             Budget.split_native(
++               client,
++               pending.token,
++               pending.revision,
++               guardian,
++               self(),
++               5,
++               deadline()
++             )
++
++    assert {:error, :invalid_operation} =
++             Budget.split_native(
++               client,
++               split.native.token,
++               split.native.revision,
++               guardian,
++               self(),
++               6,
++               deadline()
++             )
++
++    assert {:error, :unauthorized_owner} =
++             Task.async(fn ->
++               Budget.reserve_native(client, self(), input, 7, deadline())
++             end)
++             |> Task.await()
++
++    assert {:error, :active_limit} = reserve(client, 0, 8)
++    assert %{usage: 100, leases: 2, active_connections: 1} = snapshot(server, instance)
++  end
++
++  test "Service death during native initialization retains the pinned cleanup ownership" do
++    {_, server} = setup_budget()
++
++    service_owner =
++      spawn(fn ->
++        receive do
++          :stop -> :ok
++        end
++      end)
++
++    guardian =
++      spawn(fn ->
++        receive do
++          :stop -> :ok
++        end
++      end)
++
++    on_exit(fn ->
++      for pid <- [service_owner, guardian], Process.alive?(pid), do: Process.exit(pid, :kill)
++    end)
++
++    assert {:ok, instance} = Budget.register_instance(server, self(), %{}, deadline())
++
++    assert {:ok, service} =
++             Budget.register_service(
++               server,
++               instance,
++               %{id: :native_init, owner: service_owner, generation: make_ref()},
++               %{},
++               deadline()
++             )
++
++    assert {:ok, client} = Budget.register_gate(server, service, self(), deadline())
++    input = %{accounting(100, %{connection: make_ref()}) | pending_processes: 1}
++    assert {:ok, receipt} = Budget.reserve_native(client, service_owner, input, 1, deadline())
++    monitor = Process.monitor(service_owner)
++    Process.exit(service_owner, :kill)
++    assert_receive {:DOWN, ^monitor, :process, ^service_owner, :killed}, 1_000
++
++    assert {:error, :orphaned} =
++             Budget.split_native(
++               client,
++               receipt.token,
++               receipt.revision,
++               guardian,
++               self(),
++               2,
++               deadline()
++             )
++
++    assert %{usage: 100, active_connections: 1, pending_processes: 1, leases: 1} =
++             snapshot(server, instance)
++
++    assert {:ok, %{allocations: [%{kind: :guardian, owner: ^service_owner}]}} =
++             Budget.allocations(client)
++  end
+ 
+   test "exact boundaries admit warning and reject projected hard overflow without changing state" do
+     {_, server} = setup_budget()
+--- before/apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex
++++ apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex
+@@ -131,8 +131,40 @@
+ 
+   @impl true
+   def terminate(_, state) do
++    settle_local_workers(state)
+     _ = clear(state)
+     :ok
++  end
++
++  # The host is already terminating. Revoke local operation capabilities first
++  # so a worker finishing a response can observe cancellation and exit normally
++  # before the parent's terminal pair forces remaining children. This is local
++  # cleanup only: no new writes, peer drain or request-deadline extension.
++  defp settle_local_workers(%{operations: nil}), do: :ok
++
++  defp settle_local_workers(state) do
++    deadline = now() + min(50, state.connection.limits.callback_timeout)
++
++    monitors =
++      for {key, %{worker: worker, token: token}} <- state.streams,
++          is_pid(worker),
++          token != nil,
++          Process.alive?(worker) do
++        monitor = Process.monitor(worker)
++        _ = Operations.cancel(state.operations, key, token, :closed)
++        _ = Operations.remove(state.operations, key, token)
++        {worker, monitor, min(deadline, terminal_deadline(state.streams[key]))}
++      end
++
++    Enum.each(monitors, fn {worker, monitor, deadline} ->
++      receive do
++        {:DOWN, ^monitor, :process, ^worker, _} -> :ok
++      after
++        Lifecycle.remaining(deadline) -> :ok
++      end
++
++      Process.demonitor(monitor, [:flush])
++    end)
+   end
+ 
+   defp progress(%{ready: false} = state), do: {:ok, state}
+@@ -146,7 +178,10 @@
+          {:ok, state} <- control(state) do
+       if state.control == nil or state.control_bytes != <<>>,
+         do: {:ok, state},
+-        else: turns(state, min(:queue.len(state.order), state.options.h3_limits.control_turn))
++        # A small set of streams can still have several ready quanta. Spend the
++        # existing round-robin turn budget instead of waiting another host poll
++        # after one pass. The same turn count and absolute callback bound apply.
++        else: turns(state, state.options.h3_limits.control_turn)
+     end
+   end
+ 
+@@ -637,8 +672,8 @@
+           bytes,
+           entry.deadline,
+           {Stream, :run_admitted, [self(), state.operations, token, gate, entry.deadline]},
+-          kind: :h3_stream,
+-          memberships: %{request: token, h3_stream: {parent, token}}
++          [kind: :h3_stream, memberships: %{request: token, h3_stream: {parent, token}}],
++          :phase_receipt
+         )
+ 
+       state = update_entry(state, key, &%{&1 | startup: startup, admission: :pending})
+@@ -679,6 +714,11 @@
+                   cancel(state, key, 0x107)
+               end
+             end
++
++          {:reply, {:error, {:not_reserved, token, :deadline_exceeded}}}
++          when token == entry.token ->
++            state = update_entry(state, key, &%{&1 | startup: nil, admission: :not_reserved})
++            if entry.cancel != [] or entry.retiring, do: state, else: cancel(state, key, 0x107)
+ 
+           :timeout ->
+             state
+@@ -1277,18 +1317,20 @@
+         end
+ 
+       nil ->
+-        cond do
+-          now() >= deadline ->
++        case operation_options(
++               state.connection.limits.callback_timeout,
++               state.turn_deadline,
++               deadline,
++               now()
++             ) do
++          :expired ->
+             fail(state, 0x102, :operation_timeout)
+ 
+-          now() >= state.turn_deadline ->
++          :yield ->
+             {:wait, state}
+ 
+-          true ->
+-            case fun.(
+-                   timeout: min(50, state.connection.limits.callback_timeout),
+-                   deadline: max(1, min(deadline, state.turn_deadline) - now())
+-                 ) do
++          {:ok, options} ->
++            case fun.(options) do
+               {:unknown, reference} ->
+                 {:wait, %{state | pending: Map.put(state.pending, key, {reference, deadline})}}
+ 
+@@ -1299,6 +1341,19 @@
+                 {:ok, state, result}
+             end
+         end
++    end
++  end
++
++  @doc false
++  def operation_options(callback_timeout, turn_deadline, deadline, at) do
++    # Leave room for the call to return inside this turn, including configured
++    # callback windows shorter than 50ms. Neither absolute deadline is renewed.
++    allowance = min(50, max(1, div(callback_timeout, 2)))
++
++    cond do
++      at >= deadline -> :expired
++      turn_deadline - at < min(allowance, deadline - at) -> :yield
++      true -> {:ok, [timeout: allowance, deadline: min(deadline, turn_deadline) - at]}
+     end
+   end
+ 
+@@ -1372,12 +1427,9 @@
+           deadline
+         )
+ 
+-      # A failed admission plus a definitive stale cancellation has no committed
+-      # worker token. Failure/timeout alone is never a terminal ownership proof.
+-      absent =
+-        entry.admission == :none or
+-          (entry.admission == :rejected and
+-             entry.spawn_cancel == {:done, {:error, :stale_generation}})
++      # Only the original OTP response alias and exact spawn token can prove
++      # pre-reservation expiry. A stale cancel reply cannot establish absence.
++      absent = entry.admission in [:none, :not_reserved]
+ 
+       if result == :ok or (result == {:error, :stale_generation} and absent),
+         do: update_entry(state, key, &%{&1 | resources_terminal: true}),
+@@ -1449,6 +1501,11 @@
+   end
+ 
+   defp delete_stream(state, key) do
++    case state.streams[key] do
++      %{spawn_cancel: {:pending, reference}} -> :gen_server.receive_response(reference, 0)
++      _ -> :ok
++    end
++
+     %{
+       state
+       | streams: Map.delete(state.streams, key),
+--- before/apps/gaoxy_http3/test/connection_test.exs
++++ apps/gaoxy_http3/test/connection_test.exs
+@@ -36,6 +36,53 @@
+     assert gate == self()
+     assert {:ok, ^state} = Connection.handle_event(:tick, state)
+     assert {:ok, ^state} = Connection.handle_event(:writable, state)
++  end
++
++  test "native operation headroom leaves small callback windows usable without renewing deadlines" do
++    at = -1_000
++
++    for window <- [1, 2, 40] do
++      assert {:ok, spec} =
++               Options.normalize(
++                 endpoint: {Endpoint, %{}},
++                 limits: %{callback_timeout: window},
++                 tls: %{certfile: "c", keyfile: "k"}
++               )
++
++      assert {:ok, options} =
++               Connection.operation_options(
++                 spec.limits.callback_timeout,
++                 at + window,
++                 at + 100,
++                 at
++               )
++
++      assert options[:timeout] in 1..window
++      assert options[:deadline] == window
++
++      assert :yield =
++               Connection.operation_options(
++                 spec.limits.callback_timeout,
++                 at + window,
++                 at + 100,
++                 at + window
++               )
++    end
++
++    assert {:ok, [timeout: 20, deadline: 39]} =
++             Connection.operation_options(40, at + 39, at + 100, at)
++
++    assert :yield = Connection.operation_options(40, at + 19, at + 100, at)
++
++    assert {:ok, [timeout: 50, deadline: 100]} =
++             Connection.operation_options(5_000, at + 100, at + 2_000, at)
++
++    assert :yield = Connection.operation_options(5_000, at + 49, at + 2_000, at)
++
++    assert {:ok, [timeout: 20, deadline: 4]} =
++             Connection.operation_options(40, at + 39, at + 4, at)
++
++    assert :expired = Connection.operation_options(40, at + 39, at, at)
+   end
+ 
+   test "pre-ready peer streams retain opaque keys without reading or assigning IDs" do
+@@ -333,6 +380,12 @@
+               :ok = Operations.ack(table, key, token, ref)
+               send(observer, {:short_read_result, self(), result})
+           end
++
++          # This fixture owns only the read operation, not endpoint teardown.
++          # Keep it alive through every bounded owner turn before ending it.
++          receive do
++            :finish -> :ok
++          end
+         end)
+ 
+       on_exit(fn -> if Process.alive?(worker), do: Process.exit(worker, :kill) end)
+@@ -367,9 +420,10 @@
+                       {:ok, unquote(bytes), true, [{"x-final", "seen"}]}},
+                      1_000
+ 
+-      assert_receive {:DOWN, ^monitor, :process, ^worker, :normal}, 1_000
+       assert next.streams[key].input == <<>>
+       assert next.streams[key].operation == nil
++      send(worker, :finish)
++      assert_receive {:DOWN, ^monitor, :process, ^worker, :normal}, 1_000
+       :ok = Connection.terminate(:test_complete, next)
+     end
+   end
+--- before/apps/gaoxy_http3/test/resource_budget_h3_test.exs
++++ apps/gaoxy_http3/test/resource_budget_h3_test.exs
+@@ -267,7 +267,7 @@
+     :ok = Connection.terminate(:test_complete, resumed)
+   end
+ 
+-  test "a delayed cancellation receipt survives command-row removal and repeated retirement polls" do
++  test "a delayed stale cancellation survives polling and cannot prove absent reservation" do
+     {state, key, token, _gate} = polling_state()
+     state = put_in(state.streams[key].admission, :rejected)
+     assert {:ok, cancelled} = Connection.handle_event({:stopped, key, 0x10C}, state)
+@@ -284,10 +284,38 @@
+     GenServer.reply(from, {:error, :stale_generation})
+ 
+     assert {:ok, settled} = Connection.handle_event(:tick, pending)
+-    refute Map.has_key?(settled.streams, key)
++    assert Map.has_key?(settled.streams, key)
++    refute settled.streams[key].resources_terminal
+     assert {:error, :closed} = Operations.status(settled.operations, key, token)
+     refute_receive {:held_reply, {:cancel_spawn, _, ^token}, _}, 0
+     :ok = Connection.terminate(:test_complete, settled)
++  end
++
++  test "only exact pre-reservation proof on the original spawn alias retires an absent worker" do
++    for match_token <- [false, true] do
++      {state, key, token, gate} = polling_state()
++      startup = :gen_server.send_request(gate, :held_startup)
++      assert_receive {:held_reply, :held_startup, from}, 1_000
++      state = update_in(state.streams[key], &%{&1 | startup: startup, admission: :pending})
++      assert {:ok, cancelled} = Connection.handle_event({:stopped, key, 0x10C}, state)
++      assert_receive {:held_reply, {:cancel_spawn, _, ^token}, _}, 1_000
++      retiring = update_in(cancelled.streams[key], &%{&1 | retiring: true, cancel: []})
++      assert {:ok, pending} = Connection.handle_event(:tick, retiring)
++      refute pending.streams[key].resources_terminal
++      proof_token = if match_token, do: token, else: make_ref()
++      GenServer.reply(from, {:error, {:not_reserved, proof_token, :deadline_exceeded}})
++      assert {:ok, settled} = Connection.handle_event(:tick, pending)
++
++      if match_token do
++        refute Map.has_key?(settled.streams, key)
++      else
++        assert settled.streams[key].admission == :rejected
++        refute settled.streams[key].resources_terminal
++      end
++
++      assert {:error, :closed} = Operations.status(settled.operations, key, token)
++      :ok = Connection.terminate(:test_complete, settled)
++    end
+   end
+ 
+   defp polling_state do

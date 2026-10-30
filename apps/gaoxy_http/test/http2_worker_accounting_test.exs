@@ -218,18 +218,49 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccountingTest do
     mfa = {Stream, :run, args}
     spawn_args = [gate, owner, activation, r.deadline, mfa]
     from = {owner, [:alias | reqid]}
-    payload = {:spawn_request, s.lease, r.token, w, r.deadline, mfa}
+
+    accounting = %{
+      retained_bytes: max(0, w - s.reserves.stream),
+      temporary_bytes: s.reserves.stream,
+      transport_bytes: w,
+      websocket_bytes: 0,
+      memberships: %{},
+      pending_processes: 0
+    }
+
+    memberships = %{h2_stream: {s.lease, r.id}, request: r.token}
+    metadata = [kind: :h2_stream, memberships: memberships]
+    lease_accounting = %{accounting | memberships: memberships, pending_processes: 1}
+
+    receipt = %{
+      token: reqid,
+      revision: 9_223_372_036_854_775_807,
+      operation: 9_223_372_036_854_775_807,
+      status: :committed
+    }
+
+    payload =
+      {:spawn_request, s.lease, r.token, accounting, r.deadline, mfa, metadata, :phase_receipt}
+
     success = {:ok, worker, child_lease}
-    # This is the longest ordinary source-controlled finite reason, checked
-    # against all native/core finite constructors by the source checkpoint.
-    failure = {:error, :invalid_spawn_request}
+    # Instantiate the larger ordinary rejection or authenticated phase proof.
+    # Keep the term itself so every enclosing constructor is checked independently.
+    failure =
+      Enum.max_by(
+        [
+          {:error, :safety_sample_unavailable},
+          {:error, {:not_reserved, r.token, :deadline_exceeded}}
+        ],
+        c
+      )
+
     reply = max_size(success, failure, c)
 
     public_result =
       [
         c.({:reply, success}),
         c.({:reply, failure}),
-        c.({:error, {:invalid_spawn_request, gate}}),
+        c.({:error, {:safety_sample_unavailable, gate}}),
         c.(:no_reply),
         c.(:timeout)
       ]
@@ -239,7 +270,7 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccountingTest do
       [
         c.({:reply, :ok}),
         c.({:reply, failure}),
-        c.({:error, {:invalid_spawn_request, gate}}),
+        c.({:error, {:safety_sample_unavailable, gate}}),
         c.(:no_reply),
         c.(:timeout)
       ]
@@ -255,7 +286,16 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccountingTest do
       drain_notify: true,
       request_active: true,
       cleanup: nil,
-      deadline: r.deadline
+      deadline: r.deadline,
+      accounting: lease_accounting,
+      kind: :h2_stream,
+      budget_owner: worker,
+      down_seen: false,
+      exit_seen: false,
+      spawn_token: r.token,
+      stream_parent: {s.lease, owner},
+      stream_resources_terminal: false,
+      budget_receipt: receipt
     }
 
     correlation = %{
@@ -274,9 +314,9 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccountingTest do
     watchdog = {:expired, child_lease, expiry}
     activated = {:gaoxy_admitted_worker_activate, activation, child_lease}
     cancel = {:cancel_spawn, s.lease, r.token}
-    down_owner = {:DOWN, monitor, :process, owner, :invalid_spawn_request}
-    down_gate = {:DOWN, monitor, :process, gate, :invalid_spawn_request}
-    down_child = {:DOWN, monitor, :process, worker, :invalid_spawn_request}
+    down_owner = {:DOWN, monitor, :process, owner, :safety_sample_unavailable}
+    down_gate = {:DOWN, monitor, :process, gate, :safety_sample_unavailable}
+    down_child = {:DOWN, monitor, :process, worker, :safety_sample_unavailable}
     limits = Map.put(s.limits, :max_write_chunk, 16_384)
     body = %{phase: :done, total: 0, trailers: [], trailer_bytes: 0}
     transport = {owner, r.id, r.token}
@@ -300,6 +340,7 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccountingTest do
       route_bytes: 0,
       resource_pins: [],
       protocol_bytes: n,
+      funding: %{total: w, credit: s.reserves.stream, memberships: memberships},
       poll_buffer_bytes: 0,
       transport: Transport,
       transport_state: transport,
@@ -401,7 +442,7 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccountingTest do
       {:gate_child_monitor_root, c.(monitor), 1},
       {:child_owner_monitor_root, c.(monitor), 1},
       {:child_gate_monitor_root, c.(monitor), 1},
-      {:worker_exit_envelope, c.({:EXIT, worker, :invalid_spawn_request}), 2},
+      {:worker_exit_envelope, c.({:EXIT, worker, :safety_sample_unavailable}), 2},
       {:owner_down_envelope, c.(down_owner), 2},
       {:gate_down_envelope, c.(down_gate), 2},
       {:watchdog_timer_ref, c.(timer), 1},
@@ -445,7 +486,12 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccountingTest do
       {:finite_error_reply, c.(failure), 2},
       {:child_monitor_down, c.(down_child), 2},
       {:terminal_deadline, e(r.deadline), 3},
-      {:terminal_timeout, e(s.limits.request_timeout), 3}
+      {:terminal_timeout, e(s.limits.request_timeout), 3},
+      {:spawn_accounting, c.(accounting), 1},
+      {:spawn_metadata, c.(metadata), 1},
+      {:stream_memberships, c.(memberships), 1},
+      {:lease_accounting, c.(lease_accounting), 1},
+      {:canonical_receipt, c.(receipt), 1}
     ]
 
     caps = raw |> Enum.map(fn {_, size, _} -> size end) |> List.to_tuple()

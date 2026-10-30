@@ -11,7 +11,7 @@ Add to `mix.exs`, then run `mix deps.get`:
 ```elixir
 defp deps do
   [
-    {:gaoxy_http3, "~> 0.13.1"}
+    {:gaoxy_http3, "~> 0.14.0"}
   ]
 end
 ```
@@ -80,6 +80,13 @@ Start with the supplied resource limits. `:limits`, `:http_limits` and
 `:h3_limits` are maps validated together before activation. H3 defaults allow
 eight request streams per connection and 32,768-byte header blocks. Dynamic
 QPACK table capacity and blocked-stream limits must both remain zero.
+
+Instance memory admission shares the adaptive VM capacity pool with other
+Gaoxy listeners. Physical/cgroup capacity determines the soft budget; explicit
+service caps and the finite QUIC/HTTP3 safety limits remain independent. Use one
+top-level `resource_budget` on a shared Gaoxy instance, ListenerSet or Phoenix
+Endpoint and inspect it with `Gaoxy.resource_budget(instance)`. See the
+[resource budget guide](https://github.com/gsmlg-dev/gaoxy/blob/main/docs/resource-budget.md).
 
 Request lifetimes remain finite. `http_limits: %{request_timeout: :infinity}`
 is rejected with `:unsupported_request_timeout`. Response-only lifetime overrides

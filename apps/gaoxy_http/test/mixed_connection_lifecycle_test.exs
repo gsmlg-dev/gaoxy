@@ -77,10 +77,13 @@ defmodule Gaoxy.HTTP.MixedConnectionLifecycleTest do
     refute selected.settings_ack
     assert Process.read_timer(first.detector_timer) == false
 
+    assert {:ok, [buffer: delivery]} = Hell.Socket.getopts(socket, [:buffer])
+
     reserves =
       Limits.reservation(
         context.spec.handler_options.http_limits,
-        context.spec.handler_options.h2_limits
+        context.spec.handler_options.h2_limits,
+        max(delivery, Limits.receive_buffer())
       )
 
     assert :sys.get_state(selected.gate).leases[selected.lease].bytes == reserves.connection
@@ -194,10 +197,14 @@ defmodule Gaoxy.HTTP.MixedConnectionLifecycleTest do
     {socket, context, _} = context()
     assert {:continue, state} = Connection.handle_connection(socket, context)
 
+    :ok = Hell.Socket.setopts(socket, buffer: Limits.receive_buffer())
+    assert {:ok, [buffer: delivery]} = Hell.Socket.getopts(socket, [:buffer])
+
     reserves =
       Limits.reservation(
         context.spec.handler_options.http_limits,
-        context.spec.handler_options.h2_limits
+        context.spec.handler_options.h2_limits,
+        max(delivery, Limits.receive_buffer())
       )
 
     {:ok, _other} =

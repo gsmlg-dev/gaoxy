@@ -1,0 +1,49 @@
+{
+  "task_id": "ARB-H1H2-REVIEW",
+  "mode": "read-only independent production review",
+  "reviewer": "/root/budget_phoenix_review",
+  "source_head": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+  "status": "CHANGES_REQUESTED",
+  "review_counters": {
+    "sol": 0,
+    "astra": 0
+  },
+  "implementation_counters": {
+    "sol": 2,
+    "astra": 2
+  },
+  "findings": [
+    {
+      "priority": "P2",
+      "title": "Definite expired pre-reserve startup leaves an H2 retirement record",
+      "admission_path": "apps/gaoxy/lib/gaoxy/admission.ex:175",
+      "retirement_path": "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex:1763",
+      "classification_path": "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex:1833",
+      "effect": "Missing live spawn token yields stale_generation for proof; retirement consumes a stream slot and retries every10ms until connection closure.",
+      "evidence": "Source-confirmed specific pre-reserve rejection path; runtime reproduction NOT RUN.",
+      "required_regression": "Expired pre-reserve worker admission clears retirement; another stream succeeds on the same connection.",
+      "proof_boundary": "Do not treat every later or ambiguous deadline outcome as absence of reservation."
+    }
+  ],
+  "source_sha256": {
+    "apps/gaoxy/lib/gaoxy/admission.ex": "99bcf9d68bcb0e06540a82f4a1dd65b25c95bea020cbc4f3828b24c2fa411ce6",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "acd7e74bd0a948e727fba5209cd07c1c83858bf8a08dc3f131cd013af0cfd43d"
+  },
+  "reviewer_edits_builds_tests": false,
+  "reviewer_commands_terminal": true,
+  "parent_source_trace_confirmed": true,
+  "disposition": "Affected implementation frozen; explicit additional repair budget pending.",
+  "reservation_review": {
+    "default_old_bytes": 30359591,
+    "default_temporary_bytes": 13516840,
+    "removed_blanket_decoder_bytes": 16842751,
+    "separate_writer_bytes": 66560,
+    "formula": "4*65536 +8*(100*16384+18437)",
+    "measured_retained_separate": true,
+    "idle_decoder_credit": 0,
+    "profile_limitation": "Remaining envelope fixed across TCP/TLS and SSL internal_active_n1..100; necessity of eight TLS100 delivery/copy envelopes for every profile unproven.",
+    "controlled_fixture_limitation": "Fake TCP socket and scalar accounting; exact finite cap funds production arithmetic but does not prove real network obligations.",
+    "disposition": "No unnecessary worst-case idle reservation compliance remains open; do not infer it from passing concurrency tests."
+  },
+  "deadline_proof_limitation": "Post-reserve activate_spawn can also return deadline_exceeded (admission.ex:855); blanket deadline allowlisting is unsafe."
+}

@@ -1,0 +1,307 @@
+{
+  "task": "ARB-CORE",
+  "mode": "implementation-recovery",
+  "status": "DONE-scoped-candidate-pending-independent-review",
+  "astra_gate": "SOL_REPEATED_FAILURE",
+  "gate_evidence": "Retained Sol2/Astra2 predecessor receipt plus staged-startup and funded-envelope failures; explicit user twelve-hour additional recovery authorization.",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "branch": "main",
+  "baseline": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+  "deadline": "2026-10-30T02:09:44Z",
+  "completed_at": "2026-10-29T14:40:48.592295+00:00",
+  "counters": {
+    "sol_repair_rounds": 2,
+    "astra_repair_rounds": 4
+  },
+  "root_causes": [
+    "Scalar replacement deliberately retains legacy temporary-credit semantics; explicit same-envelope retained/temporary repartition was absent.",
+    "Blocking dispatcher preparation preceded canonical gate registration, allowing instance drain to reject the already-started service before activation rollback.",
+    "Initial repartition implementation omitted legacy local transport cap validation; Astra4 restores shared accounting validation."
+  ],
+  "owned_changes": [
+    "apps/gaoxy/lib/gaoxy/admission.ex",
+    "apps/gaoxy/lib/gaoxy/admission/accounting.ex",
+    "apps/gaoxy/lib/gaoxy/resource_budget.ex",
+    "apps/gaoxy/lib/gaoxy/resource_budget/ledger.ex",
+    "apps/gaoxy/lib/gaoxy/service.ex",
+    "apps/gaoxy/test/resource_budget_admission_test.exs",
+    "apps/gaoxy/test/resource_budget_owner_test.exs"
+  ],
+  "task_diff": ".audit/adaptive-resource-budget/core/time-quota/task.diff",
+  "task_diff_sha256": "351a3d08ffbf94aaea237a2e031a21e41c7ebb55f15b287f65a8898ed2bd8373",
+  "source_hashes": {
+    "apps/gaoxy/lib/gaoxy/admission.ex": "803493f0667270684efa3704bc2e32574620d073cb3773ad1d5e3d9e3b965875",
+    "apps/gaoxy/lib/gaoxy/admission/accounting.ex": "28f5ae3fcf54889923d38d4d71653c950fb37f41cce21a27f3578b666733692b",
+    "apps/gaoxy/lib/gaoxy/resource_budget.ex": "c7791edb7d6d39d2a9bbcc3509194fd7eaa2f3b43ff9836b526717dfcb25c460",
+    "apps/gaoxy/lib/gaoxy/resource_budget/ledger.ex": "62c2ad48cc58b0f043a97275af4486a9df879d2a722a0b74ec0b7b60ad2b395f",
+    "apps/gaoxy/lib/gaoxy/service.ex": "8df20e4151d6c6c6f09fb3f40d0bfd590a3c2b17e9b5f7e9e7257477297a8385",
+    "apps/gaoxy/test/resource_budget_admission_test.exs": "2ca5cf8fc7ebc88c5796d4775719401cba60870b07aeb8a2690cd067a29e6091",
+    "apps/gaoxy/test/resource_budget_owner_test.exs": "bd5c942c874ff441db53bd2135fbcc8971899e4989ca1fdb67e2153babf98f8b",
+    "apps/gaoxy/test/staged_activation_test.exs": "b9904499c16eda2b16a3944505702a2e36d7ee8eff3371ebb0e71cdbd50a0427"
+  },
+  "preexisting_edits": "Substantial dirty integration retained; before.json and before/ preserve exact starting bytes. No HTTP/H3/manifest source edits in this continuation.",
+  "api": {
+    "canonical": "Gaoxy.ResourceBudget.repartition(client, token, revision, complete_accounting, operation, absolute_deadline)",
+    "admission": "Gaoxy.Admission.repartition_until(gate, lease, partial_accounting_map, operation, absolute_deadline)",
+    "invariants": [
+      "retained+temporary cannot increase; memberships and pending-process credits cannot change",
+      "Canonical owner/gate/service/instance must remain alive; epoch, revision, absolute deadline and commit-deadline fences remain",
+      "Action-specific operation fingerprints prevent replace/repartition receipt aliasing; exact retries preserve retained outcome",
+      "Explicit transport-category cap enforced by canonical commit and legacy local Accounting.validate",
+      "Caller relinquishes actual retained resources before replenishing temporary credit; projected safety debit for subsequent new growth stays temporary+max(retained-sampled_baseline,0)"
+    ],
+    "compatibility": "Existing scalar updates retain temporary credit and replacement behavior; no protocol caller migrated here. Admission omitted fields retain old values; canonical API requires complete accounting."
+  },
+  "checks": [
+    {
+      "task": "ARB-CORE",
+      "label": "astra4-core-regressions",
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy/test/resource_budget_admission_test.exs",
+        "apps/gaoxy/test/resource_budget_owner_test.exs",
+        "apps/gaoxy/test/resource_budget_safety_test.exs",
+        "apps/gaoxy/test/system_memory_test.exs",
+        "apps/gaoxy/test/system_memory_native_test.exs",
+        "apps/gaoxy/test/resource_budget_policy_test.exs",
+        "apps/gaoxy/test/admitted_spawn_test.exs",
+        "apps/gaoxy/test/admission_timeout_test.exs",
+        "apps/gaoxy/test/cleanup_attachment_test.exs",
+        "apps/gaoxy/test/lifecycle_ownership_test.exs",
+        "apps/gaoxy/test/lifecycle_participant_test.exs",
+        "apps/gaoxy/test/websocket_admission_test.exs",
+        "apps/gaoxy/test/websocket_accounting_test.exs",
+        "apps/gaoxy/test/staged_activation_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "started_at": "2026-10-29T14:38:54.283963+00:00",
+      "exit": 0,
+      "elapsed_seconds": 22.126626380020753,
+      "source_changes": [],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/astra4-core-regressions.log",
+      "log_sha256": "b0c1ba00ea115d557c0c70d2109445086fe46bdc008659958202673e0b12cd55",
+      "tests": 268,
+      "failures": 0,
+      "excluded_or_skipped": false,
+      "commands_terminal": true
+    },
+    {
+      "task": "ARB-CORE",
+      "label": "astra4-strict-compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "started_at": "2026-10-29T14:39:22.389738+00:00",
+      "exit": 0,
+      "elapsed_seconds": 1.4575703761074692,
+      "source_changes": [],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/astra4-strict-compile.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests": 0,
+      "failures": 0,
+      "excluded_or_skipped": false,
+      "commands_terminal": true
+    },
+    {
+      "task": "ARB-CORE",
+      "label": "astra4-format",
+      "command": [
+        "mix",
+        "format",
+        "--check-formatted",
+        "apps/gaoxy/lib/gaoxy/resource_budget.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/ledger.ex",
+        "apps/gaoxy/lib/gaoxy/admission/accounting.ex",
+        "apps/gaoxy/lib/gaoxy/admission.ex",
+        "apps/gaoxy/lib/gaoxy/service.ex",
+        "apps/gaoxy/test/resource_budget_admission_test.exs",
+        "apps/gaoxy/test/resource_budget_owner_test.exs"
+      ],
+      "started_at": "2026-10-29T14:39:45.633863+00:00",
+      "exit": 0,
+      "elapsed_seconds": 1.2534082389902323,
+      "source_changes": [],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/astra4-format.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests": 0,
+      "failures": 0,
+      "excluded_or_skipped": false,
+      "commands_terminal": true
+    },
+    {
+      "task": "ARB-CORE",
+      "label": "astra4-whitespace",
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "apps/gaoxy/lib/gaoxy/resource_budget.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/ledger.ex",
+        "apps/gaoxy/lib/gaoxy/admission/accounting.ex",
+        "apps/gaoxy/lib/gaoxy/admission.ex",
+        "apps/gaoxy/lib/gaoxy/service.ex",
+        "apps/gaoxy/test/resource_budget_admission_test.exs",
+        "apps/gaoxy/test/resource_budget_owner_test.exs"
+      ],
+      "started_at": "2026-10-29T14:39:53.661034+00:00",
+      "exit": 0,
+      "elapsed_seconds": 0.1384360280353576,
+      "source_changes": [],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/astra4-whitespace.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tests": 0,
+      "failures": 0,
+      "excluded_or_skipped": false,
+      "commands_terminal": true
+    }
+  ],
+  "tests": {
+    "admission": 44,
+    "owner": 56,
+    "staged_activation": 11,
+    "total": 268,
+    "failures": 0,
+    "excluded": 0,
+    "skipped": 0
+  },
+  "history": {
+    "astra3-focused": {
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy/test/resource_budget_admission_test.exs",
+        "apps/gaoxy/test/resource_budget_owner_test.exs",
+        "apps/gaoxy/test/staged_activation_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "exit": 0,
+      "log": ".audit/adaptive-resource-budget/core/time-quota/astra3-focused.log",
+      "log_sha256": "62847dbb7b12d57159861001d85ae60aa99ef93749a1527dca136fc8f9ba1184",
+      "tests": 109,
+      "failures": 0
+    },
+    "astra4-legacy-cap-red-confirmed": {
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy/test/resource_budget_admission_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "exit": 2,
+      "log": ".audit/adaptive-resource-budget/core/time-quota/astra4-legacy-cap-red-confirmed.log",
+      "log_sha256": "d5ef75df0b0171db1dab375d358fd41ed59b988f47a7b60a4bab1d3f889393ea",
+      "tests": 44,
+      "failures": 1
+    },
+    "astra4-legacy-cap-red": {
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy/test/resource_budget_admission_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "exit": 2,
+      "log": ".audit/adaptive-resource-budget/core/time-quota/astra4-legacy-cap-red.log",
+      "log_sha256": "718e151424aee654d6384682d55869bbb2baf8909f2ffb4cb18b556c9bab48f0",
+      "tests": 44,
+      "failures": 1
+    },
+    "repartition-staged-red": {
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy/test/resource_budget_admission_test.exs",
+        "apps/gaoxy/test/resource_budget_owner_test.exs",
+        "apps/gaoxy/test/staged_activation_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "exit": 2,
+      "log": ".audit/adaptive-resource-budget/core/time-quota/repartition-staged-red.log",
+      "log_sha256": "71626c395cf14604842ea3af74911078fe74b1fe1a89068659785b7caef1d7d1",
+      "tests": 109,
+      "failures": 8
+    },
+    "astra3-core-regressions": {
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy/test/resource_budget_admission_test.exs",
+        "apps/gaoxy/test/resource_budget_owner_test.exs",
+        "apps/gaoxy/test/resource_budget_safety_test.exs",
+        "apps/gaoxy/test/system_memory_test.exs",
+        "apps/gaoxy/test/system_memory_native_test.exs",
+        "apps/gaoxy/test/resource_budget_policy_test.exs",
+        "apps/gaoxy/test/admitted_spawn_test.exs",
+        "apps/gaoxy/test/admission_timeout_test.exs",
+        "apps/gaoxy/test/cleanup_attachment_test.exs",
+        "apps/gaoxy/test/lifecycle_ownership_test.exs",
+        "apps/gaoxy/test/lifecycle_participant_test.exs",
+        "apps/gaoxy/test/websocket_admission_test.exs",
+        "apps/gaoxy/test/websocket_accounting_test.exs",
+        "apps/gaoxy/test/staged_activation_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "exit": 0,
+      "log": ".audit/adaptive-resource-budget/core/time-quota/astra3-core-regressions.log",
+      "log_sha256": "55d90a9a46f7b84ab7032b0a566ff70c27fe22ce97fb634e5e3b23c62ac3911a",
+      "tests": 267,
+      "failures": 0
+    },
+    "astra3-h1-wire-boundary": {
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_http/test/stream_lifetime_test.exs",
+        "apps/gaoxy_http/test/supervised_shutdown_budget_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "exit": 2,
+      "log": ".audit/adaptive-resource-budget/core/time-quota/astra3-h1-wire-boundary.log",
+      "log_sha256": "87747f7cac204c894c77016e5e5ddab87e2372479f55b1242bd0d61d6605f99c",
+      "tests": 13,
+      "failures": 3
+    }
+  },
+  "not_run": [
+    "Parent manifest update and inventory",
+    "Independent review and fresh integrated acceptance",
+    "H1/H2 protocol migration and H3 lifetime recovery",
+    "Final qualification and publication"
+  ],
+  "residual_risks": [
+    "H1 wire boundary remains13/3: unchanged failures pending explicit caller migration; these are not CORE acceptance success.",
+    "H3 native bytes and connection quota retention until public QUIC.info closed remain separate assigned recovery."
+  ],
+  "decisions_needed": [
+    "Parent independently review candidate, update manifest Admission44/Owner56 and run inventory, then assign protocol recovery."
+  ],
+  "commands_terminal": true,
+  "temporary_processes_remaining": false,
+  "writes_stopped": true,
+  "build_lane_released": true
+}

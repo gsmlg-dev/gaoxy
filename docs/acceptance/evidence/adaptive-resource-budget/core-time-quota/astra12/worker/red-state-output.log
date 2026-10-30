@@ -1,0 +1,200 @@
+==> gaoxy
+
+15:05:29.019 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+15:05:29.052 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 138509, max_cases: 4
+
+
+
+  1) test tcp continue state detaches before the next callback (Gaoxy.ResourceBudget.StreamNetworkTest)
+     apps/gaoxy/test/resource_budget_stream_network_test.exs:378
+     Assertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       handler = #PID<0.371.0>
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {:continued_backing, ^handler, 65}
+     mailbox:
+       pattern: {:continued_backing, ^handler, 65}
+       value:   {:continued_backing, #PID<0.371.0>, 8192}
+     stacktrace:
+       test/resource_budget_stream_network_test.exs:389: (test)
+
+..
+
+  2) test tls sends detached bounded output for borrowed binary and nested iodata (Gaoxy.ResourceBudget.StreamNetworkTest)
+     apps/gaoxy/test/resource_budget_stream_network_test.exs:342
+     Assertion with == failed
+     code:  assert :binary.referenced_byte_size(sent) == byte_size(expected)
+     left:  8192
+     right: 65
+     stacktrace:
+       test/resource_budget_stream_network_test.exs:371: anonymous fn/4 in Gaoxy.ResourceBudget.StreamNetworkTest."test tls sends detached bounded output for borrowed binary and nested iodata"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/resource_budget_stream_network_test.exs:361: (test)
+
+
+15:05:33.276 [error] GenServer #PID<0.481.0> terminating
+** (stop) :byte_limit
+Process Label: {:hell, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 34832}}}
+Last message: {:continue, :handle_connection}
+State: {%Hell.Socket{socket: {:sslsocket, #Port<0.38>, #PID<0.480.0>, #PID<0.479.0>, :gen_tcp, :tls_gen_connection, #Reference<0.3806458388.4112646145.74836>, [option_tracker: #PID<0.468.0>, session_tickets_tracker: :disabled, session_id_tracker: :not_relevant]}, transport_module: Hell.Transports.SSL, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %Hell.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3806458388.4112515074.62711>, start_time: -576460746643698317, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 34832, telemetry_span_context: #Reference<0.3806458388.4112515074.62711>, parent_telemetry_span_context: #Reference<0.3806458388.4112515073.74820>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3806458388.4112515074.62711>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.3806458388.4112515073.74758>, service: "echo", generation: #Reference<0.3806458388.4112515073.74764>}, instance: #PID<0.461.0>, service: #PID<0.464.0>, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudget.StreamNetworkTest.Echo, tls: %{certfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/apps/gaoxy/tmp/Gaoxy.ResourceBudget.StreamNetworkTest/test-tls-explicit-byte-cap-below-completion-floor-refuses-admission-a7c07064/cert.pem", keyfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/apps/gaoxy/tmp/Gaoxy.ResourceBudget.StreamNetworkTest/test-tls-explicit-byte-cap-below-completion-floor-refuses-admission-a7c07064/key.pem", provider: :otp, alpn: ["gaoxy-echo-v1"]}, transport: :tls, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 447049, max_connections: 16384, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, idle_timeout: 30000, max_output: 64, max_requests: 65536, max_state: 256, max_streams: 65536}, budget_policy: %{max_bytes: 447049, max_connections: 16384, max_active: nil, provenance: %{max_bytes: :explicit, max_connections: :omitted, max_active: :omitted, normalized_limits: %{max_bytes: 447049, max_connections: 16384, max_active: 64, max_requests: 65536, max_streams: 65536}, max_requests: :omitted, max_streams: :omitted}, max_requests: 65536, max_streams: 65536}, handler_mode: :stream, quic: %{}, handler_options: #PID<0.459.0>, hell_options: [], abyss_options: []}, gate: #PID<0.465.0>, startup_token: #Reference<0.3806458388.4112515073.74777>}}
+.
+
+  3) test tcp retained slices detach while opaque handler resources remain usable (Gaoxy.ResourceBudget.StreamNetworkTest)
+     apps/gaoxy/test/resource_budget_stream_network_test.exs:313
+     Assertion with == failed
+     code:  assert observation.prior_backings == List.duplicate(65, value)
+     left:  [8192]
+     right: ~c"A"
+     stacktrace:
+       test/resource_budget_stream_network_test.exs:438: Gaoxy.ResourceBudget.StreamNetworkTest.slice_exchange/4
+       test/resource_budget_stream_network_test.exs:329: anonymous fn/4 in Gaoxy.ResourceBudget.StreamNetworkTest."test tcp retained slices detach while opaque handler resources remain usable"/1
+       (elixir 1.18.5) lib/enum.ex:4507: Enum.reduce/3
+       test/resource_budget_stream_network_test.exs:329: (test)
+
+
+
+  4) test tcp sends detached bounded output for borrowed binary and nested iodata (Gaoxy.ResourceBudget.StreamNetworkTest)
+     apps/gaoxy/test/resource_budget_stream_network_test.exs:342
+     Assertion with == failed
+     code:  assert :binary.referenced_byte_size(sent) == byte_size(expected)
+     left:  8192
+     right: 65
+     stacktrace:
+       test/resource_budget_stream_network_test.exs:371: anonymous fn/4 in Gaoxy.ResourceBudget.StreamNetworkTest."test tcp sends detached bounded output for borrowed binary and nested iodata"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/resource_budget_stream_network_test.exs:361: (test)
+
+
+15:05:33.360 [error] GenServer #PID<0.539.0> terminating
+** (stop) :fixture_error
+Process Label: {:hell, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 37396}}}
+Last message: {:tcp, #Port<0.47>, "e"}
+State: {%Hell.Socket{socket: #Port<0.47>, transport_module: Hell.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %Hell.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3806458388.4112515074.63783>, start_time: -576460746552594407, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 37396, telemetry_span_context: #Reference<0.3806458388.4112515074.63783>, parent_telemetry_span_context: #Reference<0.3806458388.4112515074.63764>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3806458388.4112515074.63783>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.3806458388.4112515074.63715>, service: "echo", generation: #Reference<0.3806458388.4112515074.63721>}, instance: #PID<0.526.0>, service: #PID<0.529.0>, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudget.StreamNetworkTest.TerminalSlices, tls: %{}, transport: :tcp, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 1048576, max_connections: 16384, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, idle_timeout: 30000, max_output: 65507, max_requests: 65536, max_state: 65536, max_streams: 65536}, budget_policy: %{max_bytes: nil, max_connections: 16384, max_active: nil, provenance: %{max_bytes: :omitted, max_connections: :omitted, max_active: :omitted, normalized_limits: %{max_bytes: 1048576, max_connections: 16384, max_active: 64, max_requests: 65536, max_streams: 65536}, max_requests: :omitted, max_streams: :omitted}, max_requests: 65536, max_streams: 65536}, handler_mode: :stream, quic: %{}, handler_options: #PID<0.524.0>, hell_options: [], abyss_options: []}, app: {#PID<0.524.0>, "ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt"}, gate: #PID<0.530.0>, lease: #Reference<0.3806458388.4112515074.63786>, funded: 643053, startup_token: #Reference<0.3806458388.4112515074.63734>, delivery_bytes: 1, delivery_limit: 223237}}
+
+
+  5) test tcp fixture_error state detaches before terminate (Gaoxy.ResourceBudget.StreamNetworkTest)
+     apps/gaoxy/test/resource_budget_stream_network_test.exs:396
+     Assertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       reason = :fixture_error
+       handler = #PID<0.539.0>
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {:terminal_backing, ^handler, ^reason, 65, slice}
+     mailbox:
+       pattern: {:terminal_backing, ^handler, ^reason, 65, slice}
+       value:   {:terminal_backing, #PID<0.539.0>, :fixture_error, 8192,
+                 "ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt"}
+     stacktrace:
+       test/resource_budget_stream_network_test.exs:407: (test)
+
+..
+
+  6) test tls closed state detaches before terminate (Gaoxy.ResourceBudget.StreamNetworkTest)
+     apps/gaoxy/test/resource_budget_stream_network_test.exs:396
+     Assertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       reason = :closed
+       handler = #PID<0.620.0>
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {:terminal_backing, ^handler, ^reason, 65, slice}
+     mailbox:
+       pattern: {:terminal_backing, ^handler, ^reason, 65, slice}
+       value:   {:terminal_backing, #PID<0.620.0>, :closed, 8192,
+                 "ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt"}
+     stacktrace:
+       test/resource_budget_stream_network_test.exs:407: (test)
+
+.
+15:05:38.152 [error] GenServer #PID<0.676.0> terminating
+** (stop) :byte_limit
+Process Label: {:hell, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 54604}}}
+Last message: {:continue, :handle_connection}
+State: {%Hell.Socket{socket: #Port<0.67>, transport_module: Hell.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %Hell.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3806458388.4112515074.65630>, start_time: -576460741758527214, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 54604, telemetry_span_context: #Reference<0.3806458388.4112515074.65630>, parent_telemetry_span_context: #Reference<0.3806458388.4112515074.65619>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3806458388.4112515074.65630>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.3806458388.4112515074.65571>, service: "echo", generation: #Reference<0.3806458388.4112515074.65577>}, instance: #PID<0.663.0>, service: #PID<0.666.0>, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudget.StreamNetworkTest.Echo, tls: %{}, transport: :tcp, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 447049, max_connections: 16384, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, idle_timeout: 30000, max_output: 64, max_requests: 65536, max_state: 256, max_streams: 65536}, budget_policy: %{max_bytes: 447049, max_connections: 16384, max_active: nil, provenance: %{max_bytes: :explicit, max_connections: :omitted, max_active: :omitted, normalized_limits: %{max_bytes: 447049, max_connections: 16384, max_active: 64, max_requests: 65536, max_streams: 65536}, max_requests: :omitted, max_streams: :omitted}, max_requests: 65536, max_streams: 65536}, handler_mode: :stream, quic: %{}, handler_options: #PID<0.661.0>, hell_options: [], abyss_options: []}, gate: #PID<0.667.0>, startup_token: #Reference<0.3806458388.4112515074.65590>}}
+...
+
+  7) test tls continue state detaches before the next callback (Gaoxy.ResourceBudget.StreamNetworkTest)
+     apps/gaoxy/test/resource_budget_stream_network_test.exs:378
+     Assertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       handler = #PID<0.752.0>
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {:continued_backing, ^handler, 65}
+     mailbox:
+       pattern: {:continued_backing, ^handler, 65}
+       value:   {:continued_backing, #PID<0.752.0>, 8192}
+     stacktrace:
+       test/resource_budget_stream_network_test.exs:389: (test)
+
+
+15:05:39.740 [error] GenServer #PID<0.772.0> terminating
+** (stop) :byte_limit
+Process Label: {:hell, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 55272}}}
+Last message: {:continue, :handle_connection}
+State: {%Hell.Socket{socket: #Port<0.81>, transport_module: Hell.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %Hell.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3806458388.4112515074.66817>, start_time: -576460740170983582, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 55272, telemetry_span_context: #Reference<0.3806458388.4112515074.66817>, parent_telemetry_span_context: #Reference<0.3806458388.4112515074.66798>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3806458388.4112515074.66817>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.3806458388.4112515074.66750>, service: "echo", generation: #Reference<0.3806458388.4112515074.66756>}, instance: #PID<0.759.0>, service: #PID<0.762.0>, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudget.StreamNetworkTest.Echo, tls: %{}, transport: :tcp, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 6591049, max_connections: 16384, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, idle_timeout: 30000, max_output: 64, max_requests: 65536, max_state: 256, max_streams: 65536}, budget_policy: %{max_bytes: 6591049, max_connections: 16384, max_active: nil, provenance: %{max_bytes: :explicit, max_connections: :omitted, max_active: :omitted, normalized_limits: %{max_bytes: 6591049, max_connections: 16384, max_active: 64, max_requests: 65536, max_streams: 65536}, max_requests: :omitted, max_streams: :omitted}, max_requests: 65536, max_streams: 65536}, handler_mode: :stream, quic: %{}, handler_options: #PID<0.757.0>, hell_options: [transport_options: [buffer: 32768, recbuf: 32768]], abyss_options: []}, gate: #PID<0.763.0>, startup_token: #Reference<0.3806458388.4112515074.66769>}}
+..
+
+  8) test tls retained slices detach while opaque handler resources remain usable (Gaoxy.ResourceBudget.StreamNetworkTest)
+     apps/gaoxy/test/resource_budget_stream_network_test.exs:313
+     Assertion with == failed
+     code:  assert observation.prior_backings == List.duplicate(65, value)
+     left:  [8192]
+     right: ~c"A"
+     stacktrace:
+       test/resource_budget_stream_network_test.exs:438: Gaoxy.ResourceBudget.StreamNetworkTest.slice_exchange/4
+       test/resource_budget_stream_network_test.exs:329: anonymous fn/4 in Gaoxy.ResourceBudget.StreamNetworkTest."test tls retained slices detach while opaque handler resources remain usable"/1
+       (elixir 1.18.5) lib/enum.ex:4507: Enum.reduce/3
+       test/resource_budget_stream_network_test.exs:329: (test)
+
+
+15:05:40.419 [error] GenServer #PID<0.853.0> terminating
+** (stop) :byte_limit
+Process Label: {:hell, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 37364}}}
+Last message: {:continue, :handle_connection}
+State: {%Hell.Socket{socket: {:sslsocket, #Port<0.93>, #PID<0.852.0>, #PID<0.851.0>, :gen_tcp, :tls_gen_connection, #Reference<0.3806458388.4112646146.68270>, [option_tracker: #PID<0.840.0>, session_tickets_tracker: :disabled, session_id_tracker: :not_relevant]}, transport_module: Hell.Transports.SSL, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %Hell.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3806458388.4112515073.77548>, start_time: -576460739502356671, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 37364, telemetry_span_context: #Reference<0.3806458388.4112515073.77548>, parent_telemetry_span_context: #Reference<0.3806458388.4112515073.77526>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3806458388.4112515073.77548>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.3806458388.4112515074.68197>, service: "echo", generation: #Reference<0.3806458388.4112515074.68203>}, instance: #PID<0.833.0>, service: #PID<0.836.0>, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudget.StreamNetworkTest.Echo, tls: %{certfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/apps/gaoxy/tmp/Gaoxy.ResourceBudget.StreamNetworkTest/test-tls-32768-buffer-cannot-exceed-its-explicit-byte-cap-4fd90f3b/cert.pem", keyfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/apps/gaoxy/tmp/Gaoxy.ResourceBudget.StreamNetworkTest/test-tls-32768-buffer-cannot-exceed-its-explicit-byte-cap-4fd90f3b/key.pem", provider: :otp, alpn: ["gaoxy-echo-v1"]}, transport: :tls, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 6591049, max_connections: 16384, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, idle_timeout: 30000, max_output: 64, max_requests: 65536, max_state: 256, max_streams: 65536}, budget_policy: %{max_bytes: 6591049, max_connections: 16384, max_active: nil, provenance: %{max_bytes: :explicit, max_connections: :omitted, max_active: :omitted, normalized_limits: %{max_bytes: 6591049, max_connections: 16384, max_active: 64, max_requests: 65536, max_streams: 65536}, max_requests: :omitted, max_streams: :omitted}, max_requests: 65536, max_streams: 65536}, handler_mode: :stream, quic: %{}, handler_options: #PID<0.831.0>, hell_options: [transport_options: [buffer: 32768, recbuf: 32768]], abyss_options: []}, gate: #PID<0.837.0>, startup_token: #Reference<0.3806458388.4112515074.68216>}}
+.
+
+  9) test tcp closed state detaches before terminate (Gaoxy.ResourceBudget.StreamNetworkTest)
+     apps/gaoxy/test/resource_budget_stream_network_test.exs:396
+     Assertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       reason = :closed
+       handler = #PID<0.873.0>
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {:terminal_backing, ^handler, ^reason, 65, slice}
+     mailbox:
+       pattern: {:terminal_backing, ^handler, ^reason, 65, slice}
+       value:   {:terminal_backing, #PID<0.873.0>, :closed, 8192,
+                 "ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt"}
+     stacktrace:
+       test/resource_budget_stream_network_test.exs:407: (test)
+
+..
+15:05:42.489 [error] GenServer #PID<0.961.0> terminating
+** (stop) :fixture_error
+Process Label: {:hell, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 55292}}}
+Last message: {:ssl, {:sslsocket, #Port<0.109>, #PID<0.960.0>, #PID<0.959.0>, :gen_tcp, :tls_gen_connection, #Reference<0.3806458388.4112646146.69699>, [option_tracker: #PID<0.948.0>, session_tickets_tracker: :disabled, session_id_tracker: :not_relevant]}, "e"}
+State: {%Hell.Socket{socket: {:sslsocket, #Port<0.109>, #PID<0.960.0>, #PID<0.959.0>, :gen_tcp, :tls_gen_connection, #Reference<0.3806458388.4112646146.69699>, [option_tracker: #PID<0.948.0>, session_tickets_tracker: :disabled, session_id_tracker: :not_relevant]}, transport_module: Hell.Transports.SSL, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %Hell.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3806458388.4112515073.78456>, start_time: -576460737472767391, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 55292, telemetry_span_context: #Reference<0.3806458388.4112515073.78456>, parent_telemetry_span_context: #Reference<0.3806458388.4112515074.69690>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3806458388.4112515073.78456>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.3806458388.4112515073.78353>, service: "echo", generation: #Reference<0.3806458388.4112515073.78359>}, instance: #PID<0.941.0>, service: #PID<0.944.0>, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudget.StreamNetworkTest.TerminalSlices, tls: %{certfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/apps/gaoxy/tmp/Gaoxy.ResourceBudget.StreamNetworkTest/test-tls-fixture_error-state-detaches-before-terminate-d957c5da/cert.pem", keyfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/apps/gaoxy/tmp/Gaoxy.ResourceBudget.StreamNetworkTest/test-tls-fixture_error-state-detaches-before-terminate-d957c5da/key.pem", provider: :otp, alpn: ["gaoxy-echo-v1"]}, transport: :tls, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 1048576, max_connections: 16384, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, idle_timeout: 30000, max_output: 65507, max_requests: 65536, max_state: 65536, max_streams: 65536}, budget_policy: %{max_bytes: nil, max_connections: 16384, max_active: nil, provenance: %{max_bytes: :omitted, max_connections: :omitted, max_active: :omitted, normalized_limits: %{max_bytes: 1048576, max_connections: 16384, max_active: 64, max_requests: 65536, max_streams: 65536}, max_requests: :omitted, max_streams: :omitted}, max_requests: 65536, max_streams: 65536}, handler_mode: :stream, quic: %{}, handler_options: #PID<0.939.0>, hell_options: [], abyss_options: []}, app: {#PID<0.939.0>, "ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt"}, gate: #PID<0.945.0>, lease: #Reference<0.3806458388.4112515073.78503>, funded: 643053, startup_token: #Reference<0.3806458388.4112515073.78372>, delivery_bytes: 1, delivery_limit: 223237}}
+
+
+ 10) test tls fixture_error state detaches before terminate (Gaoxy.ResourceBudget.StreamNetworkTest)
+     apps/gaoxy/test/resource_budget_stream_network_test.exs:396
+     Assertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       reason = :fixture_error
+       handler = #PID<0.961.0>
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {:terminal_backing, ^handler, ^reason, 65, slice}
+     mailbox:
+       pattern: {:terminal_backing, ^handler, ^reason, 65, slice}
+       value:   {:terminal_backing, #PID<0.961.0>, :fixture_error, 8192,
+                 "ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt"}
+     stacktrace:
+       test/resource_budget_stream_network_test.exs:407: (test)
+
+
+Finished in 14.3 seconds (0.00s async, 14.3s sync)
+24 tests, 10 failures
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

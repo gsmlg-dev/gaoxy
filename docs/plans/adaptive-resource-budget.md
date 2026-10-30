@@ -10,6 +10,17 @@ complete by a narrower passing test.
 
 ## Task routing and cumulative repair record
 
+Current authorization: on 2026-10-30 the user extends the original quota by
+24 hours. The fixed window now runs **2026-10-29 22:09:44 through 2026-10-31
+10:09:44 Asia/Shanghai** (36 hours total). The original twelve-hour expiry and
+model-capacity interruption remain historical evidence. During the extended
+window the existing CORE, H1/H2 and H3
+tasks may continue Astra recovery without a numerical failure stop. Historical
+counts remain cumulative and the earlier pending requests are resolved by this
+explicit grant. Keep one active Astra worker, serialize shared validation, and
+complete independent review and unchanged acceptance checks before delivery.
+The historical checkpoints below retain their actual status at execution time.
+
 | Task | Initial/current worker | State | Sol repairs | Astra repairs | Gate |
 | --- | --- | --- | --- | --- | --- |
 | ARB-BASE | Sol/Sol | Accepted read-only audit | 0 | 0 | None |
@@ -22,12 +33,28 @@ complete by a narrower passing test.
 | ARB-CORE-PREFLIGHT | Sol/Sol | Accepted read-only transition/provenance patch map | 0 | 0 | None |
 | ARB-CONFIG | Sol/Sol | Accepted specification/code review and fresh combined 147/0 | 0 | 0 | None |
 | ARB-PROTOCOL-PREFLIGHT | Sol/Sol | Accepted read-only hook map; same-token stream retention selected | 0 | 0 | None |
-| ARB-CORE | Sol/Astra | Accepted recovery 241/0, parent review and fresh combined 312/0 | 2 | 1 | SOL_REPEATED_FAILURE |
+| ARB-CORE | Sol/Astra | Accepted repair14/source review; final900/0 and unchanged optional4/0 PASS, with original caps/deadlines/proofs preserved | 2 | 14 | SOL_REPEATED_FAILURE |
 | ARB-ENTRY | Sol/Sol | Gateway/JSON propagation accepted in combined 312/0 | 0 | 0 | None |
-| ARB-H1H2 | Sol/Sol | Dynamic protocol integration in progress | 0 | 0 | None |
-| ARB-H3 | Sol/Sol | Disjoint protocol implementation; build lane held by H1/H2 | 0 | 0 | None |
-| ARB-PHOENIX | Sol/Sol | Pure 11/0 accepted; two runtime cases await H1 integration | 0 | 0 | None |
-| ARB-QUALIFY | Sol/unassigned | Not started | 0 | 0 | None |
+| ARB-H1H2 | Sol/Astra | Accepted scoped378/0 and source review; final pinned868/0 passes, prior helper16/1 retained | 2 | 16 | SOL_REPEATED_FAILURE |
+| ARB-H1H2-REVIEW | Sol/Sol | Test-only repairs accepted; production review requests expired-start retirement repair | 0 | 0 | None |
+| ARB-H1H2-REVIEW2 | Sol/Sol | Frozen source accepted; prior P2 resolved,25 input hashes stable; parent runtime evidence remains separately scoped | 0 | 0 | None |
+| ARB-H3 | Sol/Astra | Astra12 scoped233/0 and source review accepted; final pinned868/0 integrated PASS | 2 | 12 | SOL_REPEATED_FAILURE |
+| ARB-H3-REVIEW | Sol/Sol | Frozen680 inputs accepted; native P1 and deadline P2 resolved, independent review PASS | 0 | 0 | None |
+| ARB-H3-PREFLIGHT | Sol/Sol | Accepted read-only map; typed connection cleanup needs coordinated CORE ownership | 0 | 0 | None |
+| ARB-PHOENIX | Sol/Sol | Versioned27/0 component, clients10/0 and unified8/0 PASS; original3/1 retained | 1 | 0 | None |
+| ARB-PHOENIX-REVIEW | Sol/Sol | Accepted Phoenix candidate and public guide; stale Proxy moduledoc corrected/re-reviewed | 0 | 0 | None |
+| ARB-QUALIFY | Sol/Coordinator | All35 final014 gates PASS on682 frozen inputs: canonical900/0 plus package, Phoenix, clients, standalone, portable and optional QUIC | 0 | 0 | None |
+| ARB-QUALIFY-DIAG | Sol/Sol | Read-only helper/startup/lifetime classification; CORE startup ordering confirmed; no repairs | 0 | 0 | None |
+| ARB-RELEASE-PREFLIGHT | Sol/Sol | Accepted read-only gate map; provisional 0.14.0 requires live availability check | 0 | 0 | None |
+| ARB-META-VERIFY | Sol/Sol | Accepted 36/0 isolated Python gate regressions; tested scripts and manifest unchanged | 0 | 0 | None |
+| ARB-RELEASE-NOTES-DRAFT | Sol/Sol | Audit-only 0.14.0 prose prepared; promotion waits for final acceptance and live version recheck | 0 | 0 | None |
+| ARB-RELEASE-VERIFIER | Sol/Sol | Parameterized audit tools reviewed; parent80/0 Python controls; actual new-release artifact/runtime verification NOT RUN | 0 | 0 | None |
+| ARB-ACCEPTANCE-AUDIT | Sol/Sol | 12 DoD and 20 verification rows mapped; ordinary finite connection-churn evidence missing, H3/final gates open | 0 | 0 | None |
+| ARB-CHURN | Sol/Sol | Accepted16/0 including nine connection rounds; inventory868/120, strict compile/format pass, parent owns build lane | 1 | 0 | None |
+| ARB-CORE-RELEASE-SPEC | Sol/Sol | Accepted fixed original raw TCP/TLS drain contract and bounded-repair invariants | 0 | 0 | None |
+| ARB-CORE-RELEASE-CODE | Sol/Sol | Frozen repair12 accepted; buffer/state/output findings resolved, terminal ownership and raw evidence verified | 0 | 0 | None |
+| ARB-FINAL-ACCEPTANCE | Sol/Sol | Final014 source accepted,12DoD/20verification audited and35 gates/682 input hashes verified; ready for authorized delivery | 0 | 0 | None |
+| ARB-VERSION | Sol/Sol | Accepted0.14.0 alignment; final source gates PASS and6Hex/tag/GitHubrelease live availability rechecked unused | 0 | 0 | None |
 | ARB-RELEASE | Coordinator/unassigned | Not started | 0 | 0 | None |
 
 ROUTE task=ARB-BASE agent=sol_worker reason=baseline-investigation
@@ -50,6 +77,37 @@ ROUTE task=ARB-CORE agent=astra_worker reason=SOL_REPEATED_FAILURE
 ROUTE task=ARB-ENTRY agent=sol_worker reason=outer-configuration-policy-propagation
 ROUTE task=ARB-H1H2 agent=sol_worker reason=approved-dynamic-protocol-integration
 ROUTE task=ARB-H3 agent=sol_worker reason=approved-dynamic-h3-integration
+ROUTE task=ARB-H3 agent=astra_worker reason=SOL_REPEATED_FAILURE
+ROUTE task=ARB-H1H2 agent=astra_worker reason=SOL_REPEATED_FAILURE
+ROUTE task=ARB-H3-REVIEW agent=sol_worker reason=independent-h3-specification-and-code-review
+ROUTE task=ARB-PHOENIX-REVIEW agent=sol_worker reason=independent-phoenix-acceptance-and-public-guide-review
+ROUTE task=ARB-H1H2-REVIEW agent=sol_worker reason=independent-controlled-fixture-and-proxy-contract-review
+ROUTE task=ARB-QUALIFY agent=coordinator reason=post-review-checks-and-package-prequalification
+ROUTE task=ARB-QUALIFY-DIAG agent=sol_worker reason=read-only-frozen-component-failure-classification
+ROUTE task=ARB-QUALIFY-DIAG agent=sol_worker reason=read-only-staged-startup-and-protocol-remainder-diagnosis
+ROUTE task=ARB-CORE agent=astra_worker reason=SOL_REPEATED_FAILURE-with-explicit-twelve-hour-additional-repair-allowance
+ROUTE task=ARB-RELEASE-PREFLIGHT agent=sol_worker reason=read-only-exact-source-delivery-gate-map
+ROUTE task=ARB-H1H2 agent=astra_worker reason=SOL_REPEATED_FAILURE-with-explicit-twelve-hour-extra-repair-budget
+ROUTE task=ARB-H3-PREFLIGHT agent=sol_worker reason=read-only-existing-public-cleanup-composition-map
+ROUTE task=ARB-META-VERIFY agent=sol_worker reason=isolated-python-gate-regressions-without-shared-beam-state
+ROUTE task=ARB-RELEASE-NOTES-DRAFT agent=sol_worker reason=bounded-user-facing-release-prose-from-approved-contract
+ROUTE task=ARB-H1H2-REVIEW2 agent=sol_worker reason=independent-completion-credit-and-terminal-ownership-review
+ROUTE task=ARB-H3 agent=astra_worker reason=SOL_REPEATED_FAILURE-continuation-with-explicit-time-quota-and-typed-CORE-cleanup-ownership
+ROUTE task=ARB-RELEASE-VERIFIER agent=sol_worker reason=bounded-audit-tool-adaptation-for-exact-source-public-artifact-verification
+ROUTE task=ARB-ACCEPTANCE-AUDIT agent=sol_worker reason=independent-requirement-to-evidence-audit-without-shared-build-state
+ROUTE task=ARB-H3-REVIEW agent=sol_worker reason=bounded-read-only-typed-native-cleanup-seam-review
+ROUTE task=ARB-CHURN agent=sol_worker reason=missing-ordinary-finite-connection-churn-acceptance-coverage
+ROUTE task=ARB-H3-REVIEW agent=sol_worker reason=final-frozen-native-lifetime-and-bounded-progress-review
+ROUTE task=ARB-CHURN agent=sol_worker reason=reviewed-test-installation-unit-promotion-and-focused-validation
+ROUTE task=ARB-QUALIFY agent=coordinator reason=fresh-integrated-canonical-and-release-source-qualification
+ROUTE task=ARB-FINAL-ACCEPTANCE agent=sol_worker reason=independent-final-requirement-and-integration-review
+ROUTE task=ARB-VERSION agent=sol_worker reason=coordinated-release-version-and-user-documentation
+ROUTE task=ARB-CORE agent=astra_worker reason=SOL_REPEATED_FAILURE-continuation-Astra7-with-explicit-time-quota-and-source-built-release-smoke-failure
+ROUTE task=ARB-CORE-RELEASE-SPEC agent=sol_worker reason=independent-read-only-raw-stream-drain-contract-review
+ROUTE task=ARB-CORE agent=astra_worker reason=SOL_REPEATED_FAILURE-continuation-repair12-under-explicit-plus24-hour-time-quota
+ROUTE task=ARB-CORE-RELEASE-CODE agent=sol_worker reason=independent-read-only-backing-and-compatibility-review-after-time-extension
+ROUTE task=ARB-CORE agent=astra_worker reason=existing-native-QUIC-compatibility-failure-after-extended-window-qualification-repair13
+ROUTE task=ARB-CORE agent=astra_worker reason=existing-raw-QUIC-listener-close-ordering-after-byte-cap-recovery-repair14
 
 Architecture admission is the explicitly requested system ownership redesign;
 it is not a Sol failure/recovery escalation. Other tasks default to Sol. Keep
@@ -210,25 +268,25 @@ after gate loss. Resource-owner DOWN alone remains insufficient terminal proof.
 Default process names are scoped to the local BEAM node, so connected nodes do
 not accidentally share one globally named default authority.
 
-- [ ] Implement supervised canonical ledger continuity, authority generations,
+- [x] Implement supervised canonical ledger continuity, authority generations,
   per-instance scopes and aggregate VM coordination; fail closed after ledger
   loss and reconstruct after authority restart without forgetting live usage.
-- [ ] Add pure policy normalization and omission provenance. Preserve explicit
+- [x] Add pure policy normalization and omission provenance. Preserve explicit
   legacy max_bytes/max_active semantics; add distinct connection/request/stream
   quotas and instance soft/hard configuration.
-- [ ] Integrate atomic acquire/resize/transfer/release into all Admission paths,
+- [x] Integrate atomic acquire/resize/transfer/release into all Admission paths,
   including send, cleanup, spawn activation/cancellation and terminal pairs.
-- [ ] Preserve resource ownership on ambiguous timeout and idempotent retry;
+- [x] Preserve resource ownership on ambiguous timeout and idempotent retry;
   do not allocate after unconfirmed reservation.
-- [ ] Add accurate request-end/upgrade transitions and resource kind counters.
-- [ ] Separate finite backend/QUIC transport safety ceilings from memory policy.
-- [ ] Add capacity refresh, OOM/process safety sampling, rate-limited warning
+- [x] Add accurate request-end/upgrade transitions and resource kind counters.
+- [x] Separate finite backend/QUIC transport safety ceilings from memory policy.
+- [x] Add capacity refresh, OOM/process safety sampling, rate-limited warning
   logs, telemetry and public `Gaoxy.resource_budget(instance)` inspection.
-- [ ] Controlled tests prove exact thresholds, projected admission under race,
+- [x] Controlled tests prove exact thresholds, projected admission under race,
   multi-instance sharing, explicit policies, release/recovery, owner failures,
   authority restart, ledger fencing, refresh shrink and stable capacity despite
   unrelated free-memory changes. No unit listeners or full runtime startup.
-- [ ] Independent specification/code review, required repairs and fresh checks.
+- [x] Independent specification/code review, required repairs and fresh checks.
 
 ## Phases 2–3: dynamic protocol accounting and overload
 
@@ -251,45 +309,276 @@ NOT RUN until H1 supplies connection membership metadata. H1/H2 owns the one
 build lane while H3 prepares disjoint source changes. No protocol acceptance or
 publication is inferred from the 312-case checkpoint.
 
+Subsequent H1/H2 protocol integration reproduced seven intended missing-feature
+regressions (three H1, four H2). Those are agreed TDD RED cases, not unexpected
+repair failures. Both new files enter the protocol suite; the existing ordinary
+two-H2-connection case is promoted from `existing_not_scheduled`. Historical
+capacity/high-water specialist assertions remain preserved and unscheduled.
+
+Integration also exposed a CORE cancellation gap: after a cancelled or
+unobserved async spawn reply, the caller knows the spawn token but may never
+learn the private worker lease. Stream membership termination alone correctly
+retains output bytes, making the existing lease-addressed proof unreachable.
+This remains the same CORE task, with Sol 2/Astra 1 inherited; final bounded
+Astra recovery 2 must add authenticated token-addressed resource proof with a
+bounded live-lease index, preserve real worker/guardian terminal requirements,
+and verify H2/H3 cancellation orderings. H1/H2 production source is initially
+frozen for its RED capture; H3 stops without edits. No third Astra round is
+authorized. The prior 241/0 and 312/0 receipts retain their historical status.
+
+Final CORE recovery 2 passed **249/0**, including all 40 CORE cases, strict
+compile, scoped formatting, inventory and whitespace. Parent review accepted
+`finish_spawn_resources/5`, bounded live-token resolution and cancellation retry
+receipts; all 26 source/context/log hashes matched. No Budget, Reconciler or
+Ledger changes were needed. CORE's Sol 2/Astra 2 repair budget is exhausted
+successfully; protocol integration cannot rename or continue a CORE repair.
+H1/H2 receives the build lane, with a fresh CORE 40-case run after parent review.
+H3 resumes disjoint source work and coordinates compile-ready freezes. Evidence
+is retained under `../acceptance/evidence/adaptive-resource-budget/core-final/recovery2/`.
+
+The fresh post-review CORE run executed **40/0** before the HTTP test host
+failed to compile its Phoenix Endpoint module: `gaoxy_http` intentionally does
+not depend on Phoenix. The one native ListenerSet case remains in the app and
+the actual two-Endpoint case now lives in `examples/phoenix_native`, preserving
+all resource counters, shared-pool and zero-cleanup assertions. This is Phoenix
+repair 1; no package dependency or lockfile change was needed. Both initially
+executed and failed because H1 used invalid PID membership identifiers.
+
+H1 repair 1 replaced PID membership with references; validation then found that
+the listener startup token was shared across connections and the overload
+Exchange omitted its HTTP limits (4 tests, 3 failures). Final Sol repair 2
+creates one stable reference per accepted connection and supplies error-response
+limits. It passed the three new H1 protocol cases and native ListenerSet case
+**4/0**, followed by the real Phoenix example **1/0**. These focused results do
+not accept the remaining H2 implementation or final integrated source. The H1H2
+Sol repair counter remains 2; there is no third Sol repair allowance.
+
+The first H1 repair validation also encountered partial H3 source with an invalid
+default-argument escape and executed no tests. H3 owns that compile failure and
+its targeted repair 1; all raw logs remain under `.audit/adaptive-resource-budget/`.
+H3 now owns the serialized build lane while H2 prepares its initial coherent
+implementation off-tree. These drafts are task-local files, not Git worktrees.
+H3's actual peer, native byte metrics and final checks remain outstanding.
+
+H3 repair 1 passed strict compilation, but focused validation executed 48 tests
+with three failures; its new network case then failed on a missing control-stream
+map entry. Diagnoses identified a zero-byte controlled terminal fixture, newly
+linked worker cancellation escaping its owner, prematurely cleared ingress and
+an absent-key control-stream drop. Repair 2 preserved the existing assertions,
+gave the fixture positive retained credit, trapped worker exits, retained ingress
+until its real terminal event and guarded absent control keys. Its fresh combined
+validation executed **50 tests with one failure**. Both actual H3 protocol cases
+passed concurrency/quota rejection, live siblings, worker crash, service drain,
+zero accounting/cleanup and UDP rebind. The unchanged reply-CAS regression still
+requires immediate `Operations` row removal on cancellation; canonical resource
+ownership and retry receipts must independently retain their real lifetimes.
+
+Sol stopped all H3 implementation writes and commands with cumulative Sol 2 /
+Astra 0. `SOL_REPEATED_FAILURE` admits one bounded Astra recovery for that same
+task; the direct implementation's initial syntax failure does not add a repair
+round. Source, raw logs and assertions are preserved. No CORE changes are
+authorized, and CORE's successfully exhausted Sol 2 / Astra 2 budget remains
+unchanged. H1H2 owns the next coherent H2 apply/build lane; the recovery must
+coordinate its compile-ready freeze and serialize validation.
+
+H2's coherent initial implementation then passed strict compilation and **17/0**:
+the three H1 cases, five new H2 cases, promoted two-TLS-connection case and eight
+independently constructed accounting regressions. It reduces the fixed connection
+allowance, measures retained state, prepays actual HPACK decoding and returns the
+temporary decode credit, and preserves separate startup/cancellation/output
+terminal bookkeeping. This passing candidate is not final acceptance.
+
+The next broader active HTTP compatibility run executed **337 tests with 19
+failures** (exit 2); no retained specialist paths were included. It found missing
+new fields in controlled fixtures, old scalar-update message expectations,
+retained/temporary metric mismatches and shutdown failures. The six poll-boundary
+cases configure parser limits, not explicit `max_bytes`; they do not establish
+an explicit-cap defect. All raw
+assertions and failed evidence remain intact under
+`.audit/adaptive-resource-budget/h1-h2/`. The same H1H2 task has already consumed
+Sol repair rounds 1 and 2, so Sol stopped all writes and commands. Its bounded
+Astra recovery is queued after H3; only one Astra recovery may be active. A
+recovery must preserve explicit-cap and positive high-water/cleanup assertions,
+diagnose the lifecycle failures, and rerun the full affected checks. Passing
+17/0 does not supersede failing 337/19.
+
+### Frozen H3 review and H1/H2 recovery handoff
+
+H3's final frozen receipt is
+`.audit/adaptive-resource-budget/h3/recovery1/receipt.json`, SHA256
+`c0484ece93775b413ce294a8201e9e0cc065f4009a02b5d4345f8aa6ea732580`.
+Independent review verified nine source, five context and thirteen log hashes.
+The combined 96/0 run, compile, formatting, inventory and source whitespace
+checks passed. One P1 remains: callback-worker DOWN/EXIT can refund the QUIC
+connection's native-byte charge and connection membership before its separate
+engine terminates. Exact public `QUIC.info(handle) == {:error, :closed}` can
+prove terminal engine death, but the current ownership path does not retain
+the charge until that proof. This is a local ownership gap, not a confirmed
+upstream missing API. H3 and CORE remain at Sol 2/Astra 2; an explicit request
+for two additional bounded recovery rounds is pending and is not approval.
+No further H3/CORE implementation writes are authorized while pending.
+
+H3 implementer and reviewer confirmed all commands terminal and writes stopped.
+H1/H2's `.audit/adaptive-resource-budget/h1-h2/handoff.json` preserves fourteen
+source hashes, twelve evidence hashes, the task diff and the 337/19 failures.
+The parent verified those hashes before handoff. `SOL_REPEATED_FAILURE` admits
+bounded Astra recovery with inherited Sol 2/Astra 0: repair the controlled
+fixtures/traces, preserve exact retained/high-water assertions, and diagnose
+the three actual shutdown wire regressions. Allowed writes remain H1/H2 and
+their directly affected tests; CORE and H3 are frozen. Shared build validation
+is serialized. No counter reset or third Sol repair is authorized.
+
+Read-only runtime diagnosis then reproduced `Admission.update_until` returning
+`{:error, :draining}` immediately before the infinite-stream success terminator
+and both active-upload HTTP 500 responses. The selected stream case failed
+(twelve other cases excluded); the full upload file executed 4/2. These are
+diagnostic failures, not passing required gates. Existing scalar updates leave
+temporary credit intact while retained buffers grow. Correct use of prepaid
+completion credit needs truthful, reusable retained/temporary repartition;
+Ledger's current growth and safety-debit semantics do not support that reuse
+during drain. Merely removing the temporary-growth check is not an established
+fix because the pressure-sample baseline must conserve the same credits.
+CORE remains frozen, with the new compatibility evidence added to the pending
+extra-round request. No inaccurate protocol accounting workaround is accepted.
+
+H1/H2 Astra round 1 corrected the proxy trace/dead-gate contracts but exposed an
+implicit 1 MiB cap in the controlled H2 idle fixture (27 cases / 6 failures).
+Round 2 supplied the fixture's exact finite connection-reservation-derived cap;
+the two test files then passed **27/0**. Recovery changed no production source.
+Its Sol 2/Astra 2 budget is now exhausted; six Poll accounting assertions and
+three shutdown regressions still depend on the frozen CORE completion-credit
+repair. Independent narrow test review accepted the two files and verified all
+sixteen source, five protected and twenty-three evidence hashes. The original
+fourteen source hashes remain unchanged. The original broader compatibility
+command then confirmed **337/9**, with exactly those nine remaining failures.
+Parent post-review checks freshly passed the two controlled files **27/0**,
+strict compile and owned formatting without source mutations. This passing
+subset does not accept H1/H2 or permit another repair round. Frozen receipts
+and raw logs are archived under `../acceptance/evidence/adaptive-resource-budget/h1h2-blocked/`.
+
+The additional independent production trace found one H2 P2: when Admission
+definitively rejects an expired startup before reserving or creating a worker,
+no spawn token enters its live index. H2 nevertheless retains a spawn-addressed
+retirement record. Its resource proof receives `:stale_generation`, while the
+definitive-rejection predicate omits this pre-reserve deadline outcome. The row
+persists, consumes a per-connection stream slot and retries every 10 ms until
+connection closure. This finding is source-confirmed, not runtime-reproduced.
+A regression must verify terminal retirement and subsequent service on the same
+connection. A repair must distinguish definite pre-reserve rejection from any
+ambiguous/later deadline outcome; timeout alone is never absence proof. H1/H2
+implementation remains frozen at Sol 2/Astra 2 pending extra authorization.
+
+Review also quantified the default H2 temporary connection envelope as
+13,516,840 bytes (`4 * 65,536 + 8 * (100 * 16,384 + 18,437)`), down from
+30,359,591 after removing the blanket 16,842,751-byte decoder allowance.
+Runtime retained state is measured separately, idle decode credit is zero,
+and the writer retains a separate 66,560-byte obligation. The remaining
+envelope is fixed across TCP/TLS and supported SSL active-count profiles.
+The review did not prove that eight maximum TLS100 delivery/copy envelopes are
+necessary for every such profile. The controlled idle fixture only funds the
+same arithmetic; it is not proof of real receive obligations. Record this as
+an open requirement-to-evidence question for bounded H1/H2 recovery, preserving
+decoder/read safety and existing positive byte/high-water assertions.
+
+The final consolidated authorization request supersedes the two earlier pending
+requests. It asks for at most two additional Astra repair/validation rounds
+**per affected task** (CORE, H1/H2 and H3), including their necessary regressions
+and independent review. Each currently retains Sol 2/Astra 2; no counters reset.
+The request is pending, not authorization. All affected implementation writes
+and build/test commands are stopped. The accepted Phoenix/test-only/doc scopes,
+post-review 27/0 and 2/0, package staging 12/0 and built-consumer 7/0 plus
+manual/production/release-isolation results are archived. Final full-suite,
+mixed-protocol, versioning, push and release gates remain outstanding.
+
+The frozen-source ordinary qualification subsequently covered every canonical
+active file without modifying implementation. Unit passed **377/0**. Component
+stopped at **224/3**; its unattempted suffix executed **66/5**. Protocol stopped
+at **51/6**; its unattempted suffix executed **98/2**. Exact combined file
+coverage is **118 files, 816 cases / 16 failures**, with zero exclusions/skips,
+all commands terminal and all 679 source hashes unchanged. Suffix execution is
+supplemental coverage; both original failed gates remain failed and final
+`check-repairs.py all` still requires a fresh passing run after authorized repair.
+
+Seven failures beyond the historical broader-HTTP nine are now observed:
+helper finalization 16/3, staged activation 11/2, H3 WebSocket 2/1 and H2 stream
+lifetime 2/1. Each file is unchanged from baseline, whose exact commands passed
+16/0, 11/0, 2/0 and 2/0 respectively. Independent read-only diagnosis traces
+staged activation to CORE registration after instance drain: preparation
+returns too late for gate registration, preventing dispatcher startup and
+bypassing activation's later cancellation check. This is separate from prepaid
+completion-credit accounting. Preserve rollback, participant ordering, port
+reuse, cancellation-result and drain-guard invariants during recovery. The
+remaining helper/protocol branches require the recorded observations; do not
+infer a common cause merely from an early close. Evidence and exact commands:
+`../acceptance/evidence/adaptive-resource-budget/frozen-qualification/`.
+These regressions stay with the existing CORE/H1H2/H3 tasks and do not reset
+their exhausted Sol 2/Astra 2 counters or authorize implementation. No further
+commit, version bump, push or release has occurred.
+
 ### ARB-PROTOCOL
 
 Files: H1 Connection/Exchange; H2 Limits/Connection/WorkerAccounting/Writer;
 H3 Options/Connection/Stream/QUICBridge; providers and directly affected tests.
 Coordinate any core interface change with its sole owner before editing.
 
-- [ ] Reproduce ordinary concurrent default-budget regressions before repair.
-- [ ] H1 connection/request/body/send accounting grows and returns ownership;
+- [x] Reproduce ordinary concurrent default-budget regressions before repair.
+- [x] H1 connection/request/body/send accounting grows and returns ownership;
   keep-alive ends request counts and retains only real carry state.
-- [ ] H1 safe overload returns valid bounded 503; unsafe partial framing closes
+- [x] H1 safe overload returns valid bounded 503; unsafe partial framing closes
   without leaks or deadline changes.
-- [ ] H2 measured idle/retained state replaces the static 30 MB allowance;
+- [x] H2 measured idle/retained state replaces the static 30 MB allowance;
   temporary HPACK peak is acquired before decode and released at its real
   lifetime. Preserve decoder/table/block/flow/frame bounds and compression state.
-- [ ] H2 stream, worker and writer ownership remain distinct and cancellation/
+- [x] H2 stream, worker and writer ownership remain distinct and cancellation/
   startup retains existing terminal invariants. Ordinary worker overload refuses
   the affected stream while existing streams continue.
-- [ ] H3 separates QUIC, stream, transport-buffer and HTTP request resources;
+- [x] H3 separates QUIC, stream, transport-buffer and HTTP request resources;
   preserve pending operation cleanup, QPACK policy and finite transport ceilings.
-- [ ] H3 resource refusal is request/stream-local with 0x107 where safe;
+- [x] H3 resource refusal is request/stream-local with 0x107 where safe;
   transport connection refusal releases handles and workers.
-- [ ] Independent connections, overlapping streams, concurrent uploads, SSE,
+- [x] Independent connections, overlapping streams, concurrent uploads, SSE,
   response streaming, WebSocket upgrade, churn and cleanup have actual network
   evidence. Classify new tests and retain all historical specialist dispositions.
-- [ ] Independent review and fresh focused/integrated checks.
+- [x] Independent review and fresh focused/integrated checks.
 
 ## Phase 4: Phoenix and ListenerSet
 
 ### ARB-PHOENIX
 
-- [ ] ListenerSet and Phoenix options carry shared instance policy through pure
+The promoted default-concurrency app regression uses a native Endpoint. A
+separate actual Phoenix Endpoint regression must exercise adaptive defaults,
+two independent TLS H2 connections and overlapping streams, public resource
+counts, continued request service and confirmed zero cleanup. The existing
+example's explicit-policy mixed HTTP/HTTPS case does not supply that evidence.
+This remains ARB-PHOENIX with Sol 1/Astra 0; its disjoint example test source
+may be prepared while H1/H2 recovers, but shared validation stays serialized.
+
+The added actual Phoenix regression passed **2/0**, and the combined body,
+SSE/lifetime, LiveView, WebSocket compatibility and configured-limit checks
+passed **18/0**. Independent review accepted source/receipt/lockfile, six logs
+and ninety-three context hashes. Parent then freshly reran the focused two
+cases after review, passing **2/0** with no source mutations. This is scoped
+acceptance; final mixed-H3 and integrated publication qualification remain open.
+Evidence: `../acceptance/evidence/adaptive-resource-budget/phoenix-h2/`.
+
+The additional adaptive-default mixed HTTP H1 / TLS H2 / QUIC H3 case first
+executed3/1, with the H3 peer closing before SETTINGS; no cause was established.
+Bounded public failure diagnostics preserve all original assertions and waits.
+After installation/formatting, the parent freshly passed focused3/0 and combined
+budget/body/stream/LiveView/WebSocket19/0 with stable source. Both the earlier
+failure and new passing receipts remain recorded under
+`../acceptance/evidence/adaptive-resource-budget/h1h2-time-quota/astra16/`.
+Final integrated and publication qualification remain separate.
+
+- [x] ListenerSet and Phoenix options carry shared instance policy through pure
   planning, preparation, deferred activation and inspection.
-- [ ] Remove default-masking hard-coded H2 budget overrides from Phoenix example;
+- [x] Remove default-masking hard-coded H2 budget overrides from Phoenix example;
   document intentional explicit configuration and migration semantics.
-- [ ] Validate mixed HTTP/HTTPS/H3 within one ListenerSet and multiple Endpoints/
+- [x] Validate mixed HTTP/HTTPS/H3 within one ListenerSet and multiple Endpoints/
   ListenerSets sharing the VM pool without multiplying capacity.
-- [ ] Exercise Phoenix LiveView WebSocket connections, ordinary requests, SSE,
+- [x] Exercise Phoenix LiveView WebSocket connections, ordinary requests, SSE,
   streaming responses and uploads with independent clients/peers.
-- [ ] Update README, public resource-budget/telemetry docs and examples; review.
+- [x] Update README, public resource-budget/telemetry docs and examples; review.
 
 ## Phase 5: requirement-to-evidence audit
 
@@ -326,12 +615,12 @@ source-consumer/standalone/Phoenix peer gates. Serialize shared build state.
 
 ## Phase 6: independent review and release
 
-- [ ] Independent architecture/specification/code review completed; actionable
+- [x] Independent architecture/specification/code review completed; actionable
   findings resolved and final integrated source freshly qualified.
-- [ ] All own version manifests and six published Hex distributions target the
-  same next version; update current installation/release docs without rewriting
-  historical acceptance evidence. Provisional minor target: 0.14.0, recheck
-  remote state before choosing publication source.
+- [x] All seven own version manifests and six staged public Hex distributions
+  target0.14.0; current installation/release docs are aligned and historical
+  acceptance evidence is preserved. Live six-Hex/tag/GitHub-release checks
+  confirm the version unused before selecting the publication source.
 - [ ] Inspect final task-owned diff and commit conventionally on current branch.
 - [ ] Push verified commit and confirm remote SHA; retain exact-source CI statuses.
 - [ ] Dispatch existing `release.yml` with version, current branch and full

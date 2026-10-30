@@ -1,0 +1,46 @@
+==> gaoxy_http3
+
+01:08:17.934 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+01:08:17.966 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+
+
+  1) test persistent H3 websocket outlives peer idle and repeatedly reuses small receive windows (Gaoxy.HTTP.HTTP3.WebSocketNetworkTest)
+     apps/gaoxy_http3/test/websocket_network_test.exs:38
+     TRANSFER_PROGRESS 4915200 5242890 5242955
+     PEER_CLOSED ConnectionTerminated(error_code=<QuicErrorCode.NO_ERROR: 0>, frame_type=None, reason_phrase='')
+     Traceback (most recent call last):
+       File "<string>", line 51, in run
+       File "/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/locks.py", line 212, in wait
+         await fut
+     asyncio.exceptions.CancelledError
+
+     The above exception was the direct cause of the following exception:
+
+     Traceback (most recent call last):
+       File "<string>", line 78, in <module>
+       File "/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 195, in run
+         return runner.run(main)
+                ^^^^^^^^^^^^^^^^
+       File "/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 118, in run
+         return self._loop.run_until_complete(task)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+       File "/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+         return future.result()
+                ^^^^^^^^^^^^^^^
+       File "<string>", line 47, in run
+       File "/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/timeouts.py", line 115, in __aexit__
+         raise TimeoutError from exc_val
+     TimeoutError
+
+     code: assert exit == 0, output
+     stacktrace:
+       test/websocket_network_test.exs:149: (test)
+
+.
+Finished in 35.5 seconds (35.5s async, 0.00s sync)
+2 tests, 1 failure
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

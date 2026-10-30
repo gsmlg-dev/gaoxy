@@ -11,7 +11,7 @@ Add to `mix.exs`, then run `mix deps.get`:
 ```elixir
 defp deps do
   [
-    {:gaoxy, "~> 0.13.1"}
+    {:gaoxy, "~> 0.14.0"}
   ]
 end
 ```
@@ -62,6 +62,13 @@ your handler must buffer and parse any application message framing.
 `handler_options: term` supplies the second argument to `init/2`.
 Optional `terminate/2` handles connection cleanup.
 
+Raw TCP/TLS connections reserve bounded receive, state and output credit before
+handler initialization, including credit to finish I/O during drain. Default
+limits require 905,139 bytes per connection. Explicit byte caps must fund that
+floor; larger configured socket buffers increase it. See the
+[resource-budget migration guide](../../docs/resource-budget.md#quotas-and-migration)
+for buffer settings and the exact calculation.
+
 Inspect the instance from IEx:
 
 ```elixir
@@ -101,12 +108,29 @@ isolated callback; `{:reply, bytes}` sends to that packet's sender.
 
 ## Configuration
 
-The instance accepts `:name` and `:services`. Services are maps; unknown keys are
-rejected. Bind addresses are IP tuples, and port `0` requests an ephemeral port.
-Defaults bind loopback and limit each service to 64 active operations and
-1,048,576 retained bytes. Override finite positive limits with a map such as
-`limits: %{max_active: 32, max_bytes: 4_194_304, idle_timeout: 60_000}`.
-These budgets describe admitted resources, not total VM or kernel memory.
+The instance accepts `:name`, `:services` and `:resource_budget`. Services are
+maps; unknown keys are rejected. Bind addresses are IP tuples, and port `0`
+requests an ephemeral port. Defaults bind loopback.
+
+Adaptive memory admission shares one capacity pool across instances in the same
+BEAM VM. Its soft limit is 50% of effective physical/cgroup capacity and its hard
+limit is twice soft. Unreliable detection uses 256/512 MiB. Usage above soft
+through hard remains admissible with rate-limited warnings. Explicit instance
+thresholds use `resource_budget: %{soft_limit: 268_435_456, hard_limit: 402_653_184}`;
+the explicit hard value is never doubled and the shared VM pool still applies.
+
+Service `limits.max_connections`, `max_requests` and `max_streams` are independent
+quotas, defaulting to 16,384, 65,536 and 65,536. Explicit legacy `max_active` and
+`max_bytes` remain undoubled ordinary-lease and transport/cleanup hard caps;
+WebSocket retained bytes participate in shared memory, not the legacy transport
+cap. Omitted historical numeric profiles no longer impose aggregate caps.
+Protocol, process and OOM safety guards remain finite and independent.
+
+`Gaoxy.resource_budget(instance)` exposes thresholds, retained/temporary usage,
+active resource counters, rejection reasons, detection and shared VM totals.
+These budgets describe owned resources and commitments, not total VM or kernel
+memory. See the [resource budget guide](https://github.com/gsmlg-dev/gaoxy/blob/main/docs/resource-budget.md)
+for exact boundaries, telemetry and migration semantics.
 
 TCP/TLS services accept `hell_options`, for example
 `[num_acceptors: 4, transport_options: [backlog: 2048, keepalive: true]]`.

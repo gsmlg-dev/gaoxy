@@ -14,7 +14,7 @@ Add to `mix.exs`, then run `mix deps.get`:
 ```elixir
 defp deps do
   [
-    {:gaoxy_proxy, "~> 0.13.1"}
+    {:gaoxy_proxy, "~> 0.14.0"}
   ]
 end
 ```
@@ -51,10 +51,12 @@ Uploads and raw responses stream, redirects return to the client, and failed
 requests are not automatically retried or replayed. Incoming forwarding headers
 are discarded and regenerated from the downstream connection.
 
-The explicit byte budget matters: an HTTP request reserves roughly 8 MiB at the
-default limits, plus separately charged native retained bytes. The core default
-1 MiB budget rejects these sessions. Choose capacity for your concurrency; this
-reservation is not a measurement of total VM or kernel memory.
+The example selects an explicit transport hard cap. Omission uses adaptive
+shared memory admission; it no longer imposes the historical 1 MiB aggregate
+cap. An HTTP proxy request still reserves roughly 8 MiB at the default limits,
+plus separately charged native retained bytes. Size intentional administrator
+caps for that concurrency. These reservations do not measure total VM or kernel
+memory; see the [resource budget guide](https://github.com/gsmlg-dev/gaoxy/blob/main/docs/resource-budget.md).
 
 HTTP endpoint defaults are `opening_timeout: 5_000`, `idle_timeout: 60_000`,
 `write_timeout: 5_000`, `max_lifetime: 30_000` and `max_chunk_bytes: 65_536`
@@ -94,7 +96,7 @@ endpoint: {Gaoxy.HTTP.Router, [
 ]}
 ```
 
-Keep the explicit service byte budget. A WebSocket session reserves 4 MiB plus
+Size any explicit service cap for session commitments. A WebSocket session reserves 4 MiB plus
 eight message windows and its opening fields. The default message size is
 65,536 bytes and the default fragment limit is 128. The configured `ws`/`wss`
 authority follows the same URL restrictions; `wss` verifies the peer, with an

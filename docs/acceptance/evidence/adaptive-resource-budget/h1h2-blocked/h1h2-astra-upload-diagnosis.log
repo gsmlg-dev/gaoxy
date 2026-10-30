@@ -1,0 +1,40 @@
+==> gaoxy_http
+
+19:14:11.989 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+19:14:12.027 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+..BUDGET_TRACE {#PID<0.426.0>, {#PID<0.417.0>, #Reference<0.797979355.2585526273.134560>, 311463}, {:error, :draining}}
+
+
+  1) test active upload survives supervised 5000ms drain and completes cleanup (Gaoxy.HTTP.SupervisedShutdownBudgetTest)
+     apps/gaoxy_http/test/supervised_shutdown_budget_test.exs:64
+     match (=) failed
+     code:  assert {:error, :closed} = :gen_tcp.recv(socket, 0, 1000)
+     left:  {:error, :closed}
+     right: {:ok,
+             "HTTP/1.1 500 Internal Server Error\r\nconnection: close\r\ncontent-length: 0\r\n\r\n"}
+     stacktrace:
+       test/supervised_shutdown_budget_test.exs:137: Gaoxy.HTTP.SupervisedShutdownBudgetTest.stop_and_assert/2
+       test/supervised_shutdown_budget_test.exs:83: (test)
+
+BUDGET_TRACE {#PID<0.455.0>, {#PID<0.446.0>, #Reference<0.797979355.2585526273.135102>, 311463}, {:error, :draining}}
+
+
+  2) test active upload survives supervised 5500ms drain and completes cleanup (Gaoxy.HTTP.SupervisedShutdownBudgetTest)
+     apps/gaoxy_http/test/supervised_shutdown_budget_test.exs:64
+     match (=) failed
+     code:  assert {:error, :closed} = :gen_tcp.recv(socket, 0, 1000)
+     left:  {:error, :closed}
+     right: {:ok,
+             "HTTP/1.1 500 Internal Server Error\r\nconnection: close\r\ncontent-length: 0\r\n\r\n"}
+     stacktrace:
+       test/supervised_shutdown_budget_test.exs:137: Gaoxy.HTTP.SupervisedShutdownBudgetTest.stop_and_assert/2
+       test/supervised_shutdown_budget_test.exs:83: (test)
+
+
+Finished in 0.7 seconds (0.7s async, 0.00s sync)
+4 tests, 2 failures
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

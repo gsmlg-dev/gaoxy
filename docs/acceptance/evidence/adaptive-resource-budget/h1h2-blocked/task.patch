@@ -1,0 +1,78 @@
+diff --git i/apps/gaoxy_http/test/http2_websocket_idle_test.exs w/apps/gaoxy_http/test/http2_websocket_idle_test.exs
+index 1bd4c9e6..630f1269 100644
+--- i/apps/gaoxy_http/test/http2_websocket_idle_test.exs
++++ w/apps/gaoxy_http/test/http2_websocket_idle_test.exs
+@@ -1,7 +1,7 @@
+ defmodule Gaoxy.HTTP.HTTP2WebSocketIdleTest do
+   use ExUnit.Case, async: true
+   alias Gaoxy.HTTP.Connection
+-  alias Gaoxy.HTTP.HTTP2.{Frame, Headers}
++  alias Gaoxy.HTTP.HTTP2.{Frame, Headers, Limits}
+ 
+   defmodule Endpoint do
+     def init(options), do: {:ok, options}
+@@ -123,6 +123,19 @@ defmodule Gaoxy.HTTP.HTTP2WebSocketIdleTest do
+     {:ok, spec} = Gaoxy.HTTP.service_spec(endpoint: {Endpoint, []}, extended_connect: true)
+     options = spec.handler_options
+     limits = Map.put(options.http_limits, :extended_connect, true)
++    reserves = Limits.reservation(limits, options.h2_limits)
++
++    # This controlled gate has no adaptive runtime authority. Fund exactly the
++    # connection credit exercised by progress/1 without its old implicit cap.
++    gate_limits = %{spec.limits | max_bytes: reserves.connection}
++
++    gate =
++      start_supervised!(
++        {Gaoxy.Admission, {gate_limits, %{instance: make_ref(), service: :test}}},
++        id: make_ref()
++      )
++
++    {:ok, lease} = Gaoxy.Admission.acquire(gate, 0)
+ 
+     {:ok, request} =
+       Headers.request(
+@@ -172,11 +185,18 @@ defmodule Gaoxy.HTTP.HTTP2WebSocketIdleTest do
+ 
+     state = %{
+       phase: :http2,
++      gate: gate,
++      lease: lease,
++      connection_member: lease,
++      reserves: reserves,
++      decode_reservation: 0,
+       highest: 1,
+       default_read_timeout: idle,
+       limits: limits,
+       h2: options.h2_limits,
+       streams: %{1 => stream},
++      retiring_streams: %{},
++      retirement_timer: nil,
+       starting: nil,
+       writer_ready: false,
+       output: :queue.new(),
+diff --git i/apps/gaoxy_http/test/native_proxy_seams_test.exs w/apps/gaoxy_http/test/native_proxy_seams_test.exs
+index fd69c474..2e364573 100644
+--- i/apps/gaoxy_http/test/native_proxy_seams_test.exs
++++ w/apps/gaoxy_http/test/native_proxy_seams_test.exs
+@@ -368,7 +368,8 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
+ 
+     :ok = GenServer.stop(dead_gate)
+     next = %{next | gate: dead_gate}
+-    assert {:noproc, _} = catch_exit(Exchange.poll_connection(observe_recv(next), 100))
++    observed = observe_recv(next)
++    assert {:error, :closed, ^observed} = Exchange.poll_connection(observed, 100)
+     refute_received {:poll_recv_charge, _}
+     assert {:ok, "y"} = Hell.Socket.recv(exchange.socket, 1, 100)
+   end
+@@ -549,6 +550,11 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
+     receive do
+       {:trace, ^gate, :receive, {:"$gen_call", _from, {:update, ^lease, bytes}}} ->
+         collect_updates(gate, lease, [bytes | acc])
++
++      {:trace, ^gate, :receive,
++       {:"$gen_call", _from, {:update_until, ^lease, bytes, operation, deadline}}}
++      when is_reference(operation) and is_integer(deadline) ->
++        collect_updates(gate, lease, [bytes | acc])
+     after
+       0 -> Enum.reverse(acc)
+     end

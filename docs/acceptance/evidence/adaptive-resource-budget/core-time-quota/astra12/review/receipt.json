@@ -1,0 +1,243 @@
+{
+  "task": "ARB-CORE-RELEASE-CODE",
+  "status": "DONE",
+  "verdict": "ACCEPT frozen bounded repair12 candidate; no actionable findings remain in assigned scope",
+  "assignment": "direct Sol independent read-only review",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "branch": "main",
+  "baseline": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+  "original_goal_baseline": "a6a35438c0a153cd53c87c6a55c19a70a11fb75a",
+  "reviewed_at": "2026-10-30T07:22:48.240123+00:00",
+  "time_allowance_ends": "2026-10-31T02:09:44Z",
+  "reviewer_sol_repairs": 0,
+  "reviewer_astra_repairs": 0,
+  "implementation_sol_repairs": 2,
+  "implementation_astra_repairs": 12,
+  "astra_gate": "none for reviewer; implementation retains historical SOL_REPEATED_FAILURE route",
+  "candidate_patch_sha256": "702176413ae85d9acdcad413d713a64e1bdff8930c220bb6260b1209ec49ef47",
+  "candidate_task_hashes": {
+    "apps/gaoxy/lib/gaoxy/stream_bridge.ex": "7c682c49f9d80c0518d982cc46e872e563634343632eed8cf5b9dd66fa36d502",
+    "apps/gaoxy/test/resource_budget_stream_network_test.exs": "b78d79c664bc60422e459dcea382ff8a0a04316c4532976ea691921df827e5cf",
+    "scripts/check-repairs.py": "5c3b72c7ca8300562f9de4ef172f598a6018092a69d242a2de29c58a419aa562"
+  },
+  "candidate_input_count": 682,
+  "candidate_input_manifest_sha256": "660cac8e81b9bacec37b8023bde2b40483deb2c8dbcd78879f30b3cc96a6f2ec",
+  "all_682_candidate_inputs_verified_before_parent_overlay": true,
+  "current_expected_parent_documentation_overlay": [
+    {
+      "path": "apps/gaoxy/README.md",
+      "candidate_sha256": "53a2f781cf3b07b94399ac12e4370711e44928422bd035535838fe937819eb3f",
+      "current_sha256": "82507ec12c489fad0d242aebbfa141d2d611fa585ae220c17475dc86c1750e32"
+    }
+  ],
+  "owner_handoff": ".audit/adaptive-resource-budget/core/time-quota/extension24h-repair12/handoff.json",
+  "owner_handoff_sha256": "8aa8eb13b7cce6dfc4073ea2c60f1388331c02ba4c9a8617b43318c126558823",
+  "owner_terminal_and_writes_stopped": true,
+  "shared_build_lane": "released to parent",
+  "findings": [
+    {
+      "id": "R1",
+      "prior_severity": "P2",
+      "status": "RESOLVED",
+      "evidence": "finite BackendOptions receive-buffer range retained; final actual TCP/TLS32KiB controls pass"
+    },
+    {
+      "id": "R2",
+      "prior_severity": "P1",
+      "status": "RESOLVED",
+      "file": "apps/gaoxy/lib/gaoxy/stream_bridge.ex",
+      "line": 197,
+      "evidence": "bounded ordinary ETF normalization before adopting init/continue/send/close/error state; exact value fence; actual resource usability and retained backing controls PASS"
+    },
+    {
+      "id": "R3",
+      "prior_severity": "P1 after extended actual RED",
+      "status": "RESOLVED",
+      "file": "apps/gaoxy/lib/gaoxy/stream_bridge.ex",
+      "line": 210,
+      "evidence": "logical output bound, flatten and explicit independent binary copy; tail handoff before send; actual TCP/TLS65/67-byte send-entry backing and exact wire controls PASS"
+    }
+  ],
+  "verification_receipts": [
+    {
+      "label": "red-state-output",
+      "command": [
+        "mix",
+        "test",
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+      "source": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+      "started_at": "2026-10-30T07:05:27.846320+00:00",
+      "environment": {
+        "MIX_ENV": "test",
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_H2_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_CONSUMER_DEPS": "/home/gao/Workspace/gsmlg-opt/gaoxy/deps"
+      },
+      "exit": 2,
+      "status": "FAIL",
+      "evidence_lines": [
+        "24 tests, 10 failures"
+      ],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/extension24h-repair12/red-state-output.log",
+      "log_sha256": "763002a6f7fed0988785608a99edcbe5e9d3c17e0022c1f1b70c5506ecb9d642",
+      "commands_terminal": true,
+      "source_changes": [],
+      "raw_log_hash_independently_verified": true,
+      "source_input_count": 682,
+      "task_hashes_match_final": {
+        "apps/gaoxy/lib/gaoxy/stream_bridge.ex": false,
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs": false,
+        "scripts/check-repairs.py": false
+      }
+    },
+    {
+      "label": "round12-raw",
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+      "source": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+      "started_at": "2026-10-30T07:08:51.809761+00:00",
+      "environment": {
+        "MIX_ENV": "test",
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_H2_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_CONSUMER_DEPS": "/home/gao/Workspace/gsmlg-opt/gaoxy/deps"
+      },
+      "exit": 0,
+      "status": "PASS",
+      "evidence_lines": [
+        "24 tests, 0 failures"
+      ],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/extension24h-repair12/round12-raw.log",
+      "log_sha256": "f7793ffbc51b4749995a8221501b582227793427845aa618507cadcac62882e8",
+      "commands_terminal": true,
+      "source_changes": [],
+      "raw_log_hash_independently_verified": true,
+      "source_input_count": 682,
+      "task_hashes_match_final": {
+        "apps/gaoxy/lib/gaoxy/stream_bridge.ex": true,
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs": false,
+        "scripts/check-repairs.py": false
+      }
+    },
+    {
+      "label": "round12-scoped",
+      "command": [
+        "bash",
+        "-c",
+        "mix format --check-formatted apps/gaoxy/lib/gaoxy/stream_bridge.ex apps/gaoxy/lib/gaoxy/service.ex apps/gaoxy/test/resource_budget_stream_network_test.exs && mix compile --warnings-as-errors && python3 scripts/check-test-inventory.py && python3 scripts/check-tests.py apps/gaoxy/test/resource_budget_stream_network_test.exs --seed 0 --max-cases 1 && mix test apps/gaoxy/test/native_stream_test.exs apps/gaoxy/test/stream_isolation_test.exs apps/gaoxy/test/resource_budget_admission_test.exs"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+      "source": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+      "started_at": "2026-10-30T07:11:59.826706+00:00",
+      "environment": {
+        "MIX_ENV": "test",
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_H2_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_CONSUMER_DEPS": "/home/gao/Workspace/gsmlg-opt/gaoxy/deps"
+      },
+      "exit": 0,
+      "status": "PASS",
+      "evidence_lines": [
+        "INVENTORY_PASS unit=390, component=321, protocol=187 active_files=121 retained_files=143",
+        "30 tests, 0 failures",
+        "72 tests, 0 failures"
+      ],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/extension24h-repair12/round12-scoped.log",
+      "log_sha256": "d0f5a077133ba992e8d51ff8f7e18d150314b4bbc5890bd78f59b7fb1718aefe",
+      "commands_terminal": true,
+      "source_changes": [],
+      "raw_log_hash_independently_verified": true,
+      "source_input_count": 682,
+      "task_hashes_match_final": {
+        "apps/gaoxy/lib/gaoxy/stream_bridge.ex": true,
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs": true,
+        "scripts/check-repairs.py": true
+      }
+    },
+    {
+      "label": "round12-release",
+      "command": [
+        "bash",
+        "-c",
+        "mix compile --warnings-as-errors && mix release gaoxy --overwrite && python3 scripts/release-smoke.py"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+      "source": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+      "started_at": "2026-10-30T07:13:40.860208+00:00",
+      "environment": {
+        "MIX_ENV": "prod",
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_H2_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_CONSUMER_DEPS": "/home/gao/Workspace/gsmlg-opt/gaoxy/deps"
+      },
+      "exit": 0,
+      "status": "PASS",
+      "evidence_lines": [
+        "PASS portable release TCP/TLS/UDP startup, traffic, admitted TCP/TLS replies after SIGTERM admission barrier, VM exit, UDP endpoint reuse; 3 transports"
+      ],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/extension24h-repair12/round12-release.log",
+      "log_sha256": "16ad5db655bdc2b257013f9cf9f5eaa989ed18a9388178c9919f7e901c3afc4c",
+      "commands_terminal": true,
+      "source_changes": [],
+      "raw_log_hash_independently_verified": true,
+      "source_input_count": 682,
+      "task_hashes_match_final": {
+        "apps/gaoxy/lib/gaoxy/stream_bridge.ex": true,
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs": true,
+        "scripts/check-repairs.py": true
+      }
+    }
+  ],
+  "protected_original_baseline_byte_equality": {
+    "scripts/release-smoke.py": "c9e92e0e9c249153f7f9531b3f5a53ca4b793db07ae09bfbdc1f202b23924853",
+    "docs/adr/004-lifecycle.md": "0addac1c8ea4f53b01f60c0775e405d2ce1b341f0841052c1a2babed9b3aa390",
+    "apps/gaoxy/lib/gaoxy/stream_handler.ex": "5e96a0b3bc7e4629e9f305b50225e1056e50e91d8152f83f39992cf5945f7680"
+  },
+  "public_docs_reviewed_hashes": {
+    "AGENTS.md": "35a65e83fac04bcc90c7e4e02fd7e4eabf72e77a01ac390b20edcd0fc6cee075",
+    "apps/gaoxy/README.md": "82507ec12c489fad0d242aebbfa141d2d611fa585ae220c17475dc86c1750e32",
+    "docs/resource-budget.md": "fa30755a47d2de710787aac95169627d8a709f622603d9ae4043650016272f84",
+    "docs/designs/adaptive-resource-budget.md": "36c4043716b68fbe6e43899af45c3f9be135e062de3d944865184623b7aa966e",
+    "docs/releases/0.14.0.md": "3be443625483291cf98eb35062f2f728b718570186a5e0ef8c3cbb8121fe5747"
+  },
+  "prior_immutable_review_artifacts": {
+    ".audit/adaptive-resource-budget/core/time-quota/release-drain7/code-review/report.md": "c17de1c8ec76bdbd5d3036fdd2d3bc0efd0f9e8f6428ba7b3f26381e34f4a1a7",
+    ".audit/adaptive-resource-budget/core/time-quota/release-drain7/code-review/receipt.json": "418127c70ba3389d97e828dfcb7ab787323ce1d4d7b6c16e58203cd801a94840"
+  },
+  "reviewer_commands": [
+    "read AGENTS/design/plan and prior immutable report",
+    "read candidate source, before-snapshot/task diffs, public OTP/Hell semantics and final30-case test source",
+    "independently hash raw logs, frozen3 task files,682 input manifest, task patch and prior immutable review artifacts",
+    "git show original baseline for protected smoke/ADR004/StreamHandler byte equality",
+    "git diff --check -- apps/gaoxy/lib/gaoxy/stream_bridge.ex apps/gaoxy/test/resource_budget_stream_network_test.exs scripts/check-repairs.py (PASS exit0)"
+  ],
+  "reviewer_tests_or_builds_run": false,
+  "reviewer_beam_runtime_or_network_commands_run": false,
+  "reviewer_git_mutations": false,
+  "reviewer_write_scope": ".audit/adaptive-resource-budget/core/time-quota/extension24h-review only",
+  "commands_terminal": true,
+  "remaining_parent_work": [
+    "Fresh combined canonical898-case and other required qualification on the parent README overlay",
+    "Final whole-goal acceptance and authorized coordinated commit/push/release"
+  ],
+  "qualification_limits": [
+    "No node-identity mutation or artificial codec failure injected; decode/identity failure fences reviewed in source",
+    "Bridge-owned normalized copies/send values are bounded; arbitrary callback/NIF allocations, external callback-owned resources and total RSS are outside this guarantee",
+    "Receive envelope is for qualified default OTP SSL batching100; independently changed internal batching profiles are unqualified",
+    "Inventory898 is manifest arithmetic, not full898 tests executed by owner or reviewer"
+  ]
+}

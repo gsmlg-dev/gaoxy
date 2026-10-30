@@ -1,0 +1,705 @@
+==> gaoxy_http
+
+19:18:38.132 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+19:18:38.156 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+
+
+  1) test valid opening fences an already queued owner idle notification and retains write deadline (Gaoxy.HTTP.HTTP2WebSocketIdleTest)
+     apps/gaoxy_http/test/http2_websocket_idle_test.exs:11
+     ** (KeyError) key :accepted not found in: %{
+       first: false,
+       output: {[
+          {<<0, 0, 14, 1, 4, 0, 0, 0, 1, 32, 16, 7, 58, 115, 116, 97, 116, 117, 115,
+             3, 50, 48, 48>>,
+           {:headers, 1, {#PID<0.362.0>, #Reference<0.1384449050.975699969.50151>}},
+           -576460749123}
+        ], []},
+       starting: nil,
+       buffer: "",
+       closing: false,
+       h2: %{
+         max_streams: 32,
+         max_frame: 16384,
+         table_size: 4096,
+         max_header_block: 16384,
+         receive_window: 65535,
+         control_rate: 256,
+         control_turn: 32,
+         frame_timeout: 5000
+       },
+       phase: :http2,
+       draining: false,
+       limits: %{
+         extended_connect: true,
+         read_timeout: 5000,
+         write_timeout: 5000,
+         max_buffer_bytes: 65536,
+         max_trailer_bytes: 8192,
+         max_trailers: 32,
+         max_read_chunk: 16384,
+         request_timeout: 30000,
+         stream_timeout: :request,
+         header_timeout: 5000,
+         max_body_bytes: 8388608,
+         max_chunk_line: 1024,
+         max_header_bytes: 32768,
+         max_headers: 100,
+         max_request_line: 8192
+       },
+       gate: #PID<0.361.0>,
+       lease: #Reference<0.1384449050.975699969.50109>,
+       streams: %{
+         1 => %{
+           eof: false,
+           id: 1,
+           monitor: nil,
+           request: %Gaoxy.HTTP.Request{
+             method: "CONNECT",
+             target: "/ws",
+             target_form: :origin,
+             version: :"HTTP/2",
+             protocol: "websocket",
+             path: "/ws",
+             query_string: "",
+             host: "localhost",
+             port: 80,
+             scheme: :http,
+             peer: nil,
+             local: nil,
+             head_bytes: 285,
+             headers: [{"sec-websocket-version", "13"}],
+             body: :tunnel,
+             keep_alive: true,
+             expect_continue: false
+           },
+           read: nil,
+           write: %{
+             timer: #Reference<0.1384449050.975699970.46108>,
+             deadline: -576460749123,
+             kind: :headers,
+             token: #Reference<0.1384449050.975699970.46107>,
+             from: {#PID<0.362.0>, #Reference<0.1384449050.975699969.50151>}
+           },
+           worker: #PID<0.362.0>,
+           deadline: :infinity,
+           write_failed: false,
+           token: #Reference<0.1384449050.975699969.50144>,
+           local_closed: false,
+           committed: true,
+           websocket: true,
+           startup: nil,
+           poll: nil,
+           renderer_blocks: 1,
+           renderer_projection_bytes: 129,
+           queued_wire: 0,
+           delivered_wire: 0
+         }
+       },
+       connection_member: #Reference<0.1384449050.975699969.50109>,
+       reserves: %{
+         stream: 196608,
+         decode: 142680064,
+         connection: 13516840,
+         writer: 66560
+       },
+       decode_reservation: 0,
+       highest: 1,
+       default_read_timeout: 30,
+       retiring_streams: %{},
+       retirement_timer: nil,
+       writer_ready: false,
+       outgoing_block: nil,
+       close_after_write: false,
+       settings_ack: true,
+       preface: true,
+       continuation: nil,
+       rate_start: -576460750156,
+       rate: 0,
+       partial_timer: nil,
+       partial_token: nil
+     }
+     code: {:noreply, {socket, state}} = open(socket, state, 1)
+     stacktrace:
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:1865: Gaoxy.HTTP.HTTP2.Connection.failure/2
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:192: Gaoxy.HTTP.HTTP2.Connection.progress/1
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:766: Gaoxy.HTTP.HTTP2.Connection.call/4
+       test/http2_websocket_idle_test.exs:15: (test)
+
+
+
+  2) test rejected opening preserves the original finite owner interval (Gaoxy.HTTP.HTTP2WebSocketIdleTest)
+     apps/gaoxy_http/test/http2_websocket_idle_test.exs:24
+     ** (KeyError) key :accepted not found in: %{
+       first: false,
+       output: {[], []},
+       starting: nil,
+       buffer: "",
+       closing: false,
+       h2: %{
+         max_streams: 32,
+         max_frame: 16384,
+         table_size: 4096,
+         max_header_block: 16384,
+         receive_window: 65535,
+         control_rate: 256,
+         control_turn: 32,
+         frame_timeout: 5000
+       },
+       phase: :http2,
+       draining: false,
+       limits: %{
+         extended_connect: false,
+         read_timeout: 5000,
+         write_timeout: 5000,
+         max_buffer_bytes: 65536,
+         max_trailer_bytes: 8192,
+         max_trailers: 32,
+         max_read_chunk: 16384,
+         request_timeout: 30000,
+         stream_timeout: :request,
+         header_timeout: 5000,
+         max_body_bytes: 8388608,
+         max_chunk_line: 1024,
+         max_header_bytes: 32768,
+         max_headers: 100,
+         max_request_line: 8192
+       },
+       gate: #PID<0.366.0>,
+       lease: #Reference<0.1384449050.975699970.46128>,
+       streams: %{
+         1 => %{
+           eof: false,
+           id: 1,
+           monitor: nil,
+           request: %Gaoxy.HTTP.Request{
+             method: "CONNECT",
+             target: "/ws",
+             target_form: :origin,
+             version: :"HTTP/2",
+             protocol: "websocket",
+             path: "/ws",
+             query_string: "",
+             host: "localhost",
+             port: 80,
+             scheme: :http,
+             peer: nil,
+             local: nil,
+             head_bytes: 285,
+             headers: [{"sec-websocket-version", "13"}],
+             body: :tunnel,
+             keep_alive: true,
+             expect_continue: false
+           },
+           read: nil,
+           write: nil,
+           worker: #PID<0.367.0>,
+           deadline: -576460749086,
+           write_failed: false,
+           token: #Reference<0.1384449050.975699970.46143>,
+           local_closed: false,
+           committed: false,
+           websocket: false,
+           startup: nil,
+           poll: nil,
+           renderer_blocks: 0,
+           renderer_projection_bytes: 0,
+           queued_wire: 0,
+           delivered_wire: 0
+         }
+       },
+       connection_member: #Reference<0.1384449050.975699970.46128>,
+       reserves: %{
+         stream: 196608,
+         decode: 142680064,
+         connection: 13516840,
+         writer: 66560
+       },
+       decode_reservation: 0,
+       highest: 1,
+       default_read_timeout: 30,
+       retiring_streams: %{},
+       retirement_timer: nil,
+       writer_ready: false,
+       outgoing_block: nil,
+       close_after_write: false,
+       settings_ack: true,
+       preface: true,
+       continuation: nil,
+       rate_start: -576460750086,
+       rate: 0,
+       partial_timer: nil,
+       partial_token: nil
+     }
+     code: {:noreply, {same, state}} = open(socket, state, 1)
+     stacktrace:
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:1865: Gaoxy.HTTP.HTTP2.Connection.failure/2
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:192: Gaoxy.HTTP.HTTP2.Connection.progress/1
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:766: Gaoxy.HTTP.HTTP2.Connection.call/4
+       test/http2_websocket_idle_test.exs:27: (test)
+
+
+
+  3) test only the last completed WebSocket restores a fresh original owner interval (Gaoxy.HTTP.HTTP2WebSocketIdleTest)
+     apps/gaoxy_http/test/http2_websocket_idle_test.exs:36
+     ** (KeyError) key :accepted not found in: %{
+       first: false,
+       output: {[], []},
+       starting: nil,
+       buffer: "",
+       closing: false,
+       h2: %{
+         max_streams: 32,
+         max_frame: 16384,
+         table_size: 4096,
+         max_header_block: 16384,
+         receive_window: 65535,
+         control_rate: 256,
+         control_turn: 32,
+         frame_timeout: 5000
+       },
+       phase: :http2,
+       draining: false,
+       limits: %{
+         extended_connect: true,
+         read_timeout: 5000,
+         write_timeout: 5000,
+         max_buffer_bytes: 65536,
+         max_trailer_bytes: 8192,
+         max_trailers: 32,
+         max_read_chunk: 16384,
+         request_timeout: 30000,
+         stream_timeout: :request,
+         header_timeout: 5000,
+         max_body_bytes: 8388608,
+         max_chunk_line: 1024,
+         max_header_bytes: 32768,
+         max_headers: 100,
+         max_request_line: 8192
+       },
+       gate: #PID<0.371.0>,
+       lease: #Reference<0.1384449050.975699970.46167>,
+       streams: %{
+         1 => %{
+           eof: true,
+           id: 1,
+           monitor: nil,
+           request: %Gaoxy.HTTP.Request{
+             method: "CONNECT",
+             target: "/ws",
+             target_form: :origin,
+             version: :"HTTP/2",
+             protocol: "websocket",
+             path: "/ws",
+             query_string: "",
+             host: "localhost",
+             port: 80,
+             scheme: :http,
+             peer: nil,
+             local: nil,
+             head_bytes: 285,
+             headers: [{"sec-websocket-version", "13"}],
+             body: :tunnel,
+             keep_alive: true,
+             expect_continue: false
+           },
+           read: nil,
+           write: nil,
+           worker: #PID<0.372.0>,
+           deadline: -576460749085,
+           write_failed: false,
+           token: #Reference<0.1384449050.975699970.46182>,
+           local_closed: true,
+           committed: false,
+           websocket: true,
+           startup: nil,
+           poll: nil,
+           renderer_blocks: 0,
+           renderer_projection_bytes: 0,
+           queued_wire: 0,
+           delivered_wire: 0
+         },
+         3 => %{
+           eof: true,
+           id: 3,
+           monitor: nil,
+           request: %Gaoxy.HTTP.Request{
+             method: "CONNECT",
+             target: "/ws",
+             target_form: :origin,
+             version: :"HTTP/2",
+             protocol: "websocket",
+             path: "/ws",
+             query_string: "",
+             host: "localhost",
+             port: 80,
+             scheme: :http,
+             peer: nil,
+             local: nil,
+             head_bytes: 285,
+             headers: [{"sec-websocket-version", "13"}],
+             body: :tunnel,
+             keep_alive: true,
+             expect_continue: false
+           },
+           read: nil,
+           write: nil,
+           worker: #PID<0.372.0>,
+           deadline: -576460749085,
+           write_failed: false,
+           token: #Reference<0.1384449050.975699970.46185>,
+           local_closed: true,
+           committed: false,
+           websocket: true,
+           startup: nil,
+           poll: nil,
+           renderer_blocks: 0,
+           renderer_projection_bytes: 0,
+           queued_wire: 0,
+           delivered_wire: 0
+         }
+       },
+       connection_member: #Reference<0.1384449050.975699970.46167>,
+       reserves: %{
+         stream: 196608,
+         decode: 142680064,
+         connection: 13516840,
+         writer: 66560
+       },
+       decode_reservation: 0,
+       highest: 1,
+       default_read_timeout: 40,
+       retiring_streams: %{},
+       retirement_timer: nil,
+       writer_ready: false,
+       outgoing_block: nil,
+       close_after_write: false,
+       settings_ack: true,
+       preface: true,
+       continuation: nil,
+       rate_start: -576460750085,
+       rate: 0,
+       partial_timer: nil,
+       partial_token: nil
+     }
+     code: Connection.handle_info(
+     stacktrace:
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:1865: Gaoxy.HTTP.HTTP2.Connection.failure/2
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:192: Gaoxy.HTTP.HTTP2.Connection.progress/1
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:1250: Gaoxy.HTTP.HTTP2.Connection.info/3
+       test/http2_websocket_idle_test.exs:44: (test)
+
+
+
+  4) test peer reset restores idle through the public network continuation contract (Gaoxy.HTTP.HTTP2WebSocketIdleTest)
+     apps/gaoxy_http/test/http2_websocket_idle_test.exs:63
+     ** (KeyError) key :accepted not found in: %{
+       first: false,
+       output: {[], []},
+       starting: nil,
+       buffer: "",
+       closing: false,
+       h2: %{
+         max_streams: 32,
+         max_frame: 16384,
+         table_size: 4096,
+         max_header_block: 16384,
+         receive_window: 65535,
+         control_rate: 256,
+         control_turn: 32,
+         frame_timeout: 5000
+       },
+       phase: :http2,
+       draining: false,
+       limits: %{
+         extended_connect: true,
+         read_timeout: 5000,
+         write_timeout: 5000,
+         max_buffer_bytes: 65536,
+         max_trailer_bytes: 8192,
+         max_trailers: 32,
+         max_read_chunk: 16384,
+         request_timeout: 30000,
+         stream_timeout: :request,
+         header_timeout: 5000,
+         max_body_bytes: 8388608,
+         max_chunk_line: 1024,
+         max_header_bytes: 32768,
+         max_headers: 100,
+         max_request_line: 8192
+       },
+       gate: #PID<0.376.0>,
+       lease: #Reference<0.1384449050.975699970.46206>,
+       streams: %{},
+       connection_member: #Reference<0.1384449050.975699970.46206>,
+       reserves: %{
+         stream: 196608,
+         decode: 142680064,
+         connection: 13516840,
+         writer: 66560
+       },
+       decode_reservation: 0,
+       highest: 1,
+       default_read_timeout: 40,
+       retiring_streams: %{},
+       retirement_timer: nil,
+       writer_ready: false,
+       outgoing_block: nil,
+       close_after_write: false,
+       settings_ack: true,
+       preface: true,
+       continuation: nil,
+       rate_start: -576460750085,
+       rate: 1,
+       partial_timer: nil,
+       partial_token: nil
+     }
+     code: Connection.handle_data(
+     stacktrace:
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:1865: Gaoxy.HTTP.HTTP2.Connection.failure/2
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:192: Gaoxy.HTTP.HTTP2.Connection.progress/1
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:232: Gaoxy.HTTP.HTTP2.Connection.data/3
+       test/http2_websocket_idle_test.exs:69: (test)
+
+
+
+  5) test ordinary local messages do not restart an unchanged owner idle interval (Gaoxy.HTTP.HTTP2WebSocketIdleTest)
+     apps/gaoxy_http/test/http2_websocket_idle_test.exs:78
+     ** (KeyError) key :accepted not found in: %{
+       first: false,
+       output: {[], []},
+       starting: nil,
+       buffer: "",
+       closing: false,
+       h2: %{
+         max_streams: 32,
+         max_frame: 16384,
+         table_size: 4096,
+         max_header_block: 16384,
+         receive_window: 65535,
+         control_rate: 256,
+         control_turn: 32,
+         frame_timeout: 5000
+       },
+       phase: :http2,
+       draining: false,
+       limits: %{
+         extended_connect: true,
+         read_timeout: 5000,
+         write_timeout: 5000,
+         max_buffer_bytes: 65536,
+         max_trailer_bytes: 8192,
+         max_trailers: 32,
+         max_read_chunk: 16384,
+         request_timeout: 30000,
+         stream_timeout: :request,
+         header_timeout: 5000,
+         max_body_bytes: 8388608,
+         max_chunk_line: 1024,
+         max_header_bytes: 32768,
+         max_headers: 100,
+         max_request_line: 8192
+       },
+       gate: #PID<0.381.0>,
+       lease: #Reference<0.1384449050.975699970.46243>,
+       streams: %{
+         1 => %{
+           eof: false,
+           id: 1,
+           monitor: nil,
+           request: %Gaoxy.HTTP.Request{
+             method: "CONNECT",
+             target: "/ws",
+             target_form: :origin,
+             version: :"HTTP/2",
+             protocol: "websocket",
+             path: "/ws",
+             query_string: "",
+             host: "localhost",
+             port: 80,
+             scheme: :http,
+             peer: nil,
+             local: nil,
+             head_bytes: 285,
+             headers: [{"sec-websocket-version", "13"}],
+             body: :tunnel,
+             keep_alive: true,
+             expect_continue: false
+           },
+           read: nil,
+           write: nil,
+           worker: #PID<0.382.0>,
+           deadline: -576460749084,
+           write_failed: false,
+           token: #Reference<0.1384449050.975699970.46258>,
+           local_closed: false,
+           committed: false,
+           websocket: false,
+           startup: nil,
+           poll: nil,
+           renderer_blocks: 0,
+           renderer_projection_bytes: 0,
+           queued_wire: 0,
+           delivered_wire: 0
+         }
+       },
+       connection_member: #Reference<0.1384449050.975699970.46243>,
+       reserves: %{
+         stream: 196608,
+         decode: 142680064,
+         connection: 13516840,
+         writer: 66560
+       },
+       decode_reservation: 0,
+       highest: 1,
+       default_read_timeout: 30,
+       retiring_streams: %{},
+       retirement_timer: nil,
+       writer_ready: false,
+       outgoing_block: nil,
+       close_after_write: false,
+       settings_ack: true,
+       preface: true,
+       continuation: nil,
+       rate_start: -576460750084,
+       rate: 0,
+       partial_timer: nil,
+       partial_token: nil
+     }
+     code: {:noreply, {socket, state}} = Connection.handle_info(:unrelated, {socket, state})
+     stacktrace:
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:1865: Gaoxy.HTTP.HTTP2.Connection.failure/2
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:192: Gaoxy.HTTP.HTTP2.Connection.progress/1
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:1250: Gaoxy.HTTP.HTTP2.Connection.info/3
+       test/http2_websocket_idle_test.exs:81: (test)
+
+
+
+  6) test opening still expires its own finite write while owner idle is suspended (Gaoxy.HTTP.HTTP2WebSocketIdleTest)
+     apps/gaoxy_http/test/http2_websocket_idle_test.exs:87
+     ** (KeyError) key :accepted not found in: %{
+       first: false,
+       output: {[
+          {<<0, 0, 14, 1, 4, 0, 0, 0, 1, 32, 16, 7, 58, 115, 116, 97, 116, 117, 115,
+             3, 50, 48, 48>>,
+           {:headers, 1, {#PID<0.387.0>, #Reference<0.1384449050.975699969.50307>}},
+           -576460750022}
+        ], []},
+       starting: nil,
+       buffer: "",
+       closing: false,
+       h2: %{
+         max_streams: 32,
+         max_frame: 16384,
+         table_size: 4096,
+         max_header_block: 16384,
+         receive_window: 65535,
+         control_rate: 256,
+         control_turn: 32,
+         frame_timeout: 5000
+       },
+       phase: :http2,
+       draining: false,
+       limits: %{
+         extended_connect: true,
+         read_timeout: 5000,
+         write_timeout: 5000,
+         max_buffer_bytes: 65536,
+         max_trailer_bytes: 8192,
+         max_trailers: 32,
+         max_read_chunk: 16384,
+         request_timeout: 30000,
+         stream_timeout: :request,
+         header_timeout: 5000,
+         max_body_bytes: 8388608,
+         max_chunk_line: 1024,
+         max_header_bytes: 32768,
+         max_headers: 100,
+         max_request_line: 8192
+       },
+       gate: #PID<0.386.0>,
+       lease: #Reference<0.1384449050.975699969.50289>,
+       streams: %{
+         1 => %{
+           eof: false,
+           id: 1,
+           monitor: nil,
+           request: %Gaoxy.HTTP.Request{
+             method: "CONNECT",
+             target: "/ws",
+             target_form: :origin,
+             version: :"HTTP/2",
+             protocol: "websocket",
+             path: "/ws",
+             query_string: "",
+             host: "localhost",
+             port: 80,
+             scheme: :http,
+             peer: nil,
+             local: nil,
+             head_bytes: 285,
+             headers: [{"sec-websocket-version", "13"}],
+             body: :tunnel,
+             keep_alive: true,
+             expect_continue: false
+           },
+           read: nil,
+           write: %{
+             timer: #Reference<0.1384449050.975699969.50309>,
+             deadline: -576460750022,
+             kind: :headers,
+             token: #Reference<0.1384449050.975699969.50308>,
+             from: {#PID<0.387.0>, #Reference<0.1384449050.975699969.50307>}
+           },
+           worker: #PID<0.387.0>,
+           deadline: :infinity,
+           write_failed: false,
+           token: #Reference<0.1384449050.975699969.50304>,
+           local_closed: false,
+           committed: true,
+           websocket: true,
+           startup: nil,
+           poll: nil,
+           renderer_blocks: 1,
+           renderer_projection_bytes: 129,
+           queued_wire: 0,
+           delivered_wire: 0
+         }
+       },
+       connection_member: #Reference<0.1384449050.975699969.50289>,
+       reserves: %{
+         stream: 196608,
+         decode: 142680064,
+         connection: 13516840,
+         writer: 66560
+       },
+       decode_reservation: 0,
+       highest: 1,
+       default_read_timeout: 40,
+       retiring_streams: %{},
+       retirement_timer: nil,
+       writer_ready: false,
+       outgoing_block: nil,
+       close_after_write: false,
+       settings_ack: true,
+       preface: true,
+       continuation: nil,
+       rate_start: -576460750052,
+       rate: 0,
+       partial_timer: nil,
+       partial_token: nil
+     }
+     code: {:noreply, {socket, state}} = open(socket, state, 1, 30)
+     stacktrace:
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:1865: Gaoxy.HTTP.HTTP2.Connection.failure/2
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:192: Gaoxy.HTTP.HTTP2.Connection.progress/1
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:766: Gaoxy.HTTP.HTTP2.Connection.call/4
+       test/http2_websocket_idle_test.exs:89: (test)
+
+.....................
+Finished in 1.6 seconds (1.6s async, 0.00s sync)
+27 tests, 6 failures
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

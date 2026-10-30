@@ -94,6 +94,7 @@ defmodule Gaoxy.HTTP.HTTP2WebSocketNetworkTest do
     assert {:ok, _, fields} = HPACK.decode(HPACK.new_decoder(max_dynamic_size: 0), block)
     assert {":status", "200"} in fields
     assert {0, 1, 3, "/sibling"} = next(socket, 0, 3)
+    assert %{rejected: 0} = Gaoxy.status(server, :http)
     :ok = :gen_tcp.close(socket)
     assert :ok = Gaoxy.stop(server)
   end

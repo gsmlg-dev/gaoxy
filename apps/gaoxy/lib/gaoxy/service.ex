@@ -16,6 +16,9 @@ defmodule Gaoxy.Service do
   def complete_cleanup(service, token),
     do: Lifecycle.call(service, {:complete_cleanup, token}, Lifecycle.deadline(1_000))
 
+  def acquire_native(service, connection, native, deadline),
+    do: Lifecycle.call(service, {:acquire_native, connection, native, deadline}, deadline)
+
   def child_spec({table, _live, id, _scope} = args) do
     [{^id, spec}] = :ets.lookup(table, id)
 
@@ -58,27 +61,51 @@ defmodule Gaoxy.Service do
   end
 
   defp init_registered(table, live, id, instance, spec, scope, service, generation, budget) do
-    with {:ok, spec} <- prepare_dispatcher(spec),
-         {:ok, policy} <- RegistryPolicy.register(scope) do
+    with {:ok, policy} <- RegistryPolicy.register(scope) do
       case Admission.start_link(
              {spec.limits, scope |> Map.put(:service_pid, self()) |> Map.put(:budget, budget)}
            ) do
         {:ok, gate} ->
           case Admission.budget_client(gate) do
             {:ok, client} ->
-              init_backend(
-                table,
-                live,
-                id,
-                instance,
-                spec,
-                scope,
-                service,
-                generation,
-                Map.put(budget, :client, client),
-                gate,
-                policy
-              )
+              budget = Map.put(budget, :client, client)
+
+              # Preparation can block while instance stop fences new admission.
+              # Establish the gate first so this already-started service can
+              # finish startup and its existing activation rollback normally.
+              case prepare_dispatcher(spec) do
+                {:ok, spec} ->
+                  init_backend(
+                    table,
+                    live,
+                    id,
+                    instance,
+                    spec,
+                    scope,
+                    service,
+                    generation,
+                    budget,
+                    gate,
+                    policy
+                  )
+
+                {:error, reason} ->
+                  gate_terminal =
+                    Lifecycle.protect(fn ->
+                      if Process.alive?(gate), do: GenServer.stop(gate), else: :ok
+                    end) == :ok
+
+                  Reconciler.finish(
+                    budget,
+                    gate,
+                    %{},
+                    Lifecycle.deadline(Lifecycle.cleanup_headroom()),
+                    gate_terminal
+                  )
+
+                  RegistryPolicy.cancel(policy)
+                  {:stop, reason}
+              end
 
             {:error, reason} ->
               if Process.alive?(gate), do: GenServer.stop(gate)
@@ -195,6 +222,57 @@ defmodule Gaoxy.Service do
   end
 
   @impl true
+  def handle_call({:acquire_native, connection, native, deadline}, {owner, _} = from, state)
+      when connection.gate == state.gate and connection.service == self() do
+    if state.mode == :ready and is_integer(deadline) and Lifecycle.remaining(deadline) > 0 do
+      token = make_ref()
+      prepared = Gaoxy.QUICCleanup.prepare(connection, owner, token)
+
+      cleanup = %{
+        guardian: self(),
+        monitor: nil,
+        receipt: false,
+        allocation: nil,
+        native: %{prepared: prepared, from: from, deadline: deadline, phase: :reserving}
+      }
+
+      state = put_in(state.cleanups[token], cleanup)
+
+      result =
+        Lifecycle.protect(fn ->
+          Admission.reserve_native(
+            state.gate,
+            owner,
+            connection.lease,
+            token,
+            native,
+            :erlang.external_size(prepared),
+            deadline
+          )
+        end)
+
+      case result do
+        :ok ->
+          {:noreply, state}
+
+        {:error, reason} when reason in [:budget_timeout, :budget_unavailable] ->
+          {:reply, {:error, reason}, put_in(state.cleanups[token].native.from, nil)}
+
+        {:error, {:exit, _}} ->
+          {:reply, {:error, :native_reservation_unconfirmed}, fail_gate(state)}
+
+        error ->
+          {:reply, error, %{state | cleanups: Map.delete(state.cleanups, token)}}
+      end
+    else
+      {:reply, {:error, if(state.mode == :ready, do: :deadline_exceeded, else: state.mode)},
+       state}
+    end
+  end
+
+  def handle_call({:acquire_native, _, _, _}, _, state),
+    do: {:reply, {:error, :stale_generation}, state}
+
   def handle_call({:attach_cleanup, _, _, _, _, _}, _, %{mode: mode} = state)
       when mode != :ready,
       do: {:reply, {:error, mode}, state}
@@ -567,6 +645,117 @@ defmodule Gaoxy.Service do
     end
   end
 
+  def handle_info({:gaoxy_native_reserved, token, receipt}, state) do
+    case state.cleanups[token] do
+      %{native: %{phase: :reserving} = native} = cleanup ->
+        cleanup = %{cleanup | allocation: receipt && receipt.token}
+
+        case Gaoxy.QUICCleanup.start_link(native.prepared) do
+          {:ok, guardian} ->
+            cleanup = %{
+              cleanup
+              | guardian: guardian,
+                monitor: Process.monitor(guardian),
+                native: %{native | phase: :splitting}
+            }
+
+            state = put_in(state.cleanups[token], cleanup)
+            # An expired init cannot enter the handler, but its already-funded
+            # cleanup must still be activated under a fresh cleanup deadline.
+            deadline =
+              if Lifecycle.remaining(native.deadline) > 0,
+                do: native.deadline,
+                else: Lifecycle.deadline(Lifecycle.cleanup_headroom())
+
+            result =
+              Lifecycle.protect(fn ->
+                Admission.split_native(state.gate, token, guardian, deadline)
+              end)
+
+            case result do
+              :ok ->
+                {:noreply, state}
+
+              {:error, reason} when reason in [:budget_timeout, :budget_unavailable] ->
+                {:noreply, state}
+
+              error ->
+                send(self(), {:gaoxy_native_split_failed, token, error})
+                {:noreply, state}
+            end
+
+          {:error, _} ->
+            native_reply(native, {:error, :worker_capacity})
+            {:noreply, fail_gate(%{state | cleanup_failed: :native_guardian_unavailable})}
+        end
+
+      _ ->
+        {:noreply, state}
+    end
+  end
+
+  def handle_info({:gaoxy_native_activated, token, lease, receipt}, state) do
+    case state.cleanups[token] do
+      %{native: native} = cleanup ->
+        send(cleanup.guardian, {:gaoxy_cleanup_activate, token})
+
+        result =
+          if Lifecycle.remaining(native.deadline) > 0 and state.mode == :ready,
+            do: {:ok, lease, {cleanup.guardian, token}},
+            else: {:error, :deadline_exceeded}
+
+        native_reply(native, result)
+
+        if match?({:error, _}, result),
+          do:
+            send(
+              cleanup.guardian,
+              {:gaoxy_cleanup_cancel, token, :init_expired,
+               Lifecycle.deadline(Lifecycle.cleanup_headroom())}
+            )
+
+        cleanup = %{
+          cleanup
+          | allocation: receipt && receipt.token,
+            native: %{native | from: nil, phase: :active}
+        }
+
+        {:noreply, put_in(state.cleanups[token], cleanup)}
+
+      _ ->
+        {:noreply, state}
+    end
+  end
+
+  def handle_info({:gaoxy_native_split_failed, token, reason}, state) do
+    case state.cleanups[token] do
+      %{native: native} = cleanup ->
+        native_reply(native, {:error, reason})
+
+        send(
+          cleanup.guardian,
+          {:gaoxy_cleanup_cancel, token, :init_failed,
+           Lifecycle.deadline(Lifecycle.cleanup_headroom())}
+        )
+
+        {:noreply, put_in(state.cleanups[token].native.from, nil)}
+
+      _ ->
+        {:noreply, state}
+    end
+  end
+
+  def handle_info({:gaoxy_native_rejected, token, reason}, state) do
+    case state.cleanups[token] do
+      %{native: %{phase: :reserving} = native} ->
+        native_reply(native, {:error, reason})
+        {:noreply, %{state | cleanups: Map.delete(state.cleanups, token)}}
+
+      _ ->
+        {:noreply, state}
+    end
+  end
+
   def handle_info({:gaoxy_cleanup_budget, token, receipt}, state) do
     state =
       case state.cleanups[token] do
@@ -591,6 +780,9 @@ defmodule Gaoxy.Service do
     do: {:stop, {:backend_failed, reason}, state}
 
   def handle_info(_, state), do: {:noreply, state}
+
+  defp native_reply(%{from: nil}, _), do: :ok
+  defp native_reply(%{from: from}, result), do: GenServer.reply(from, result)
 
   @impl true
   def terminate(_, state) do
@@ -1126,6 +1318,16 @@ defmodule Gaoxy.Service do
 
     num_acceptors = Keyword.get(spec.hell_options, :num_acceptors, 1)
 
+    # Raw streams promise bounded continued I/O for the connection lifetime.
+    # Establish the funded delivery profile before any TLS handshake/read.
+    stream_options =
+      if spec.handler_mode == :stream,
+        do: [
+          buffer: Gaoxy.StreamBridge.receive_buffer(),
+          recbuf: Gaoxy.StreamBridge.receive_buffer()
+        ],
+        else: []
+
     Hell.start_link(
       handler_module:
         if(spec.handler_mode == :native, do: spec.handler, else: Gaoxy.StreamBridge),
@@ -1142,7 +1344,7 @@ defmodule Gaoxy.Service do
           {:ip, spec.ip},
           {:send_timeout, spec.limits.callback_timeout},
           {:send_timeout_close, true} | tls
-        ] ++ Keyword.get(spec.hell_options, :transport_options, []),
+        ] ++ Keyword.get(spec.hell_options, :transport_options, []) ++ stream_options,
       num_acceptors: num_acceptors,
       num_connections: div(Gaoxy.Config.connection_capacity(spec), num_acceptors),
       max_connections_retry_count: 0,
@@ -1156,10 +1358,19 @@ defmodule Gaoxy.Service do
   defp quic_buffer_capacity(spec), do: spec.budget_policy.max_bytes || 16_777_216
 
   defp quic_engine_options(spec) do
+    # Raw QUIC is pull-driven: grant one facade read quantum at a time instead
+    # of allowing unread peer data to occupy the entire service byte cap.
+    # Consumption replenishes credit. Durable operation results, callback state
+    # and native cleanup remain separately charged under the unchanged cap.
+    receive_window =
+      if spec.handler == Gaoxy.HTTP.HTTP3.Connection,
+        do: quic_buffer_capacity(spec),
+        else: min(quic_buffer_capacity(spec), min(spec.limits.max_packet, 16_384))
+
     options = [
       streams: [
-        max_data: quic_buffer_capacity(spec),
-        max_stream_data: quic_buffer_capacity(spec),
+        max_data: receive_window,
+        max_stream_data: receive_window,
         max_buffer: quic_buffer_capacity(spec),
         max_ready_bytes: quic_buffer_capacity(spec),
         max_streams_bidi: quic_stream_capacity(spec),

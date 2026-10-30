@@ -34,6 +34,17 @@ defmodule Gaoxy.HTTP.HTTP3.Operations do
     end)
   end
 
+  # Lookup is bounded by the existing eight operation rows. An admitted worker
+  # resolves the opaque transport capability only after its owner binds it.
+  def resolve(table, token) when is_reference(token) do
+    case :ets.match_object(table, {:_, token, self(), :_, :_, :starting, :_}) do
+      [{key, ^token, _, _, deadline, :starting, _}] -> {:ok, key, deadline}
+      _ -> {:error, :closed}
+    end
+  rescue
+    ArgumentError -> {:error, :closed}
+  end
+
   def ready(table, key, token, lease) when is_reference(lease) do
     change(table, key, token, :worker, fn
       {_, _, _, nil, _, :starting, _} = row ->
@@ -289,6 +300,14 @@ defmodule Gaoxy.HTTP.HTTP3.Operations do
       _ ->
         {:error, :closed}
     end)
+  end
+
+  def finish(table, key, token, result, gate, accounting, deadline) do
+    with {:ok, %{worker: worker, lease: lease, status: :idle}} when worker == self() <-
+           status(table, key, token),
+         :ok <- Gaoxy.Admission.end_request(gate, lease, accounting, deadline) do
+      finish(table, key, token, result)
+    end
   end
 
   def remove(table, key, token) do

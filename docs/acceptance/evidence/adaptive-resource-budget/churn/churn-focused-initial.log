@@ -1,0 +1,23 @@
+==> gaoxy_http3
+
+01:37:33.824 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+01:37:33.846 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+.............
+
+  1) test H1 readmits three fresh connections on the same listener after confirmed cleanup (Gaoxy.HTTP.HTTP3.ResourceBudgetChurnNetworkTest)
+     apps/gaoxy_http3/test/resource_budget_churn_network_test.exs:21
+     {:http1, %{mode: :ready, state: :normal, usage: 0, requests: 0, policy: %{soft_limit: nil, hard_limit: nil, provenance: %{source: :adaptive}}, retained_bytes: 0, soft_limit: 50617145344, hard_limit: 101234290688, vm: %{state: :normal, usage: 0, requests: 0, retained_bytes: 0, soft_limit: 50617145344, hard_limit: 101234290688, pending_processes: 0, leases: 1, temporary_bytes: 0, legacy_leases: 1, transport_bytes: 0, connections: 1, h2_streams: 0, h3_streams: 0, receipt_count: 9, websocket_bytes: 0}, detection: %{metadata: %{controller_limits: [:unlimited, :unlimited, :unlimited, :unlimited], controller_locations: [{:v2, "/sys/fs/cgroup/user.slice/user-1000.slice/session-292.scope", "/sys/fs/cgroup"}], controllers: [:v2]}, source: :linux, capacity: 101234290688, fallback?: false, reasons: [], cgroup_limit_bytes: nil, physical_bytes: 101234290688}, capacity: 101234290688, safety: %{retained_baseline: 0, available_bytes: 59119185920, cgroup_headroom_bytes: nil, high_pressure?: false, sampled_at: -576460744627}, availability: :ready, pending_processes: 0, leases: 1, temporary_bytes: 0, legacy_leases: 1, transport_bytes: 0, connections: 1, h2_streams: 0, h3_streams: 0, rejections: %{}, receipt_count: 9, active_connections: 1, active_h2_streams: 0, active_h3_streams: 0, active_requests: 0, orphaned?: false, websocket_bytes: 0}}
+     stacktrace:
+       test/resource_budget_churn_network_test.exs:155: Gaoxy.HTTP.HTTP3.ResourceBudgetChurnNetworkTest.await_completed/3
+       test/resource_budget_churn_network_test.exs:81: anonymous fn/11 in Gaoxy.HTTP.HTTP3.ResourceBudgetChurnNetworkTest.churn/2
+       (elixir 1.18.5) lib/enum.ex:4507: Enum.reduce/3
+       test/resource_budget_churn_network_test.exs:51: Gaoxy.HTTP.HTTP3.ResourceBudgetChurnNetworkTest.churn/2
+
+..
+Finished in 9.6 seconds (1.0s async, 8.6s sync)
+16 tests, 1 failure
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed
+[os_mon] memory supervisor port (memsup): Erlang has closed

@@ -1,0 +1,81 @@
+==> gaoxy_http
+Compiling 1 file (.ex)
+Generated gaoxy_http app
+==> gaoxy_http
+
+23:50:03.562 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+23:50:03.591 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+........
+
+  1) test definite pre-reserve expiry retires its attempt and reuses the same connection slot (Gaoxy.HTTP.ResourceBudgetH2Test)
+     apps/gaoxy_http/test/resource_budget_h2_test.exs:97
+     %{mode: :ready, state: :normal, usage: 219740, requests: 0, policy: %{soft_limit: nil, hard_limit: nil, provenance: %{source: :adaptive}}, retained_bytes: 23132, temporary_bytes: 196608, transport_bytes: 219740, websocket_bytes: 0, pending_processes: 0, leases: 1, soft_limit: 50617145344, hard_limit: 101234290688, vm: %{state: :normal, usage: 219740, requests: 0, retained_bytes: 23132, temporary_bytes: 196608, transport_bytes: 219740, websocket_bytes: 0, pending_processes: 0, leases: 1, soft_limit: 50617145344, hard_limit: 101234290688, legacy_leases: 1, connections: 0, h2_streams: 1, h3_streams: 0, receipt_count: 53}, detection: %{metadata: %{controller_limits: [:unlimited, :unlimited, :unlimited, :unlimited], controller_locations: [{:v2, "/sys/fs/cgroup/user.slice/user-1000.slice/session-292.scope", "/sys/fs/cgroup"}], controllers: [:v2]}, source: :linux, capacity: 101234290688, fallback?: false, reasons: [], cgroup_limit_bytes: nil, physical_bytes: 101234290688}, capacity: 101234290688, safety: %{retained_baseline: 23132, available_bytes: 59927019520, cgroup_headroom_bytes: nil, high_pressure?: false, sampled_at: -576460743869}, availability: :ready, legacy_leases: 1, connections: 0, h2_streams: 1, h3_streams: 0, rejections: %{invalid_owner: 1}, receipt_count: 53, active_connections: 0, active_h2_streams: 1, active_h3_streams: 0, active_requests: 0, orphaned?: false}
+     code: close(server, socket)
+     stacktrace:
+       test/resource_budget_h2_test.exs:473: Gaoxy.HTTP.ResourceBudgetH2Test.await/3
+       test/resource_budget_h2_test.exs:175: (test)
+
+.
+
+  2) test TCP receive floor follows effective buffer and retained slices detach before handoff (Gaoxy.HTTP.ResourceBudgetH2Test)
+     apps/gaoxy_http/test/resource_budget_h2_test.exs:209
+     %{mode: :ready, state: :normal, usage: 219698, requests: 0, policy: %{soft_limit: nil, hard_limit: nil, provenance: %{source: :adaptive}}, retained_bytes: 23090, temporary_bytes: 196608, transport_bytes: 219698, websocket_bytes: 0, pending_processes: 0, leases: 1, soft_limit: 50617145344, hard_limit: 101234290688, vm: %{state: :normal, usage: 219698, requests: 0, retained_bytes: 23090, temporary_bytes: 196608, transport_bytes: 219698, websocket_bytes: 0, pending_processes: 0, leases: 1, soft_limit: 50617145344, hard_limit: 101234290688, legacy_leases: 1, connections: 0, h2_streams: 1, h3_streams: 0, receipt_count: 43}, detection: %{metadata: %{controller_limits: [:unlimited, :unlimited, :unlimited, :unlimited], controller_locations: [{:v2, "/sys/fs/cgroup/user.slice/user-1000.slice/session-292.scope", "/sys/fs/cgroup"}], controllers: [:v2]}, source: :linux, capacity: 101234290688, fallback?: false, reasons: [], cgroup_limit_bytes: nil, physical_bytes: 101234290688}, capacity: 101234290688, safety: %{retained_baseline: 23090, available_bytes: 60136357888, cgroup_headroom_bytes: nil, high_pressure?: false, sampled_at: -576460737862}, availability: :ready, legacy_leases: 1, connections: 0, h2_streams: 1, h3_streams: 0, rejections: %{invalid_owner: 1}, receipt_count: 43, active_connections: 0, active_h2_streams: 1, active_h3_streams: 0, active_requests: 0, orphaned?: false}
+     code: close(server, socket)
+     stacktrace:
+       test/resource_budget_h2_test.exs:473: Gaoxy.HTTP.ResourceBudgetH2Test.await/3
+       test/resource_budget_h2_test.exs:257: (test)
+
+....
+Finished in 13.5 seconds (0.9s async, 12.6s sync)
+15 tests, 2 failures
+==> gaoxy_test
+Running ExUnit with seed: 0, max_cases: 1
+
+....
+23:50:19.868 [error] GenServer #PID<0.750.0> terminating
+** (stop) :draining
+Last message: :poll
+State: [data: [{~c"State", %{owner: #PID<0.741.0>, connection: %Quic.Runtime.ConnectionHandle{id: #PID<0.749.0>, generation: #Reference<0.559129907.3970170881.128805>}, initialized: true}}]]
+
+
+  1) test http3: persistent SSE establishes, sends and cancels through observed barriers (Gaoxy.Test.HelperTest)
+     apps/gaoxy_test/test/helper_test.exs:120
+     match (=) failed
+     code:  assert %{status: :ok} = Gaoxy.Test.close(fixture)
+     left:  %{status: :ok}
+     right: %{
+              pending: [],
+              status: :error,
+              cleanup: :ok,
+              cursor: 1,
+              failures: [
+                %{
+                  reason: :draining,
+                  type: :session_terminated,
+                  request_id: 1,
+                  route: {"GET", "/persistent"}
+                }
+              ],
+              completed: 1,
+              fixture_id: #Reference<0.559129907.3970170881.128433>,
+              admitted: 1,
+              expectations: %{
+                {"GET", "/persistent"} => %{
+                  requirement: {:exact, 1},
+                  received: 1,
+                  admitted: 1
+                }
+              },
+              observed: 1
+            }
+     stacktrace:
+       test/helper_test.exs:145: (test)
+
+...........
+Finished in 4.2 seconds (0.00s async, 4.2s sync)
+16 tests, 1 failure
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed
+[os_mon] memory supervisor port (memsup): Erlang has closed

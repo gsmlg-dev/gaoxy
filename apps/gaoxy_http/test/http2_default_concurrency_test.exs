@@ -54,6 +54,9 @@ defmodule Gaoxy.HTTP2DefaultConcurrencyTest do
     assert Process.alive?(first_worker)
     assert Process.alive?(second_worker)
 
+    assert %{active_connections: 2, active_requests: 2, active_h2_streams: 2} =
+             Gaoxy.resource_budget(server)
+
     send(first_worker, :respond)
     send(second_worker, :respond)
     assert response(first) == %{status: "200", body: "/first"}
@@ -73,6 +76,9 @@ defmodule Gaoxy.HTTP2DefaultConcurrencyTest do
     eventually(fn ->
       match?(%{active: 0, retained_bytes: 0, cleanup_pending: 0}, Gaoxy.status(server, :http))
     end)
+
+    assert %{active_connections: 0, active_requests: 0, active_h2_streams: 0, usage: 0} =
+             Gaoxy.resource_budget(server)
 
     assert :ok = Gaoxy.stop(server, @timeout)
   end

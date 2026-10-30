@@ -34,6 +34,7 @@ defmodule Gaoxy.HTTP.HTTP2.Limits do
   def normalize(_), do: {:error, :invalid_http2_limits}
 
   def receive_buffer, do: @receive_buffer
+  def max_delivery, do: @max_delivery
 
   def validate_host(transport) do
     active = Application.get_env(:ssl, :internal_active_n, 100)
@@ -44,9 +45,13 @@ defmodule Gaoxy.HTTP.HTTP2.Limits do
        else: {:error, :unsupported_http2_host}
   end
 
-  def reservation(http, h2) do
+  def reservation(http, h2, delivery \\ @max_delivery) do
     %{
-      connection: 16_777_216 + 65_535 + 4 * http.max_buffer_bytes + 8 * @max_delivery,
+      # A native active-once delivery is already promised while the owner is
+      # waiting. Retained decoder/parser/stream state is measured separately.
+      connection: 4 * http.max_buffer_bytes + 8 * delivery,
+      receive: 2 * http.max_buffer_bytes + 8 * delivery,
+      completion: 2 * http.max_buffer_bytes,
       decode: decode_reservation(h2, h2.max_header_block),
       stream: 2 * http.max_header_bytes + 4 * http.max_read_chunk + 65_536,
       writer: 4 * 16_384 + 1_024

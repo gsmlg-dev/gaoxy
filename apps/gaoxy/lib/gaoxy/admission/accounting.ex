@@ -9,6 +9,14 @@ defmodule Gaoxy.Admission.Accounting do
 
   def categories(%{bytes: bytes}), do: %{transport_bytes: bytes, websocket_bytes: 0}
 
+  def repartition(%{accounting: previous} = lease, input) when is_map(input) do
+    with {:ok, replacement} <- replace(lease, Map.merge(previous, input)),
+         :ok <- Gaoxy.ResourceBudget.validate_repartition(previous, replacement.accounting),
+         do: {:ok, replacement}
+  end
+
+  def repartition(_, _), do: {:error, :invalid_repartition}
+
   def replace(lease, input) do
     previous =
       Map.get(
@@ -58,18 +66,31 @@ defmodule Gaoxy.Admission.Accounting do
 
   def totals(leases, cleanups) do
     initial = %{
-      transport_bytes: Enum.reduce(cleanups, 0, fn {_, cleanup}, sum -> sum + cleanup.bytes end),
-      websocket_bytes: 0
+      transport_bytes: 0,
+      websocket_bytes: 0,
+      retained_bytes: 0,
+      temporary_bytes: 0,
+      usage: 0
     }
 
-    Enum.reduce(leases, initial, fn {_, lease}, totals ->
-      accounting = categories(lease)
+    leases
+    |> Enum.reduce(initial, &sum_accounting/2)
+    |> then(&Enum.reduce(cleanups, &1, fn row, totals -> sum_accounting(row, totals) end))
+  end
 
-      %{
-        transport_bytes: totals.transport_bytes + accounting.transport_bytes,
-        websocket_bytes: totals.websocket_bytes + accounting.websocket_bytes
-      }
-    end)
+  defp sum_accounting({_, row}, totals) do
+    categories = categories(row)
+    # Scalar legacy rows have no temporary classification. Guardian rows use
+    # their original accounting until receipt AND actual terminal completion.
+    ownership = Map.get(row, :accounting, %{retained_bytes: row.bytes, temporary_bytes: 0})
+
+    %{
+      transport_bytes: totals.transport_bytes + categories.transport_bytes,
+      websocket_bytes: totals.websocket_bytes + categories.websocket_bytes,
+      retained_bytes: totals.retained_bytes + ownership.retained_bytes,
+      temporary_bytes: totals.temporary_bytes + ownership.temporary_bytes,
+      usage: totals.usage + ownership.retained_bytes + ownership.temporary_bytes
+    }
   end
 
   def validate(leases, cleanups, old, replacement, max_bytes) do

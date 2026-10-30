@@ -45,11 +45,7 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
       }
 
       with :ok <-
-             Gaoxy.Admission.update(
-               exchange.gate,
-               exchange.lease,
-               Exchange.retained_bytes(exchange)
-             ),
+             Exchange.update_body_retention(exchange, Exchange.retained_bytes(exchange)),
            do: {:ok, exchange}
     end
   end
@@ -65,11 +61,7 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
       exchange = %{exchange | response: :sent, response_trailers: []}
 
       with :ok <-
-             Gaoxy.Admission.update(
-               exchange.gate,
-               exchange.lease,
-               Exchange.retained_bytes(exchange)
-             ),
+             Exchange.update_body_retention(exchange, Exchange.retained_bytes(exchange)),
            do: {:ok, exchange}
     end
   end
@@ -418,11 +410,7 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
     size = min(length, min(exchange.limits.max_read_chunk, exchange.limits.max_write_chunk))
 
     with :ok <-
-           Gaoxy.Admission.update(
-             exchange.gate,
-             exchange.lease,
-             Exchange.retained_bytes(exchange) + size
-           ),
+           Exchange.reserve_body_retention(exchange, size),
          {:ok, data} <- :file.pread(file, offset, size),
          true <- byte_size(data) == size || {:error, :file_short_read},
          :ok <- Exchange.send_bytes(exchange, data) do

@@ -7,10 +7,10 @@ defmodule Gaoxy.Proxy.HTTP do
   Uploads and raw responses stream
   with acknowledged local writes; redirects are returned and requests are never
   replayed. An external guardian retains the admission reservation until public
-  request cleanup completes. Configure a service byte budget for the conservative
-  pinned-client reservation (roughly 8 MiB per active request); the core default
-  1 MiB budget rejects these sessions. This is a payload/copy allowance, not a
-  measurement of total BEAM, process or OTP/kernel socket memory.
+  request cleanup completes. Omitted service caps use adaptive shared memory
+  admission. Size any explicit byte cap for the conservative pinned-client
+  reservation (roughly 8 MiB per active request). This is a payload/copy allowance,
+  not a measurement of total BEAM, process or OTP/kernel socket memory.
 
   The qualified host uses the default :inet backend and OTP SSL internal_active_n
   from 1 through 100. Keep these startup settings stable; incompatible hosts are

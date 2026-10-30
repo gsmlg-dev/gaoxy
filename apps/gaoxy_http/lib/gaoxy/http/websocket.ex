@@ -20,6 +20,10 @@ defmodule Gaoxy.HTTP.WebSocket do
     input_credit: 0,
     pending_output: [],
     input_events: [],
+    completion_credit: 0,
+    funded_floor: nil,
+    funded_websocket_bytes: 0,
+    memberships: nil,
     closing: false,
     initialized: false
   ]
@@ -123,6 +127,10 @@ defmodule Gaoxy.HTTP.WebSocket do
       limits: limits,
       deadline: deadline,
       buffer: exchange.buffer,
+      # A server control frame is at most 125 payload bytes plus two header
+      # bytes. Its encoder/output copies remain funded through graceful close.
+      completion_credit: if(exchange.funding, do: 2 * 127, else: 0),
+      memberships: if(exchange.funding, do: Map.delete(exchange.funding.memberships, :request)),
       decoder: Frame.decoder(max_frame_size: limits.max_frame_size),
       message:
         Message.new(
@@ -130,6 +138,8 @@ defmodule Gaoxy.HTTP.WebSocket do
           max_fragments: limits.max_fragments
         )
     }
+
+    ws = fund_completion(ws)
 
     with {:ok, headers} <- handshake(exchange.request, response_headers),
          # Upgrade is a single transition from the completed H1 request to a new
@@ -192,9 +202,10 @@ defmodule Gaoxy.HTTP.WebSocket do
 
   @doc false
   def reserve_input(ws, credit) do
-    ws = %{ws | input_credit: credit}
+    previous = ws
+    ws = fund_completion(%{ws | input_credit: credit})
 
-    case account(ws) do
+    case account(ws, 0, previous) do
       :ok -> {:ok, ws}
       error -> error
     end
@@ -322,6 +333,14 @@ defmodule Gaoxy.HTTP.WebSocket do
              retained(ws, 0, bytes),
              deadline
            ) do
+      ws =
+        if ws.memberships do
+          paid = retained(ws, 0, bytes)
+          %{ws | funded_floor: paid.transport_bytes, funded_websocket_bytes: paid.websocket_bytes}
+        else
+          ws
+        end
+
       result(ws, apply(ws.handler, function, args))
     else
       {:error, reason} -> {:close, %{ws | reason: {:error, reason}}}
@@ -397,9 +416,14 @@ defmodule Gaoxy.HTTP.WebSocket do
   # result and invalidate that watchdog before any synchronous transport call.
   defp complete(ws, state, messages) do
     messages = if is_tuple(messages), do: [messages], else: messages
-    ws = %{ws | app_state: state, pending_output: messages}
+    previous = ws
+    ws = fund_completion(%{ws | app_state: state, pending_output: messages})
 
-    case Admission.end_websocket_callback(ws.exchange.gate, ws.exchange.lease, retained(ws)) do
+    result =
+      with :ok <- if(ws.memberships, do: account(ws, 0, previous), else: :ok),
+           do: Admission.end_websocket_callback(ws.exchange.gate, ws.exchange.lease, retained(ws))
+
+    case result do
       :ok -> {:continue, ws}
       {:error, reason} -> {:close, %{ws | reason: {:error, reason}}}
     end
@@ -428,9 +452,9 @@ defmodule Gaoxy.HTTP.WebSocket do
   defp push_next(%{pending_output: [{opcode, payload} | rest]} = ws) do
     case send_frame(ws, opcode, payload || "") do
       :ok ->
-        next = %{ws | pending_output: rest}
+        next = fund_completion(%{ws | pending_output: rest})
 
-        case account(next) do
+        case account(next, 0, ws) do
           :ok -> push_next(next)
           {:error, reason} -> {:close, %{next | reason: {:error, reason}}}
         end
@@ -526,6 +550,8 @@ defmodule Gaoxy.HTTP.WebSocket do
   end
 
   defp idle(ws) do
+    ws = fund_completion(ws)
+
     case Admission.retain(ws.exchange.gate, ws.exchange.lease, retained(ws)) do
       :ok -> {:continue, ws}
       {:error, reason} -> {:close, %{ws | reason: {:error, reason}}}
@@ -564,7 +590,7 @@ defmodule Gaoxy.HTTP.WebSocket do
     exchange_bytes =
       if ws.exchange.transport, do: Gaoxy.HTTP.Exchange.retained_bytes(ws.exchange), else: 0
 
-    %{
+    categories = %{
       transport_bytes:
         exchange_bytes + 2 * byte_size(ws.buffer) + 2 * ws.input_credit +
           :erlang.external_size(ws.decoder) + staging,
@@ -573,10 +599,61 @@ defmodule Gaoxy.HTTP.WebSocket do
           :erlang.external_size(ws.pending_output) + :erlang.external_size(ws.input_events) +
           callback_bytes
     }
+
+    if ws.memberships do
+      transport = categories.transport_bytes
+      temporary = max((ws.funded_floor || transport + ws.completion_credit) - transport, 0)
+
+      %{
+        retained_bytes: categories.transport_bytes + categories.websocket_bytes,
+        temporary_bytes: temporary,
+        transport_bytes: categories.transport_bytes + temporary,
+        websocket_bytes: categories.websocket_bytes,
+        memberships: ws.memberships,
+        pending_processes: 0
+      }
+    else
+      categories
+    end
   end
 
-  defp account(ws, staging \\ 0),
-    do: Admission.update(ws.exchange.gate, ws.exchange.lease, retained(ws, staging))
+  defp fund_completion(%{memberships: nil} = ws), do: ws
+
+  defp fund_completion(ws) do
+    # Keep a fixed funded total across send staging and its release. Adding a
+    # fresh temporary reserve to every new retained value would require growth
+    # even for an already-funded close frame during drain.
+    accounting = retained(ws)
+    transport = accounting.transport_bytes - accounting.temporary_bytes
+
+    %{
+      ws
+      | funded_floor: transport + ws.completion_credit,
+        funded_websocket_bytes: accounting.websocket_bytes
+    }
+  end
+
+  defp account(ws, staging \\ 0, previous \\ nil) do
+    accounting = retained(ws, staging)
+
+    if ws.memberships do
+      deadline = Lifecycle.earlier(ws.deadline, Lifecycle.deadline(50))
+      paid = previous || ws
+      total = accounting.retained_bytes + accounting.temporary_bytes
+      funded = paid.funded_floor + paid.funded_websocket_bytes
+      mutation = if total <= funded, do: :repartition_until, else: :update_until
+
+      apply(Admission, mutation, [
+        ws.exchange.gate,
+        ws.exchange.lease,
+        accounting,
+        make_ref(),
+        deadline
+      ])
+    else
+      Admission.update(ws.exchange.gate, ws.exchange.lease, accounting)
+    end
+  end
 
   defp within?(_, :infinity), do: true
   defp within?(value, limit), do: value <= limit

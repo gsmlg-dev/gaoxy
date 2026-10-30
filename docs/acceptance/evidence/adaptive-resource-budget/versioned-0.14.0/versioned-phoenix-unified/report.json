@@ -1,0 +1,200 @@
+{
+  "status": "PASS",
+  "command": [
+    "mix",
+    "run",
+    "--no-start",
+    "--no-compile",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/integration/phoenix_native/unified_fixture.exs"
+  ],
+  "native_h3_peer": {
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--manifest-path",
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/integration/http3/release_peer/Cargo.toml",
+      "--target-dir",
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-h3-peer-target"
+    ],
+    "lock_sha256": "220be94377edf2d65bdacabc6173d4d252d0916ce9e221eae04d8c9d4c15882c",
+    "dependencies": {
+      "h3": "0.0.8",
+      "h3-quinn": "0.0.10",
+      "quinn": "0.11.12",
+      "quinn-proto": "0.11.19",
+      "rustls": "0.23.46"
+    }
+  },
+  "native_h3_channel_peer": {
+    "command": [
+      "go",
+      "build",
+      "-mod=readonly",
+      "-o",
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-h3-channel-peer",
+      "."
+    ],
+    "go_version": "go1.26.6",
+    "source_hashes": {
+      "go.mod": "567447d7aeefef1d8de1c56733bfc04ac1f1746c4e1d1279a313e8578f5f155d",
+      "go.sum": "0be1946684b8878445bf9275afe7f92293eda3a599be3678b69b487f94e14998",
+      "main.go": "97dfd83f761f0df4cd7cdae4085ceb0a81d95953760846f6e6c0df8e3a3b07ab"
+    },
+    "dependencies": {
+      "github.com/gobwas/httphead": "v0.1.0",
+      "github.com/gobwas/pool": "v0.2.1",
+      "github.com/gobwas/ws": "v1.4.0",
+      "github.com/quic-go/qpack": "v0.6.0",
+      "github.com/quic-go/quic-go": "v0.64.1",
+      "golang.org/x/crypto": "v0.54.0",
+      "golang.org/x/net": "v0.56.0",
+      "golang.org/x/sys": "v0.47.0",
+      "golang.org/x/text": "v0.40.0"
+    }
+  },
+  "baseline": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+  "environment": {
+    "python": "3.12.13 (main, Jun 11 2026, 04:03:26) [Clang 22.1.3 ]",
+    "ELIXIR_ERL_OPTIONS": "+S 2:2",
+    "dependencies": {
+      "h2": "4.3.0",
+      "hpack": "4.1.0",
+      "hyperframe": "6.1.0",
+      "aioquic": "1.2.0",
+      "wsproto": "1.2.0"
+    }
+  },
+  "checks": [
+    {
+      "check": "independent_endpoint_HTTP/1.1",
+      "status": "PASS",
+      "protocol": "HTTP/1.1",
+      "paths": [
+        "/",
+        "/static/hello.txt",
+        "/events"
+      ]
+    },
+    {
+      "check": "independent_endpoint_HTTP/2",
+      "status": "PASS",
+      "protocol": "HTTP/2",
+      "paths": [
+        "/",
+        "/static/hello.txt",
+        "/events"
+      ]
+    },
+    {
+      "check": "independent_endpoint_HTTP/3",
+      "status": "PASS",
+      "requests": [
+        {
+          "protocol": "h3",
+          "status_code": 200,
+          "path": "/",
+          "evidence": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/adaptive-resource-budget/versioned-phoenix-unified/h3-peer/request-1082281766553154"
+        },
+        {
+          "protocol": "h3",
+          "status_code": 200,
+          "path": "/static/hello.txt",
+          "evidence": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/adaptive-resource-budget/versioned-phoenix-unified/h3-peer/request-1082282919173659"
+        },
+        {
+          "protocol": "h3",
+          "status_code": 200,
+          "path": "/events",
+          "evidence": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/adaptive-resource-budget/versioned-phoenix-unified/h3-peer/request-1082283227996762"
+        }
+      ]
+    },
+    {
+      "check": "independent_channel_h2",
+      "status": "PASS",
+      "client": {
+        "protocol": "h2",
+        "stream": 1,
+        "close_code": 1000
+      },
+      "sockets": [
+        {
+          "version": "HTTP/2",
+          "state": "upgraded",
+          "path": "/socket/websocket",
+          "protocol": "websocket",
+          "event": "websocket",
+          "marker": "vsn=2.0.0&unified=h2"
+        }
+      ]
+    },
+    {
+      "check": "code_reload_and_restore_h2",
+      "status": "PASS",
+      "protocol": "h2"
+    },
+    {
+      "check": "independent_channel_h3",
+      "status": "PASS",
+      "client": {
+        "protocol": "h3",
+        "stream": 0,
+        "close_code": 1000,
+        "evidence": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/adaptive-resource-budget/versioned-phoenix-unified/h3-channel-peer"
+      },
+      "sockets": [
+        {
+          "version": "HTTP/3",
+          "state": "upgraded",
+          "path": "/socket/websocket",
+          "protocol": "websocket",
+          "event": "websocket",
+          "marker": "vsn=2.0.0&unified=h3"
+        }
+      ]
+    },
+    {
+      "check": "code_reload_and_restore_h3",
+      "status": "PASS",
+      "protocol": "h3"
+    },
+    {
+      "check": "endpoint_shutdown",
+      "status": "PASS"
+    }
+  ],
+  "receipts": [
+    {
+      "ports": {
+        "http": 45963,
+        "https": 44371,
+        "http3": 38384
+      },
+      "code_reloader": true,
+      "event": "ready",
+      "endpoint_server": true
+    },
+    {
+      "version": "HTTP/2",
+      "state": "upgraded",
+      "path": "/socket/websocket",
+      "protocol": "websocket",
+      "event": "websocket",
+      "marker": "vsn=2.0.0&unified=h2"
+    },
+    {
+      "version": "HTTP/3",
+      "state": "upgraded",
+      "path": "/socket/websocket",
+      "protocol": "websocket",
+      "event": "websocket",
+      "marker": "vsn=2.0.0&unified=h3"
+    },
+    {
+      "event": "stopped"
+    }
+  ],
+  "process_exit": 0,
+  "source_restored": true
+}

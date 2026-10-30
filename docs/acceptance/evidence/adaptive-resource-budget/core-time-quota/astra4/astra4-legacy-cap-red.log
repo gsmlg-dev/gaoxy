@@ -1,0 +1,27 @@
+==> gaoxy
+
+22:34:29.711 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+22:34:29.748 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+
+22:34:35.716 [warning] resource budget warning
+.
+22:34:35.719 [warning] resource budget warning
+.......
+
+  1) test legacy local gates also enforce their transport cap during repartition (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:303
+     match (=) failed
+     code:  assert :ok = Admission.upgrade(g, lease, %{transport_bytes: 50, websocket_bytes: 50}, deadline())
+     left:  :ok
+     right: {:error, :inactive_request}
+     stacktrace:
+       test/resource_budget_admission_test.exs:314: (test)
+
+...................................
+Finished in 6.2 seconds (0.00s async, 6.2s sync)
+44 tests, 1 failure
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

@@ -1,0 +1,101 @@
+--- reviewed-draft
++++ apps/gaoxy_http3/test/resource_budget_churn_network_test.exs
+@@ -18,17 +18,20 @@
+   end
+ 
+   @tag :tmp_dir
+-  test "H1 readmits three fresh connections on the same listener after confirmed cleanup", context do
++  test "H1 readmits three fresh connections on the same listener after confirmed cleanup",
++       context do
+     churn(:http1, context.tmp_dir)
+   end
+ 
+   @tag :tmp_dir
+-  test "H2 readmits three fresh connections on the same listener after confirmed cleanup", context do
++  test "H2 readmits three fresh connections on the same listener after confirmed cleanup",
++       context do
+     churn(:http2, context.tmp_dir)
+   end
+ 
+   @tag :tmp_dir
+-  test "H3 readmits three fresh connections on the same listener after confirmed cleanup", context do
++  test "H3 readmits three fresh connections on the same listener after confirmed cleanup",
++       context do
+     churn(:http3, context.tmp_dir)
+   end
+ 
+@@ -56,8 +59,14 @@
+             :binary,
+             :exit_status,
+             :stderr_to_stdout,
+-            args: ["-c", peer_script(), Atom.to_string(protocol), to_string(port), path,
+-                   Path.join(directory, "ca.pem")],
++            args: [
++              "-c",
++              peer_script(),
++              Atom.to_string(protocol),
++              to_string(port),
++              path,
++              Path.join(directory, "ca.pem")
++            ],
+             cd: root
+           ]
+         )
+@@ -114,7 +123,9 @@
+       http_limits: %{request_timeout: @timeout}
+     ]
+ 
+-    options = if protocol == :http2, do: Keyword.put(options, :h2c, :prior_knowledge), else: options
++    options =
++      if protocol == :http2, do: Keyword.put(options, :h2c, :prior_knowledge), else: options
++
+     assert {:ok, spec} = Gaoxy.HTTP.service_spec(options)
+     spec
+   end
+@@ -130,12 +141,20 @@
+ 
+   defp await_completed(server, protocol, deadline) do
+     case Gaoxy.resource_budget(server) do
+-      %{active_connections: 1, active_requests: 0, active_h2_streams: 0, active_h3_streams: 0,
+-        usage: bytes} when is_integer(bytes) and bytes > 0 ->
++      %{
++        active_connections: 1,
++        active_requests: 0,
++        active_h2_streams: 0,
++        active_h3_streams: 0,
++        usage: bytes
++      }
++      when is_integer(bytes) and bytes >= 0 and (protocol == :http1 or bytes > 0) ->
++        # H1 keeps its connection quota but an empty idle buffer owns zero bytes.
+         :ok
+ 
+       snapshot ->
+         assert Gaoxy.Lifecycle.remaining(deadline) > 0, inspect({protocol, snapshot})
++
+         receive do
+         after
+           5 -> await_completed(server, protocol, deadline)
+@@ -145,13 +164,21 @@
+ 
+   defp await_idle(server, service, deadline) do
+     case {Gaoxy.resource_budget(server), Gaoxy.status(server, service)} do
+-      {%{usage: 0, active_connections: 0, active_requests: 0, active_h2_streams: 0,
+-         active_h3_streams: 0, leases: 0, pending_processes: 0},
++      {%{
++         usage: 0,
++         active_connections: 0,
++         active_requests: 0,
++         active_h2_streams: 0,
++         active_h3_streams: 0,
++         leases: 0,
++         pending_processes: 0
++       },
+        %{active: 0, retained_bytes: 0, cleanup_pending: 0, cleanup_failed: nil, state: :ready}} ->
+         :ok
+ 
+       snapshot ->
+         assert Gaoxy.Lifecycle.remaining(deadline) > 0, inspect(snapshot)
++
+         receive do
+         after
+           5 -> await_idle(server, service, deadline)

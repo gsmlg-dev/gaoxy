@@ -1,0 +1,373 @@
+{
+  "task": "ARB-H1H2",
+  "mode": "implementation",
+  "assignment": "bounded recovery",
+  "astra_gate": "SOL_REPEATED_FAILURE",
+  "status": "BLOCKED_IMPLEMENTATION",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "baseline": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+  "sol_repair_rounds": 2,
+  "astra_repair_rounds": 2,
+  "owned_changed_files": [
+    "apps/gaoxy_http/test/http2_websocket_idle_test.exs",
+    "apps/gaoxy_http/test/native_proxy_seams_test.exs"
+  ],
+  "source_sha256": {
+    "apps/gaoxy_http/lib/gaoxy/http/connection.ex": "12f418b4fbb99155b0288c52f82ce2c5d2142b81cfdbcbbf3c7dcb1a044de7ea",
+    "apps/gaoxy_http/lib/gaoxy/http/exchange.ex": "4619f4327317a07cbf3573015a8d8a86ee63fd0ba8520c99d7577833bcf7f531",
+    "apps/gaoxy_http/lib/gaoxy/http/framed_response.ex": "26b47f7d4615742bde8e7e799512cf4ec6ec6c431aee7221c6d4f56bea63f43b",
+    "apps/gaoxy_http/lib/gaoxy/http/http1/response.ex": "b4b714f8aa8357e670a4efecb65a5239230267e999e87683c8758d5695967dff",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "acd7e74bd0a948e727fba5209cd07c1c83858bf8a08dc3f131cd013af0cfd43d",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/limits.ex": "0e3c29522c230a0600e41d93bfaa37794994f5b64add838b5b605c8ecf2fe948",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/worker_accounting.ex": "87d583eba9e4be61c871d82a801fe81806e136be2e8c203d69f9a95a29a6fd84",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/writer.ex": "ede69a554be66b33f297c9fbc73381d7103496427fc1d93c26db46ebb1f938f8",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "3ec8c39806b3023a5cc72ca64753d4b45ce0b627aafdd88c30e92a1e3decbb4f",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex": "9448b8552ea4695bee6e721bb0a0db8403367ca318c3bfd1ae1084379cf94740",
+    "apps/gaoxy_http/test/http2_worker_accounting_test.exs": "0b9123c23ede790f234731cdad2c5e85d1644eb0ec63d3da26b72ee31c09b616",
+    "apps/gaoxy_http/test/http2_default_concurrency_test.exs": "0a2437b753c862d9d539d3aef308d613454c4185a7ae51916e6767f3ea8de20e",
+    "apps/gaoxy_http/test/resource_budget_h1_test.exs": "f7f680379fe22d6ca302d6b6426fb817bedefccc69223a8aa1f3cc66ce56c3d3",
+    "apps/gaoxy_http/test/resource_budget_h2_test.exs": "c32181f596c12f9b22fd38d0ec9c91619f8fc87929dc7d393346f6d9874e6883",
+    "apps/gaoxy_http/test/http2_websocket_idle_test.exs": "7624863e04e6783dbf6eba161356b5db1be6c489c9c6729a887161e98f463152",
+    "apps/gaoxy_http/test/native_proxy_seams_test.exs": "644a8d4f87ec80396afda9399bcbeff1ce3fe0543f2e277f73e9bf5bab69f764"
+  },
+  "protected_sha256": {
+    "apps/gaoxy/lib/gaoxy/admission.ex": "99bcf9d68bcb0e06540a82f4a1dd65b25c95bea020cbc4f3828b24c2fa411ce6",
+    "apps/gaoxy/lib/gaoxy/resource_budget/ledger.ex": "26173508c11c5f4ca3aa7a987f7b95c0cc9b764eb815316be0b89ddcc5024957",
+    "apps/gaoxy/lib/gaoxy/resource_budget/safety.ex": "9e163881a3b100f8d32fd50bff94add168b3cd9d49c28287e3cd0494dd35e561",
+    "apps/gaoxy/lib/gaoxy/admission/accounting.ex": "ee13ce929f5bb7590e4085f177d394513657b3e84f7765fde9849e0583793cdd",
+    "apps/gaoxy/lib/gaoxy/quic_bridge.ex": "6cd92899a76512ef868a64aeb27d6c087a5cce62e574b2a5395ca04b16094a97"
+  },
+  "evidence_sha256": {
+    "h1h2-astra-diagnosis.json": "2227bc3099f419420df3491278d123e8ac719fcdde671c7bf88da50a4fef87ef",
+    "h1h2-astra-diagnosis.log": "409acaf1b9ec07b63360bcde2344ed29eb60549e8d04babaf3dc6a4ef2f16719",
+    "h1h2-astra-upload-diagnosis.json": "7fe1c82c48dba5996728a9ad98b6803146e942398e0168542aed0f64cfc99d48",
+    "h1h2-astra-upload-diagnosis.log": "adc4da8e14a23c75cbb2012860776093482068b288d9a56a5aa05b285a602235",
+    "h1h2-astra-repair1-format.json": "9e0230cb4b88addb8d33857bfead98d92880f2c965d9c47d4e7af31e99e24d71",
+    "h1h2-astra-repair1-format.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "h1h2-astra-repair1-fixtures.json": "59c25d693058b9424d26de1f7465b7c868eb8045667f91eed17a58b596a75c3e",
+    "h1h2-astra-repair1-fixtures.log": "297c7b8529431591553c8cbff1051415a82940eeae659aef37afef550ffc8296",
+    "h1h2-astra-repair2-fixtures.json": "c3bcffb2f679f324910efbf28e2c244c5ee3895483a450801a8b95c958d2a3da",
+    "h1h2-astra-repair2-fixtures.log": "7f274bb466128c88d78f0814759b5f8634626efa924cb993ba80913040fb1714",
+    "h1h2-astra-repair2-format.json": "300d439858569da9b2a7116545e758aba58f47a84644da2f8dc9c0105645f20b",
+    "h1h2-astra-repair2-format.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "h1h2-astra-repair2-compile.json": "276b8bb2252fdb40b4199194b43023ca654b8f848be64e18f3039f690c358e69",
+    "h1h2-astra-repair2-compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "h1h2-astra-repair2-focused.json": "a80e812542ab53f113c3882d306fae8ebd9b630866016e6534fdbc67ba37c3b9",
+    "h1h2-astra-repair2-focused.log": "cad012bb57ffab18e8e81ee46af09b8046813000e005e4a1588e9c242d60ada6",
+    "h1h2-astra-repair2-inventory.json": "62712cb959c2586d8efd61e96ada1e4c8e9da5d9fa45e18734f18ada19e386a6",
+    "h1h2-astra-repair2-inventory.log": "70f07acdfa422c45e676a12ba25f6a51cf9f4b9a1702dd0881d4453bb2448658",
+    "h1h2-astra-repair2-whitespace.json": "6660dbb383cf367672a2d0db4dbb9f38965020ada2bd8a024a248b2ce0ad709d",
+    "h1h2-astra-repair2-whitespace.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "h1h2-astra-repair2-compatibility.json": "7bc421b90c0acbbe0b7392581b5ace028dc23b24d6d5ecfc8a0ca2215ce227b7",
+    "h1h2-astra-repair2-compatibility.log": "a902bfd8d4cac791c6cb1a5489e0cd3f5808d8a0c1c15c6bdbca4e4619d221ce",
+    "task.patch": "482d37163e864ffa315d3ff6780c6af4acf81d643ff17b2c44e7bac49bf334a1"
+  },
+  "checks": [
+    {
+      "label": "h1h2-astra-diagnosis",
+      "command": [
+        "mix",
+        "run",
+        "--no-start",
+        ".audit/adaptive-resource-budget/h1-h2/recovery/trace-run.exs"
+      ],
+      "exit": 2,
+      "status": "FAIL",
+      "elapsed_seconds": 2.2587213271763176,
+      "evidence_lines": [
+        "13 tests, 1 failure, 12 excluded"
+      ],
+      "source_changes": [],
+      "commands_terminal": true
+    },
+    {
+      "label": "h1h2-astra-upload-diagnosis",
+      "command": [
+        "mix",
+        "run",
+        "--no-start",
+        ".audit/adaptive-resource-budget/h1-h2/recovery/trace-upload.exs"
+      ],
+      "exit": 2,
+      "status": "FAIL",
+      "elapsed_seconds": 2.356789569137618,
+      "evidence_lines": [
+        "4 tests, 2 failures"
+      ],
+      "source_changes": [],
+      "commands_terminal": true
+    },
+    {
+      "label": "h1h2-astra-repair1-format",
+      "command": [
+        "mix",
+        "format",
+        "--check-formatted",
+        "apps/gaoxy_http/test/http2_websocket_idle_test.exs",
+        "apps/gaoxy_http/test/native_proxy_seams_test.exs"
+      ],
+      "exit": 0,
+      "status": "PASS",
+      "elapsed_seconds": 1.1051744550932199,
+      "evidence_lines": [],
+      "source_changes": [],
+      "commands_terminal": true
+    },
+    {
+      "label": "h1h2-astra-repair1-fixtures",
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_http/test/http2_websocket_idle_test.exs",
+        "apps/gaoxy_http/test/native_proxy_seams_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "exit": 2,
+      "status": "FAIL",
+      "elapsed_seconds": 3.4616634431295097,
+      "evidence_lines": [
+        "27 tests, 6 failures"
+      ],
+      "source_changes": [],
+      "commands_terminal": true
+    },
+    {
+      "label": "h1h2-astra-repair2-fixtures",
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_http/test/http2_websocket_idle_test.exs",
+        "apps/gaoxy_http/test/native_proxy_seams_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "exit": 0,
+      "status": "PASS",
+      "elapsed_seconds": 3.4686013059690595,
+      "evidence_lines": [
+        "27 tests, 0 failures"
+      ],
+      "source_changes": [],
+      "commands_terminal": true
+    },
+    {
+      "label": "h1h2-astra-repair2-format",
+      "command": [
+        "mix",
+        "format",
+        "--check-formatted",
+        "apps/gaoxy_http/test/http2_websocket_idle_test.exs",
+        "apps/gaoxy_http/test/native_proxy_seams_test.exs"
+      ],
+      "exit": 0,
+      "status": "PASS",
+      "elapsed_seconds": 1.159031807910651,
+      "evidence_lines": [],
+      "source_changes": [],
+      "commands_terminal": true
+    },
+    {
+      "label": "h1h2-astra-repair2-compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "exit": 0,
+      "status": "PASS",
+      "elapsed_seconds": 1.5624490010086447,
+      "evidence_lines": [],
+      "source_changes": [],
+      "commands_terminal": true
+    },
+    {
+      "label": "h1h2-astra-repair2-focused",
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_http/test/resource_budget_h1_test.exs",
+        "apps/gaoxy_http/test/resource_budget_h2_test.exs",
+        "apps/gaoxy_http/test/http2_default_concurrency_test.exs",
+        "apps/gaoxy_http/test/http2_worker_accounting_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "exit": 0,
+      "status": "PASS",
+      "elapsed_seconds": 3.9681363999843597,
+      "evidence_lines": [
+        "17 tests, 0 failures"
+      ],
+      "source_changes": [],
+      "commands_terminal": true
+    },
+    {
+      "label": "h1h2-astra-repair2-inventory",
+      "command": [
+        "python3",
+        "scripts/check-test-inventory.py"
+      ],
+      "exit": 0,
+      "status": "PASS",
+      "elapsed_seconds": 0.306659575086087,
+      "evidence_lines": [
+        "INVENTORY_PASS unit=377, component=290, protocol=149 active_files=118 retained_files=144"
+      ],
+      "source_changes": [],
+      "commands_terminal": true
+    },
+    {
+      "label": "h1h2-astra-repair2-whitespace",
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "apps/gaoxy_http/test/http2_websocket_idle_test.exs",
+        "apps/gaoxy_http/test/native_proxy_seams_test.exs"
+      ],
+      "exit": 0,
+      "status": "PASS",
+      "elapsed_seconds": 0.18331070896238089,
+      "evidence_lines": [],
+      "source_changes": [],
+      "commands_terminal": true
+    },
+    {
+      "label": "h1h2-astra-repair2-compatibility",
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_http/test/resource_budget_phoenix_config_test.exs",
+        "apps/gaoxy_http/test/resource_budget_config_test.exs",
+        "apps/gaoxy_http/test/plug_response_headers_test.exs",
+        "apps/gaoxy_http/test/http2_codec_test.exs",
+        "apps/gaoxy_http/test/protocol_detector_test.exs",
+        "apps/gaoxy_http/test/http_protocol_defaults_test.exs",
+        "apps/gaoxy_http/test/plug_body_test.exs",
+        "apps/gaoxy_http/test/head_content_length_test.exs",
+        "apps/gaoxy_http/test/http2_authority_test.exs",
+        "apps/gaoxy_http/test/http1_parser_test.exs",
+        "apps/gaoxy_http/test/http1_body_test.exs",
+        "apps/gaoxy_http/test/managed_proxy_renderer_test.exs",
+        "apps/gaoxy_http/test/http2_facade_test.exs",
+        "apps/gaoxy_http/test/backend_options_test.exs",
+        "apps/gaoxy_http/test/listener_set_plan_test.exs",
+        "apps/gaoxy_http/test/phoenix_adapter_test.exs",
+        "apps/gaoxy_http/test/gateway_generation_test.exs",
+        "apps/gaoxy_http/test/phoenix_client_certificate_config_test.exs",
+        "apps/gaoxy_http/test/websocket_configured_limits_test.exs",
+        "apps/gaoxy_http/test/websocket_incremental_frame_test.exs",
+        "apps/gaoxy_http/test/websocket_lifecycle_config_test.exs",
+        "apps/gaoxy_http/test/websocket_application_options_test.exs",
+        "apps/gaoxy_http/test/stream_lifetime_config_test.exs",
+        "apps/gaoxy_http/test/stream_lifetime_contract_test.exs",
+        "apps/gaoxy_http/test/supervised_shutdown_budget_config_test.exs",
+        "apps/gaoxy_http/test/resource_budget_phoenix_test.exs",
+        "apps/gaoxy_http/test/exchange_peer_close_test.exs",
+        "apps/gaoxy_http/test/http2_startup_peer_close_test.exs",
+        "apps/gaoxy_http/test/http2_websocket_idle_test.exs",
+        "apps/gaoxy_http/test/websocket_stream_test.exs",
+        "apps/gaoxy_http/test/websocket_event_retention_test.exs",
+        "apps/gaoxy_http/test/stream_lifetime_generation_test.exs",
+        "apps/gaoxy_http/test/backend_options_runtime_test.exs",
+        "apps/gaoxy_http/test/listener_set_test.exs",
+        "apps/gaoxy_http/test/stream_lifetime_test.exs",
+        "apps/gaoxy_http/test/supervised_shutdown_budget_test.exs",
+        "apps/gaoxy_http/test/plug_response_headers_network_test.exs",
+        "apps/gaoxy_http/test/exchange_peer_close_network_test.exs",
+        "apps/gaoxy_http/test/http2_startup_peer_close_network_test.exs",
+        "apps/gaoxy_http/test/head_content_length_network_test.exs",
+        "apps/gaoxy_http/test/request_lifetime_network_test.exs",
+        "apps/gaoxy_http/test/mixed_http_network_test.exs",
+        "apps/gaoxy_http/test/plug_body_network_test.exs",
+        "apps/gaoxy_http/test/poll_boundary_network_test.exs",
+        "apps/gaoxy_http/test/http2_authority_network_test.exs",
+        "apps/gaoxy_http/test/http2_websocket_network_test.exs",
+        "apps/gaoxy_http/test/mixed_connection_lifecycle_test.exs",
+        "apps/gaoxy_http/test/connection_poll_test.exs",
+        "apps/gaoxy_http/test/native_proxy_seams_test.exs",
+        "apps/gaoxy_http/test/http_protocol_defaults_network_test.exs",
+        "apps/gaoxy_http/test/websocket_configured_limits_network_test.exs",
+        "apps/gaoxy_http/test/websocket_default_capacity_network_test.exs",
+        "apps/gaoxy_http/test/stream_lifetime_h2_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "exit": 2,
+      "status": "FAIL",
+      "elapsed_seconds": 68.49816903308965,
+      "evidence_lines": [
+        "......................PASS h1 Plug response operations",
+        ".PASS h1 Plug response notifications",
+        ".PASS h2 Plug response operations",
+        ".PASS h2 Plug response notifications",
+        "..PASS H1 HEAD /declared metadata and body",
+        "PASS H1 HEAD /declared-body metadata and body",
+        "PASS H1 HEAD /inferred metadata and body",
+        "PASS H1 HEAD /empty metadata and body",
+        "PASS H1 HEAD /zero metadata and body",
+        "PASS H1 HEAD /204 metadata and body",
+        "PASS H1 HEAD /205 metadata and body",
+        "PASS H1 HEAD /304 metadata and body",
+        "PASS H1 GET /declared metadata and body",
+        "PASS H1 GET /declared-body metadata and body",
+        "PASS H1 GET /inferred metadata and body",
+        "PASS H1 GET /empty metadata and body",
+        "PASS H1 GET /zero metadata and body",
+        "PASS H1 GET /204 metadata and body",
+        "PASS H1 GET /205 metadata and body",
+        "PASS H1 GET /304 metadata and body",
+        ".PASS H2 HEAD /declared metadata and body",
+        "PASS H2 HEAD /declared-body metadata and body",
+        "PASS H2 HEAD /inferred metadata and body",
+        "PASS H2 HEAD /empty metadata and body",
+        "PASS H2 HEAD /zero metadata and body",
+        "PASS H2 HEAD /204 metadata and body",
+        "PASS H2 HEAD /205 metadata and body",
+        "PASS H2 HEAD /304 metadata and body",
+        "PASS H2 GET /declared metadata and body",
+        "PASS H2 GET /declared-body metadata and body",
+        "PASS H2 GET /inferred metadata and body",
+        "PASS H2 GET /empty metadata and body",
+        "PASS H2 GET /zero metadata and body",
+        "PASS H2 GET /204 metadata and body",
+        "PASS H2 GET /205 metadata and body",
+        "PASS H2 GET /304 metadata and body",
+        ".PASS peer-close sent_body=0 observed_body=0 peername={:error, :enotconn} normal-close cleanup sibling followup",
+        ".PASS peer-close sent_body=3 observed_body=3 peername={:error, :enotconn} normal-close cleanup sibling followup",
+        ".....................PASS H2 Plug parser application/json /parse",
+        "PASS H2 Plug parser application/x-www-form-urlencoded /parse",
+        "PASS H2 Plug parser application/json /parser-limit",
+        "337 tests, 9 failures"
+      ],
+      "source_changes": [],
+      "commands_terminal": true
+    }
+  ],
+  "independent_review": "Requested; pending parent report",
+  "remaining_failures": {
+    "PollBoundaryNetwork": 6,
+    "ShutdownLifecycle": 3
+  },
+  "remaining_blocker": "CORE completion credit reuse/retained-temporary repartition requires explicitly authorized recovery of exhausted CORE task. No protocol workaround or metric assertion adjustment applied. H1H2 own cumulative Astra2 is now exhausted too.",
+  "diagnostic_counts": "Targeted stream trace:1 executed failure,12 filtered; upload trace:4 executed2 failures. These diagnostic filters are not passing acceptance evidence.",
+  "invariants_preserved": [
+    "All six H2 idle/timer/write assertions unchanged.",
+    "Proxy update count,exact byte/floor and no-read/no-consumption assertions preserved.",
+    "All original14 H1H2 source hashes unchanged.",
+    "No CORE,H3,Phoenix,manifest,lock,or production implementation changes.",
+    "No commits,pushes,branches,worktrees,or specialist test changes."
+  ],
+  "commands_terminal": true,
+  "source_frozen": true
+}

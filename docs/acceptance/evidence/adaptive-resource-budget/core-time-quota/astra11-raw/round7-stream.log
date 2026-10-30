@@ -1,0 +1,72 @@
+==> gaoxy
+Compiling 2 files (.ex)
+Generated gaoxy app
+==> gaoxy_server
+Compiling 1 file (.ex)
+Generated gaoxy_server app
+==> gaoxy
+
+02:42:14.537 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+02:42:14.563 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 650788, max_cases: 4
+
+
+
+  1) test admitted tls callbacks complete after the listener drain barrier (Gaoxy.ResourceBudget.StreamNetworkTest)
+     apps/gaoxy/test/resource_budget_stream_network_test.exs:21
+     Assertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       monitor = #Reference<0.1132292615.2923167745.74852>
+       handler = #PID<0.453.0>
+     Showing 4 of 4 messages in the mailbox
+     code: assert_receive {:DOWN, ^monitor, :process, ^handler, :normal}
+     mailbox:
+       pattern: {:DOWN, ^monitor, :process, ^handler, :normal}
+       value:   {:terminated, #PID<0.453.0>, :closed}
+
+       pattern: {:DOWN, ^monitor, :process, ^handler, :normal}
+       value:   {:DOWN, #Reference<0.1132292615.2923167745.74852>, :process,
+                 #PID<0.453.0>, {:shutdown, :peer_closed}}
+
+       pattern: {:DOWN, ^monitor, :process, ^handler, :normal}
+       value:   {#Reference<0.0.54915.1132292615.2923233282.67264>, :ok}
+
+       pattern: {:DOWN, ^monitor, :process, ^handler, :normal}
+       value:   {:DOWN, #Reference<0.0.54915.1132292615.2923233282.67264>,
+                 :process, #PID<0.456.0>, :normal}
+     stacktrace:
+       test/resource_budget_stream_network_test.exs:66: (test)
+
+
+
+  2) test admitted tcp callbacks complete after the listener drain barrier (Gaoxy.ResourceBudget.StreamNetworkTest)
+     apps/gaoxy/test/resource_budget_stream_network_test.exs:21
+     Assertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       monitor = #Reference<0.1132292615.2923167746.67626>
+       handler = #PID<0.479.0>
+     Showing 4 of 4 messages in the mailbox
+     code: assert_receive {:DOWN, ^monitor, :process, ^handler, :normal}
+     mailbox:
+       pattern: {:DOWN, ^monitor, :process, ^handler, :normal}
+       value:   {:terminated, #PID<0.479.0>, :closed}
+
+       pattern: {:DOWN, ^monitor, :process, ^handler, :normal}
+       value:   {:DOWN, #Reference<0.1132292615.2923167746.67626>, :process,
+                 #PID<0.479.0>, {:shutdown, :peer_closed}}
+
+       pattern: {:DOWN, ^monitor, :process, ^handler, :normal}
+       value:   {#Reference<0.0.59395.1132292615.2923233282.67670>, :ok}
+
+       pattern: {:DOWN, ^monitor, :process, ^handler, :normal}
+       value:   {:DOWN, #Reference<0.0.59395.1132292615.2923233282.67670>,
+                 :process, #PID<0.482.0>, :normal}
+     stacktrace:
+       test/resource_budget_stream_network_test.exs:66: (test)
+
+
+Finished in 3.2 seconds (0.00s async, 3.2s sync)
+2 tests, 2 failures
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed
+[os_mon] memory supervisor port (memsup): Erlang has closed

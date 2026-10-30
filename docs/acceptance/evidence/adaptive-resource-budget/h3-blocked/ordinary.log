@@ -1,0 +1,408 @@
+==> gaoxy_http3
+
+18:54:47.248 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+18:54:47.277 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+......PASS H3 HEAD /declared metadata and body
+PASS H3 HEAD /declared-body metadata and body
+PASS H3 HEAD /inferred metadata and body
+PASS H3 HEAD /empty metadata and body
+PASS H3 HEAD /zero metadata and body
+PASS H3 HEAD /204 metadata and body
+PASS H3 HEAD /205 metadata and body
+PASS H3 HEAD /304 metadata and body
+PASS H3 GET /declared metadata and body
+PASS H3 GET /declared-body metadata and body
+PASS H3 GET /inferred metadata and body
+PASS H3 GET /empty metadata and body
+PASS H3 GET /zero metadata and body
+PASS H3 GET /204 metadata and body
+PASS H3 GET /205 metadata and body
+PASS H3 GET /304 metadata and body
+...PASS H3 Plug parser application/json /parse
+PASS H3 Plug parser application/x-www-form-urlencoded /parse
+PASS H3 Plug parser application/json /parser-limit
+.H3_TRANSFER_PASS bytes=5242880
+H3_TRANSFER_PASS bytes=307200
+H3_TRANSFER_PASS bytes=307200
+PEER_CLOSED ConnectionTerminated(error_code=<QuicErrorCode.NO_ERROR: 0>, frame_type=None, reason_phrase='')
+H3_IDLE_PARAMS remote_ms=0 peer_ms=300 quiet_ms=900 connection_window=65536 stream_window=16384
+H3_WEBSOCKET_PERSISTENT_PASS
+
+..
+
+  1) test direct HTTP3 applies host options and serves an independent QUIC peer (Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest)
+     apps/gaoxy_http3/test/backend_options_network_test.exs:92
+     match (=) failed
+     code:  assert %{event_batch: 1, poll_interval: 1, max_connections: 64} = :sys.get_state(backend)
+     left:  %{event_batch: 1, poll_interval: 1, max_connections: 64}
+     right: %{
+              local: {{127, 0, 0, 1}, 55601},
+              port: 0,
+              shutdown_timeout: 5000,
+              socket: #Port<0.31>,
+              callbacks: %{},
+              ip: {127, 0, 0, 1},
+              handler: Gaoxy.QUICBridge,
+              workers: %{},
+              writer: #PID<0.604.0>,
+              tls: [
+                cert: [
+                  <<48, 130, 3, 77, 48, 130, 2, 53, 160, 3, 2, 1, 2,
+                    2, 20, 111, 83, 117, 195, 239, 123, 125, 100,
+                    103, 102, 32, 62, 111, 108, 44, 241, 159, 113,
+                    108, 12, 48, 13, 6, ...>>
+                ],
+                key: {:PrivateKeyInfo,
+                 <<48, 130, 4, 189, 2, 1, 0, 48, 13, 6, 9, 42, 134,
+                   72, 134, 247, 13, 1, 1, 1, 5, 0, 4, 130, 4, 167,
+                   48, 130, 4, 163, 2, 1, 0, 2, 130, 1, ...>>}
+              ],
+              receiver: #PID<0.607.0>,
+              admission: #PID<0.603.0>,
+              generation: #Reference<0.1655910040.3655598081.225642>,
+              max_connections: 16384,
+              poll_interval: 1,
+              alpn: ["h3"],
+              callback_timeout: 5000,
+              backend: Quic,
+              endpoint: #PID<0.605.0>,
+              event_batch: 1,
+              quic_options: [
+                idle_timeout: :infinity,
+                streams: [
+                  max_data: 16777216,
+                  max_stream_data: 16777216,
+                  max_buffer: 16777216,
+                  max_ready_bytes: 16777216,
+                  max_streams_bidi: 64,
+                  max_streams_uni: 64,
+                  max_stream_records: 192,
+                  max_recv_ranges: 128
+                ]
+              ],
+              writer_max_bytes: 16777216,
+              writer_max_queue: 64,
+              writer_timeout: 5000,
+              init_timeout: 5000,
+              worker_refs: %{},
+              handler_opts: %{
+                scope: %{
+                  instance: #Reference<0.1655910040.3655598081.225616>,
+                  service: :http3,
+                  generation: #Reference<0.1655910040.3655598081.225622>
+                },
+                instance: #PID<0.597.0>,
+                service: #PID<0.600.0>,
+                spec: %{
+                  id: :http3,
+                  port: 0,
+                  udp: %{},
+                  mode: :unicast,
+                  ip: {127, 0, 0, 1},
+                  handler: Gaoxy.HTTP.HTTP3.Connection,
+                  tls: %{
+                    certfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/apps/gaoxy_http3/tmp/Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest/test-direct-HTTP3-applies-host-options-and-serves-an-independent-QUIC-peer-428bcaa4/cert.pem",
+                    keyfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/apps/gaoxy_http3/tmp/Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest/test-direct-HTTP3-applies-host-options-and-serves-an-independent-QUIC-peer-428bcaa4/key.pem"
+                  },
+                  transport: :quic,
+                  capabilities: [],
+                  dispatcher: %{},
+                  limits: %{
+                    max_bytes: 16777216,
+                    max_connections: 16384,
+                    max_active: 64,
+                    max_packet: 16384,
+                    max_memberships: 64,
+                    drain_timeout: 5000,
+                    callback_timeout: 5000,
+                    idle_timeout: 30000,
+                    ...
+                  },
+                  budget_policy: %{
+                    max_bytes: nil,
+                    max_connections: 16384,
+                    max_active: nil,
+                    provenance: %{
+                      max_bytes: :omitted,
+                      max_connections: :omitted,
+                      max_active: :omitted,
+                      ...
+                    },
+                    max_requests: 65536,
+                    max_streams: 65536
+                  },
+                  handler_mode: :stream,
+                  quic: %{poll_interval: 1, alpn: ["h3"]},
+                  handler_options: %{
+                    initialized: true,
+                    extended_connect: false,
+                    endpoint: {Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest.Endpoint,
+                     ...},
+                    http_limits: %{...},
+                    ...
+                  },
+                  hell_options: [],
+                  abyss_options: [event_batch: 1]
+                },
+                gate: #PID<0.601.0>,
+                startup_token: #Reference<0.1655910040.3655598081.225635>
+              }
+            }
+     stacktrace:
+       test/backend_options_network_test.exs:23: Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest.assert_host/3
+       test/backend_options_network_test.exs:104: (test)
+
+
+
+  2) test ListenerSet carries HTTP3 host options through real activation (Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest)
+     apps/gaoxy_http3/test/backend_options_network_test.exs:109
+     match (=) failed
+     code:  assert %{event_batch: 1, poll_interval: 1, max_connections: 64} = :sys.get_state(backend)
+     left:  %{event_batch: 1, poll_interval: 1, max_connections: 64}
+     right: %{
+              local: {{127, 0, 0, 1}, 59067},
+              port: 0,
+              shutdown_timeout: 5000,
+              socket: #Port<0.33>,
+              callbacks: %{},
+              ip: {127, 0, 0, 1},
+              handler: Gaoxy.QUICBridge,
+              workers: %{},
+              writer: #PID<0.621.0>,
+              tls: [
+                cert: [
+                  <<48, 130, 3, 77, 48, 130, 2, 53, 160, 3, 2, 1, 2,
+                    2, 20, 35, 152, 101, 170, 156, 90, 13, 120, 21,
+                    170, 42, 61, 38, 107, 198, 69, 163, 208, 73,
+                    100, 48, 13, 6, ...>>
+                ],
+                key: {:PrivateKeyInfo,
+                 <<48, 130, 4, 189, 2, 1, 0, 48, 13, 6, 9, 42, 134,
+                   72, 134, 247, 13, 1, 1, 1, 5, 0, 4, 130, 4, 167,
+                   48, 130, 4, 163, 2, 1, 0, 2, 130, 1, ...>>}
+              ],
+              receiver: #PID<0.624.0>,
+              admission: #PID<0.620.0>,
+              generation: #Reference<0.1655910040.3655598081.225771>,
+              max_connections: 16384,
+              poll_interval: 1,
+              alpn: ["h3"],
+              callback_timeout: 5000,
+              backend: Quic,
+              endpoint: #PID<0.622.0>,
+              event_batch: 1,
+              quic_options: [
+                idle_timeout: :infinity,
+                streams: [
+                  max_data: 16777216,
+                  max_stream_data: 16777216,
+                  max_buffer: 16777216,
+                  max_ready_bytes: 16777216,
+                  max_streams_bidi: 64,
+                  max_streams_uni: 64,
+                  max_stream_records: 192,
+                  max_recv_ranges: 128
+                ]
+              ],
+              writer_max_bytes: 16777216,
+              writer_max_queue: 64,
+              writer_timeout: 5000,
+              init_timeout: 5000,
+              worker_refs: %{},
+              handler_opts: %{
+                scope: %{
+                  instance: #Reference<0.1655910040.3655598082.201541>,
+                  service: "tuned_h3:http3",
+                  generation: #Reference<0.1655910040.3655598082.201561>
+                },
+                instance: #PID<0.612.0>,
+                service: #PID<0.617.0>,
+                spec: %{
+                  id: "tuned_h3:http3",
+                  port: 0,
+                  udp: %{},
+                  mode: :unicast,
+                  ip: {127, 0, 0, 1},
+                  handler: Gaoxy.HTTP.HTTP3.Connection,
+                  tls: %{
+                    certfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/apps/gaoxy_http3/tmp/Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest/test-ListenerSet-carries-HTTP3-host-options-through-real-activation-02d46246/cert.pem",
+                    keyfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/apps/gaoxy_http3/tmp/Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest/test-ListenerSet-carries-HTTP3-host-options-through-real-activation-02d46246/key.pem"
+                  },
+                  transport: :quic,
+                  capabilities: [],
+                  dispatcher: %{},
+                  limits: %{
+                    max_bytes: 16777216,
+                    max_connections: 16384,
+                    max_active: 64,
+                    max_packet: 16384,
+                    max_memberships: 64,
+                    drain_timeout: 5000,
+                    callback_timeout: 5000,
+                    idle_timeout: 30000,
+                    ...
+                  },
+                  budget_policy: %{
+                    max_bytes: nil,
+                    max_connections: 16384,
+                    max_active: nil,
+                    provenance: %{
+                      max_bytes: :omitted,
+                      max_connections: :omitted,
+                      max_active: :omitted,
+                      ...
+                    },
+                    max_requests: 65536,
+                    max_streams: 65536
+                  },
+                  handler_mode: :stream,
+                  quic: %{poll_interval: 1, alpn: ["h3"]},
+                  handler_options: %{
+                    initialized: true,
+                    extended_connect: false,
+                    endpoint: {Gaoxy.HTTP.ListenerSet.Target, ...},
+                    http_limits: %{...},
+                    ...
+                  },
+                  hell_options: [],
+                  abyss_options: [event_batch: 1]
+                },
+                gate: #PID<0.618.0>,
+                startup_token: #Reference<0.1655910040.3655598081.225764>
+              }
+            }
+     stacktrace:
+       test/backend_options_network_test.exs:23: Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest.assert_host/3
+       test/backend_options_network_test.exs:124: (test)
+
+
+
+  3) test Phoenix carries HTTP3 host options and shuts down its owned runtime (Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest)
+     apps/gaoxy_http3/test/backend_options_network_test.exs:129
+     match (=) failed
+     code:  assert %{event_batch: 1, poll_interval: 1, max_connections: 64} = :sys.get_state(backend)
+     left:  %{event_batch: 1, poll_interval: 1, max_connections: 64}
+     right: %{
+              local: {{127, 0, 0, 1}, 44880},
+              port: 0,
+              shutdown_timeout: 5000,
+              socket: #Port<0.35>,
+              callbacks: %{},
+              ip: {127, 0, 0, 1},
+              handler: Gaoxy.QUICBridge,
+              workers: %{},
+              writer: #PID<0.642.0>,
+              tls: [
+                cert: [
+                  <<48, 130, 3, 77, 48, 130, 2, 53, 160, 3, 2, 1, 2,
+                    2, 20, 23, 117, 154, 205, 194, 164, 67, 248,
+                    228, 79, 105, 8, 229, 1, 26, 140, 10, 157, 76,
+                    56, 48, 13, 6, ...>>
+                ],
+                key: {:PrivateKeyInfo,
+                 <<48, 130, 4, 189, 2, 1, 0, 48, 13, 6, 9, 42, 134,
+                   72, 134, 247, 13, 1, 1, 1, 5, 0, 4, 130, 4, 167,
+                   48, 130, 4, 163, 2, 1, 0, 2, 130, 1, ...>>}
+              ],
+              receiver: #PID<0.645.0>,
+              admission: #PID<0.641.0>,
+              generation: #Reference<0.1655910040.3655598081.225906>,
+              max_connections: 16384,
+              poll_interval: 1,
+              alpn: ["h3"],
+              callback_timeout: 5000,
+              backend: Quic,
+              endpoint: #PID<0.643.0>,
+              event_batch: 1,
+              quic_options: [
+                idle_timeout: :infinity,
+                streams: [
+                  max_data: 16777216,
+                  max_stream_data: 16777216,
+                  max_buffer: 16777216,
+                  max_ready_bytes: 16777216,
+                  max_streams_bidi: 64,
+                  max_streams_uni: 64,
+                  max_stream_records: 192,
+                  max_recv_ranges: 128
+                ]
+              ],
+              writer_max_bytes: 16777216,
+              writer_max_queue: 64,
+              writer_timeout: 5000,
+              init_timeout: 5000,
+              worker_refs: %{},
+              handler_opts: %{
+                scope: %{
+                  instance: #Reference<0.1655910040.3655598081.225865>,
+                  service: Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest.PhoenixEndpoint.HTTP3,
+                  generation: #Reference<0.1655910040.3655598081.225886>
+                },
+                instance: #PID<0.633.0>,
+                service: #PID<0.638.0>,
+                spec: %{
+                  id: Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest.PhoenixEndpoint.HTTP3,
+                  port: 0,
+                  udp: %{},
+                  mode: :unicast,
+                  ip: {127, 0, 0, 1},
+                  handler: Gaoxy.HTTP.HTTP3.Connection,
+                  tls: %{
+                    certfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/apps/gaoxy_http3/tmp/Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest/test-Phoenix-carries-HTTP3-host-options-and-shuts-down-its-owned-runtime-9c95cb1f/cert.pem",
+                    keyfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/apps/gaoxy_http3/tmp/Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest/test-Phoenix-carries-HTTP3-host-options-and-shuts-down-its-owned-runtime-9c95cb1f/key.pem"
+                  },
+                  transport: :quic,
+                  capabilities: [],
+                  dispatcher: %{},
+                  limits: %{
+                    max_bytes: 16777216,
+                    max_connections: 16384,
+                    max_active: 64,
+                    max_packet: 16384,
+                    max_memberships: 64,
+                    drain_timeout: 5000,
+                    callback_timeout: 5000,
+                    idle_timeout: 30000,
+                    ...
+                  },
+                  budget_policy: %{
+                    max_bytes: nil,
+                    max_connections: 16384,
+                    max_active: nil,
+                    provenance: %{
+                      max_bytes: :omitted,
+                      max_connections: :omitted,
+                      max_active: :omitted,
+                      ...
+                    },
+                    max_requests: 65536,
+                    max_streams: 65536
+                  },
+                  handler_mode: :stream,
+                  quic: %{poll_interval: 1, alpn: ["h3"]},
+                  handler_options: %{
+                    initialized: true,
+                    extended_connect: false,
+                    endpoint: {Gaoxy.HTTP.ListenerSet.Target, ...},
+                    http_limits: %{...},
+                    ...
+                  },
+                  hell_options: [],
+                  abyss_options: [event_batch: 1]
+                },
+                gate: #PID<0.639.0>,
+                startup_token: #Reference<0.1655910040.3655598081.225899>
+              }
+            }
+     stacktrace:
+       test/backend_options_network_test.exs:23: Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest.assert_host/3
+       test/backend_options_network_test.exs:142: (test)
+
+..........
+Finished in 48.4 seconds (47.1s async, 1.2s sync)
+25 tests, 3 failures
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed
+[os_mon] memory supervisor port (memsup): Erlang has closed

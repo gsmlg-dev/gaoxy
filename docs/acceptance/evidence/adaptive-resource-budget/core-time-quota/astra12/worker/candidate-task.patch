@@ -1,0 +1,373 @@
+--- before/apps/gaoxy/lib/gaoxy/stream_bridge.ex
++++ after/apps/gaoxy/lib/gaoxy/stream_bridge.ex
+@@ -10,7 +10,9 @@
+   @impl true
+   def handle_connection(socket, %{spec: spec, gate: gate} = state) do
+     with {:ok, delivery} <- delivery_bound(socket),
+-         funded = 2 * delivery + 2 * spec.limits.max_state + spec.limits.max_output,
++         # Old/new state, its encoded and decoded forms can overlap. Output
++         # retains its original, flattened and detached forms while normalizing.
++         funded = 2 * delivery + 4 * spec.limits.max_state + 3 * spec.limits.max_output,
+          {:ok, lease} <-
+            Admission.acquire(gate, %{temporary_bytes: funded, transport_bytes: funded},
+              kind: :connection,
+@@ -30,17 +32,30 @@
+                alpn: Hell.Socket.negotiated_protocol(socket)
+              },
+              spec.handler_options
+-           ),
+-         state =
+-           Map.merge(state, %{
+-             lease: lease,
+-             app: app,
+-             funded: funded,
+-             delivery_limit: delivery,
+-             delivery_bytes: 0
+-           }),
+-         :ok <- retain(state) do
+-      {:continue, state}
++           ) do
++      state =
++        Map.merge(state, %{
++          lease: lease,
++          app: app,
++          funded: funded,
++          delivery_limit: delivery,
++          delivery_bytes: 0
++        })
++
++      case normalize_app(app, spec) do
++        {:ok, app} ->
++          state = %{state | app: app}
++
++          case retain(state) do
++            :ok -> {:continue, state}
++            {:error, reason} -> {:error, reason, state}
++          end
++
++        {:error, reason} ->
++          # Initialization returned this original state, so its cleanup hook
++          # must still own it even when it cannot enter retained accounting.
++          {:error, reason, state}
++      end
+     else
+       {:error, reason} -> {:error, reason, state}
+     end
+@@ -70,34 +85,57 @@
+     size = min(byte_size(bytes), limit)
+     <<chunk::binary-size(^size), rest::binary>> = bytes
+ 
+-    case state.spec.handler.handle_data(chunk, state.app) do
+-      {:continue, app} ->
+-        next(rest, socket, %{state | app: app}, limit)
+-
+-      {:send, output, app} ->
+-        new_state = %{state | app: app}
+-
+-        with :ok <- state_bound(app, state.spec),
+-             :ok <- output_bound(output, state.spec),
+-             :ok <-
+-               account(
+-                 state,
+-                 state.delivery_bytes + :erlang.external_size(state.app) +
+-                   :erlang.external_size(app) + IO.iodata_length(output)
+-               ),
+-             {:ok, operation} <-
+-               Admission.start_send(state.gate, state.lease, IO.iodata_length(output)),
+-             :ok <- send_output(socket, output, state, operation) do
+-          next(rest, socket, new_state, limit)
+-        else
+-          {:error, reason} -> {:error, reason, new_state}
++    result = state.spec.handler.handle_data(chunk, state.app)
++    finish_callback(result, rest, socket, state, limit)
++  end
++
++  defp finish_callback(result, rest, socket, state, limit) do
++    original_app = elem(result, tuple_size(result) - 1)
++
++    case normalize_app(original_app, state.spec) do
++      {:ok, app} ->
++        next_state = %{state | app: app}
++
++        case result do
++          {:continue, _} ->
++            next(rest, socket, next_state, limit)
++
++          {:send, output, _} ->
++            case normalize_output(output, state.spec) do
++              {:ok, owned_output} ->
++                # Tail handoff drops the callback's borrowed output and original
++                # app before starting a send or retaining the next callback state.
++                send_prepared(rest, socket, next_state, limit, owned_output)
++
++              {:error, reason} ->
++                {:error, reason, next_state}
++            end
++
++          {:close, _} ->
++            {:close, next_state}
++
++          {:error, reason, _} ->
++            {:error, reason, next_state}
+         end
+ 
+-      {:close, app} ->
+-        {:close, %{state | app: app}}
+-
+-      {:error, reason, app} ->
+-        {:error, reason, %{state | app: app}}
++      {:error, reason} ->
++        # Never adopt a decoded state whose identity changed. Preserve the exact
++        # callback-returned state for terminal cleanup, not for another callback.
++        {:error, reason, %{state | app: original_app}}
++    end
++  end
++
++  defp send_prepared(rest, socket, state, limit, output) do
++    with :ok <-
++           account(
++             state,
++             state.delivery_bytes + :erlang.external_size(state.app) + byte_size(output)
++           ),
++         {:ok, operation} <- Admission.start_send(state.gate, state.lease, byte_size(output)),
++         :ok <- send_output(socket, output, state, operation) do
++      next(rest, socket, state, limit)
++    else
++      {:error, reason} -> {:error, reason, state}
+     end
+   end
+ 
+@@ -156,8 +194,29 @@
+     if :erlang.external_size(app) <= spec.limits.max_state, do: :ok, else: {:error, :state_limit}
+   end
+ 
+-  defp output_bound(output, spec) do
+-    if IO.iodata_length(output) <= spec.limits.max_output, do: :ok, else: {:error, :output_limit}
++  defp normalize_app(app, spec) do
++    with :ok <- state_bound(app, spec),
++         encoded = :erlang.term_to_binary(app),
++         true <- byte_size(encoded) <= spec.limits.max_state || {:error, :state_limit},
++         detached = :erlang.binary_to_term(encoded),
++         true <- detached === app || {:error, :state_identity_changed} do
++      {:ok, detached}
++    end
++  rescue
++    ArgumentError -> {:error, :state_encoding_failed}
++    SystemLimitError -> {:error, :state_encoding_failed}
++  end
++
++  defp normalize_output(output, spec) do
++    if IO.iodata_length(output) <= spec.limits.max_output do
++      # iodata_to_binary alone may return the original borrowed binary unchanged.
++      {:ok, output |> IO.iodata_to_binary() |> :binary.copy()}
++    else
++      {:error, :output_limit}
++    end
++  rescue
++    ArgumentError -> {:error, :invalid_output}
++    SystemLimitError -> {:error, :output_limit}
+   end
+ 
+   @impl true
+--- before/apps/gaoxy/test/resource_budget_stream_network_test.exs
++++ after/apps/gaoxy/test/resource_budget_stream_network_test.exs
+@@ -81,6 +81,59 @@
+     end
+   end
+ 
++  defmodule BorrowedOutput do
++    def init(context, owner), do: Echo.init(context, owner)
++
++    def handle_data(command, owner) do
++      slice = binary_part(:binary.copy("x", 8192), 128, 65)
++      send(owner, {:borrowed_output, self(), :binary.referenced_byte_size(slice)})
++      output = if command == "b", do: slice, else: ["<", [slice], ">"]
++      {:send, output, owner}
++    end
++  end
++
++  defmodule TerminalSlices do
++    def init(context, owner), do: Echo.init(context, owner)
++
++    def handle_data(command, owner) when is_pid(owner) do
++      slice = binary_part(:binary.copy("t", 8192), 128, 65)
++      send(owner, {:returned_state, self(), :binary.referenced_byte_size(slice)})
++
++      case command do
++        "c" -> {:close, {owner, slice}}
++        "e" -> {:error, :fixture_error, {owner, slice}}
++        "a" -> {:continue, {owner, slice}}
++      end
++    end
++
++    def handle_data("p", {owner, slice} = state) do
++      send(owner, {:continued_backing, self(), :binary.referenced_byte_size(slice)})
++      {:send, "ok", state}
++    end
++
++    def terminate(reason, {owner, slice}),
++      do:
++        send(
++          owner,
++          {:terminal_backing, self(), reason, :binary.referenced_byte_size(slice), slice}
++        )
++
++    def terminate(reason, owner), do: send(owner, {:original_cleanup, self(), reason})
++  end
++
++  defmodule OversizedInit do
++    def init(_, owner) do
++      app = %{owner: owner, marker: make_ref(), payload: :binary.copy("z", 512)}
++      send(owner, {:init_cleanup_owner, self(), app.marker})
++      {:ok, app}
++    end
++
++    def handle_data(_, app), do: {:continue, app}
++
++    def terminate(reason, app),
++      do: send(app.owner, {:init_cleaned, self(), reason, app.marker, byte_size(app.payload)})
++  end
++
+   for transport <- [:tcp, :tls] do
+     test "admitted #{transport} callbacks complete after the listener drain barrier", context do
+       transport = unquote(transport)
+@@ -297,6 +350,119 @@
+       assert_receive {:DOWN, ^monitor, :process, ^handler, {:shutdown, :peer_closed}}, 1000
+       assert :ok = Task.await(removal, 3500)
+       eventually(fn -> Gaoxy.resource_budget(runtime).usage == 0 end)
++    end
++
++    test "#{transport} sends detached bounded output for borrowed binary and nested iodata",
++         context do
++      transport = unquote(transport)
++
++      runtime =
++        start_runtime(transport, context.tmp_dir,
++          handler: BorrowedOutput,
++          limits: %{max_state: 256, max_output: 67}
++        )
++
++      {:ok, {ip, port}} = Gaoxy.info(runtime, "echo").local
++      {:ok, socket} = connect(transport, ip, port, context.tmp_dir)
++      on_exit(fn -> close(transport, socket) end)
++      assert_receive {:admitted, handler, _}, 1000
++      assert_alpn(transport, socket)
++      :erlang.trace_pattern({Hell.Socket, :send, 2}, true, [:local])
++      :erlang.trace(handler, true, [:call])
++      on_exit(fn -> :erlang.trace_pattern({Hell.Socket, :send, 2}, false, [:local]) end)
++
++      for {command, expected} <- [
++            {"b", :binary.copy("x", 65)},
++            {"n", "<" <> :binary.copy("x", 65) <> ">"}
++          ] do
++        assert :ok = send_bytes(transport, socket, command)
++        assert {:ok, ^expected} = recv(transport, socket, byte_size(expected))
++        assert_receive {:borrowed_output, ^handler, 8192}, 1000
++        assert_receive {:trace, ^handler, :call, {Hell.Socket, :send, [_native, sent]}}, 1000
++        assert is_binary(sent)
++        assert sent == expected
++        assert :binary.referenced_byte_size(sent) == byte_size(expected)
++      end
++
++      close(transport, socket)
++      eventually(fn -> Gaoxy.resource_budget(runtime).usage == 0 end)
++    end
++
++    test "#{transport} continue state detaches before the next callback", context do
++      transport = unquote(transport)
++      runtime = start_runtime(transport, context.tmp_dir, handler: TerminalSlices)
++      {:ok, {ip, port}} = Gaoxy.info(runtime, "echo").local
++      {:ok, socket} = connect(transport, ip, port, context.tmp_dir)
++      on_exit(fn -> close(transport, socket) end)
++      assert_receive {:admitted, handler, _}, 1000
++      assert :ok = send_bytes(transport, socket, "a")
++      assert_receive {:returned_state, ^handler, 8192}, 1000
++      assert :ok = send_bytes(transport, socket, "p")
++      assert {:ok, "ok"} = recv(transport, socket, 2)
++      assert_receive {:continued_backing, ^handler, 65}, 1000
++      close(transport, socket)
++      assert_receive {:terminal_backing, ^handler, :closed, 65, _}, 1000
++      eventually(fn -> Gaoxy.resource_budget(runtime).usage == 0 end)
++    end
++
++    for {command, reason} <- [{"c", :closed}, {"e", :fixture_error}] do
++      test "#{transport} #{reason} state detaches before terminate", context do
++        transport = unquote(transport)
++        reason = unquote(reason)
++        runtime = start_runtime(transport, context.tmp_dir, handler: TerminalSlices)
++        {:ok, {ip, port}} = Gaoxy.info(runtime, "echo").local
++        {:ok, socket} = connect(transport, ip, port, context.tmp_dir)
++        on_exit(fn -> close(transport, socket) end)
++        assert_receive {:admitted, handler, _}, 1000
++        assert :ok = send_bytes(transport, socket, unquote(command))
++        assert_receive {:returned_state, ^handler, 8192}, 1000
++        assert {:error, :closed} = recv(transport, socket, 1)
++        assert_receive {:terminal_backing, ^handler, ^reason, 65, slice}, 1000
++        assert slice == :binary.copy("t", 65)
++        eventually(fn -> Gaoxy.resource_budget(runtime).usage == 0 end)
++      end
++    end
++
++    test "#{transport} rejected init normalization keeps original cleanup ownership", context do
++      transport = unquote(transport)
++
++      runtime =
++        start_runtime(transport, context.tmp_dir,
++          handler: OversizedInit,
++          limits: %{max_state: 128}
++        )
++
++      {:ok, {ip, port}} = Gaoxy.info(runtime, "echo").local
++      {:ok, socket} = connect(transport, ip, port, context.tmp_dir)
++      on_exit(fn -> close(transport, socket) end)
++      assert_receive {:init_cleanup_owner, handler, marker}, 1000
++      assert {:error, :closed} = recv(transport, socket, 1)
++      assert_receive {:init_cleaned, ^handler, :state_limit, ^marker, 512}, 1000
++      eventually(fn -> Gaoxy.resource_budget(runtime).usage == 0 end)
++    end
++
++    for command <- ["c", "e"] do
++      test "#{transport} rejected #{command} state keeps original terminal cleanup ownership",
++           context do
++        transport = unquote(transport)
++
++        runtime =
++          start_runtime(transport, context.tmp_dir,
++            handler: TerminalSlices,
++            limits: %{max_state: 64}
++          )
++
++        {:ok, {ip, port}} = Gaoxy.info(runtime, "echo").local
++        {:ok, socket} = connect(transport, ip, port, context.tmp_dir)
++        on_exit(fn -> close(transport, socket) end)
++        assert_receive {:admitted, handler, _}, 1000
++        assert :ok = send_bytes(transport, socket, unquote(command))
++        assert_receive {:returned_state, ^handler, 8192}, 1000
++        assert {:error, :closed} = recv(transport, socket, 1)
++        assert_receive {:terminal_backing, ^handler, :state_limit, 8192, slice}, 1000
++        assert slice == :binary.copy("t", 65)
++        eventually(fn -> Gaoxy.resource_budget(runtime).usage == 0 end)
++      end
+     end
+ 
+     test "#{transport} funded connection still closes at the original drain deadline", context do
+@@ -336,7 +502,7 @@
+   defp assert_alpn(:tls, socket),
+     do: assert({:ok, "gaoxy-echo-v1"} = :ssl.negotiated_protocol(socket))
+ 
+-  defp funded(buffer, state, output), do: 2 * (100 * buffer + 18_437) + 2 * state + output
++  defp funded(buffer, state, output), do: 2 * (100 * buffer + 18_437) + 4 * state + 3 * output
+ 
+   defp start_runtime(transport, directory, options \\ []) do
+     spec =
+--- before/scripts/check-repairs.py
++++ after/scripts/check-repairs.py
+@@ -97,7 +97,7 @@
+         ('apps/gaoxy/test/certificate_fixture_test.exs', 3),
+     ],
+     'protocol': [
+-        ('apps/gaoxy/test/resource_budget_stream_network_test.exs', 16),
++        ('apps/gaoxy/test/resource_budget_stream_network_test.exs', 30),
+         ('apps/gaoxy_http3/test/resource_budget_network_test.exs', 2),
+         ('apps/gaoxy_http3/test/resource_budget_churn_network_test.exs', 3),
+         ('apps/gaoxy_http/test/resource_budget_h1_test.exs', 3),

@@ -1,0 +1,254 @@
+--- a/mix.exs
++++ b/mix.exs
+@@ -4,7 +4,7 @@
+   def project do
+     [
+       apps_path: "apps",
+-      version: "0.13.1",
++      version: "0.14.0",
+       elixir: "~> 1.18",
+       start_permanent: Mix.env() == :prod,
+       package: [licenses: ["MIT"]],
+--- a/apps/gaoxy/mix.exs
++++ b/apps/gaoxy/mix.exs
+@@ -4,7 +4,7 @@
+   def project do
+     [
+       app: :gaoxy,
+-      version: "0.13.1",
++      version: "0.14.0",
+       build_path: "../../_build",
+       config_path: "../../config/config.exs",
+       deps_path: "../../deps",
+--- a/apps/gaoxy_http/mix.exs
++++ b/apps/gaoxy_http/mix.exs
+@@ -4,7 +4,7 @@
+   def project do
+     [
+       app: :gaoxy_http,
+-      version: "0.13.1",
++      version: "0.14.0",
+       build_path: "../../_build",
+       config_path: "../../config/config.exs",
+       deps_path: "../../deps",
+--- a/apps/gaoxy_http3/mix.exs
++++ b/apps/gaoxy_http3/mix.exs
+@@ -4,7 +4,7 @@
+   def project do
+     [
+       app: :gaoxy_http3,
+-      version: "0.13.1",
++      version: "0.14.0",
+       build_path: "../../_build",
+       config_path: "../../config/config.exs",
+       deps_path: "../../deps",
+--- a/apps/gaoxy_proxy/mix.exs
++++ b/apps/gaoxy_proxy/mix.exs
+@@ -4,7 +4,7 @@
+   def project do
+     [
+       app: :gaoxy_proxy,
+-      version: "0.13.1",
++      version: "0.14.0",
+       build_path: "../../_build",
+       config_path: "../../config/config.exs",
+       deps_path: "../../deps",
+--- a/apps/gaoxy_server/mix.exs
++++ b/apps/gaoxy_server/mix.exs
+@@ -4,7 +4,7 @@
+   def project do
+     [
+       app: :gaoxy_server,
+-      version: "0.13.1",
++      version: "0.14.0",
+       build_path: "../../_build",
+       config_path: "../../config/config.exs",
+       deps_path: "../../deps",
+--- a/apps/gaoxy_test/mix.exs
++++ b/apps/gaoxy_test/mix.exs
+@@ -4,7 +4,7 @@
+   def project do
+     [
+       app: :gaoxy_test,
+-      version: "0.13.1",
++      version: "0.14.0",
+       build_path: "../../_build",
+       config_path: "../../config/config.exs",
+       deps_path: "../../deps",
+--- a/README.md
++++ b/README.md
+@@ -5,9 +5,9 @@
+ HTTP/3 available through an optional package. Run it inside your application's
+ supervision tree or use the standalone release with JSON configuration.
+ 
+-This source targets version **0.13.1**:
+-[GitHub release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.13.1) ·
+-[release notes](docs/releases/0.13.1.md) ·
++This source targets version **0.14.0**:
++[GitHub release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.14.0) ·
++[release notes](docs/releases/0.14.0.md) ·
+ [backend-options verification](docs/acceptance/backend-options.md).
+ 
+ TCP/TLS acceptor and socket tuning uses validated `hell_options`; UDP/QUIC uses
+@@ -51,8 +51,8 @@
+ 1. Replace the explicit Bandit dependency in `mix.exs` with:
+ 
+    ```elixir
+-   {:gaoxy_http, "~> 0.13.1"},
+-   {:websock_adapter, "~> 0.13.1", hex: :gaoxy_websock_adapter, override: true}
++   {:gaoxy_http, "~> 0.14.0"},
++   {:websock_adapter, "~> 0.14.0", hex: :gaoxy_websock_adapter, override: true}
+    ```
+ 
+    Keep the dependency name `:websock_adapter`: that is the OTP application
+@@ -94,7 +94,7 @@
+ 
+ ## Serve a Plug
+ 
+-Add `{:gaoxy_http, "~> 0.13.1"}` to your dependencies. Given a Plug module such
++Add `{:gaoxy_http, "~> 0.14.0"}` to your dependencies. Given a Plug module such
+ as `MyApp.Router`, add a listener to your application's supervision tree:
+ 
+ ```elixir
+--- a/apps/gaoxy/README.md
++++ b/apps/gaoxy/README.md
+@@ -11,7 +11,7 @@
+ ```elixir
+ defp deps do
+   [
+-    {:gaoxy, "~> 0.13.1"}
++    {:gaoxy, "~> 0.14.0"}
+   ]
+ end
+ ```
+--- a/apps/gaoxy_http/README.md
++++ b/apps/gaoxy_http/README.md
+@@ -4,7 +4,7 @@
+ HTTP/2 and WebSocket implementations. Gaoxy owns listener supervision and
+ connection admission; Hell provides TCP and OTP TLS. Bandit is not required.
+ 
+-Requires Elixir `~> 1.18`. Package version: **0.13.1**.
++Requires Elixir `~> 1.18`. Package version: **0.14.0**.
+ 
+ TCP/TLS listeners accept validated `hell_options` for acceptor count and socket
+ tuning. Put these inside each HTTP/HTTPS listener when using Phoenix or
+@@ -17,15 +17,15 @@
+ For a Plug application, add:
+ 
+ ```elixir
+-{:gaoxy_http, "~> 0.13.1"}
++{:gaoxy_http, "~> 0.14.0"}
+ ```
+ 
+ For Phoenix, use both dependencies below, keeping your existing Phoenix,
+ LiveView and application dependencies:
+ 
+ ```elixir
+-{:gaoxy_http, "~> 0.13.1"},
+-{:websock_adapter, "~> 0.13.1", hex: :gaoxy_websock_adapter, override: true}
++{:gaoxy_http, "~> 0.14.0"},
++{:websock_adapter, "~> 0.14.0", hex: :gaoxy_websock_adapter, override: true}
+ ```
+ 
+ `gaoxy_websock_adapter` is the Hex package name; its OTP application and module
+--- a/apps/gaoxy_http3/README.md
++++ b/apps/gaoxy_http3/README.md
+@@ -11,7 +11,7 @@
+ ```elixir
+ defp deps do
+   [
+-    {:gaoxy_http3, "~> 0.13.1"}
++    {:gaoxy_http3, "~> 0.14.0"}
+   ]
+ end
+ ```
+--- a/apps/gaoxy_proxy/README.md
++++ b/apps/gaoxy_proxy/README.md
+@@ -14,7 +14,7 @@
+ ```elixir
+ defp deps do
+   [
+-    {:gaoxy_proxy, "~> 0.13.1"}
++    {:gaoxy_proxy, "~> 0.14.0"}
+   ]
+ end
+ ```
+--- a/apps/gaoxy_test/README.md
++++ b/apps/gaoxy_test/README.md
+@@ -4,7 +4,7 @@
+ Install the aligned package as a test-only dependency:
+ 
+ ```elixir
+-{:gaoxy_test, "~> 0.13.1", only: :test}
++{:gaoxy_test, "~> 0.14.0", only: :test}
+ ```
+ 
+ The application starts fixture supervision, but starts no listener until `open/1`.
+--- a/docs/phoenix.md
++++ b/docs/phoenix.md
+@@ -1,7 +1,7 @@
+ # Phoenix with Gaoxy
+ 
+ This guide migrates an existing Phoenix application from Bandit to
+-`gaoxy_http` **0.13.1**. It uses `MyAppWeb.Endpoint` and OTP application `:my_app`;
++`gaoxy_http` **0.14.0**. It uses `MyAppWeb.Endpoint` and OTP application `:my_app`;
+ replace those names with your own. The adapter is `Gaoxy.PhoenixAdapter`.
+ Gaoxy provides the listener and native H1/H2/WebSocket engine, while Phoenix
+ continues to own the Endpoint pipeline, router, Channels, LiveView, sessions,
+@@ -13,8 +13,8 @@
+ entries to your existing `deps/0`, retaining the rest of your application deps:
+ 
+ ```elixir
+-{:gaoxy_http, "~> 0.13.1"},
+-{:websock_adapter, "~> 0.13.1", hex: :gaoxy_websock_adapter, override: true}
++{:gaoxy_http, "~> 0.14.0"},
++{:websock_adapter, "~> 0.14.0", hex: :gaoxy_websock_adapter, override: true}
+ ```
+ 
+ The second entry is required for Phoenix: `gaoxy_websock_adapter` is the
+--- /dev/null
++++ b/docs/releases/0.14.0.md
+@@ -0,0 +1,43 @@
++# Gaoxy 0.14.0
++
++Gaoxy uses adaptive memory admission shared across instances in one BEAM VM.
++HTTP/HTTPS/H3 listeners, ListenerSets and Phoenix Endpoints share that capacity
++pool. Separate operating-system processes require operator capacity partitioning.
++
++The default soft budget is 50% of effective physical/container memory capacity;
++the hard threshold is twice the soft budget. Unreliable detection falls back to
++256 MiB soft and 512 MiB hard. Usage at or below soft is normal. Above soft
++through hard, admission continues with rate-limited warnings. A new allocation
++or growth projected above hard is refused. Existing work can complete within
++its committed resources, and released capacity becomes available immediately.
++Protocol, allocation and system-memory safety guards remain independently active.
++
++Accounting follows retained memory and temporary obligations through connection,
++request, stream, output and cleanup lifetimes. Idle connections avoid unnecessary
++worst-case reservations; H2 decoder peaks remain guarded before expansion.
++Request completion or WebSocket upgrade ends ordinary request membership, while
++connections, streams and buffered output retain their own lifetimes. Worker
++death alone does not release resources whose cleanup is still unconfirmed.
++
++Service concurrency now has distinct `max_connections`, `max_requests` and
++`max_streams` quotas, defaulting to 16,384 connections, 65,536 ordinary requests
++and 65,536 H2/H3 request streams; lower protocol ceilings still apply. Omitted
++historical aggregate lease and byte caps give way to adaptive accounting.
++Explicit `max_active` retains its legacy ordinary-lease cap, including connection,
++writer and worker leases. Explicit `max_bytes` retains its transport/cleanup byte
++cap, excluding WebSocket retention. Values equal to historical defaults still
++count as explicit policies.
++
++Set an optional instance `resource_budget` with both `soft_limit` and
++`hard_limit` to choose finite thresholds; an explicit hard limit is never
++doubled. ListenerSet, Gateway, Phoenix Endpoint and standalone JSON configuration
++carry this policy. Explicit instance policies still share the VM pool.
++
++Use `Gaoxy.resource_budget(instance)` to inspect capacity, thresholds, retained
++and temporary usage, active connections/requests/streams, state, detection,
++rejections and VM totals. Snapshot, state, rejection and fallback telemetry
++support monitoring. Unavailable inspection must not be treated as zero usage;
++accounted usage is not total BEAM RSS or kernel socket memory.
++
++See the [resource-budget guide](../resource-budget.md) for configuration,
++migration, accounting boundaries and observability.

@@ -1,0 +1,1488 @@
+--- before/apps/gaoxy_http/lib/gaoxy/http/connection.ex
++++ apps/gaoxy_http/lib/gaoxy/http/connection.ex
+@@ -348,6 +348,18 @@
+                   },
+                   else: exchange
+ 
++              exchange =
++                if exchange.protocol_bytes > 0 do
++                  Exchange.fund(
++                    exchange,
++                    Exchange.retained_bytes(exchange),
++                    exchange.protocol_bytes,
++                    %{connection: state.connection_member, request: state.lease}
++                  )
++                else
++                  exchange
++                end
++
+               accounting = request_accounting(state, exchange)
+ 
+               state = %{state | buffer: ""}
+@@ -438,21 +450,11 @@
+     kind, reason -> {:error, {kind, reason}, exchange}
+   end
+ 
+-  defp request_accounting(state, exchange) do
++  defp request_accounting(_state, exchange) do
+     bytes = Exchange.retained_bytes(exchange)
+ 
+     if exchange.protocol_bytes > 0 do
+-      %{
+-        retained_bytes: bytes - exchange.protocol_bytes,
+-        temporary_bytes: exchange.protocol_bytes,
+-        transport_bytes: bytes,
+-        websocket_bytes: 0,
+-        memberships: %{
+-          connection: state.connection_member,
+-          request: state.lease
+-        },
+-        pending_processes: 0
+-      }
++      Exchange.accounting(exchange, bytes)
+     else
+       bytes
+     end
+@@ -474,7 +476,7 @@
+   defp release_request_credit(_state, %{protocol_bytes: 0} = exchange), do: {:ok, exchange}
+ 
+   defp release_request_credit(state, exchange) do
+-    exchange = %{exchange | protocol_bytes: 0}
++    exchange = %{exchange | protocol_bytes: 0, funding: nil}
+     accounting = idle_accounting(state, Exchange.retained_bytes(exchange))
+ 
+     accounting = %{
+@@ -486,8 +488,11 @@
+     }
+ 
+     case update(state, accounting, state.deadline) do
+-      :ok -> {:ok, exchange}
+-      error -> error
++      :ok ->
++        {:ok, Exchange.fund(exchange, accounting.retained_bytes, 0, accounting.memberships)}
++
++      error ->
++        error
+     end
+   end
+ 
+--- before/apps/gaoxy_http/lib/gaoxy/http/exchange.ex
++++ apps/gaoxy_http/lib/gaoxy/http/exchange.ex
+@@ -25,6 +25,7 @@
+     route_bytes: 0,
+     resource_pins: [],
+     protocol_bytes: 0,
++    funding: nil,
+     adapter_body_bytes: 0,
+     poll_buffer_bytes: 0,
+     transport: nil,
+@@ -73,10 +74,12 @@
+         deadline = if timeout == :infinity, do: :infinity, else: Gaoxy.Lifecycle.deadline(timeout)
+ 
+         with :ok <-
++               settle_funding(exchange),
++             :ok <-
+                Admission.begin_stream(
+                  exchange.gate,
+                  exchange.lease,
+-                 retained_bytes(exchange),
++                 accounting(exchange, retained_bytes(exchange)),
+                  deadline,
+                  min(Gaoxy.Lifecycle.remaining(exchange.deadline), 5_000)
+                ),
+@@ -524,12 +527,53 @@
+ 
+     if Gaoxy.Lifecycle.remaining(deadline) == 0,
+       do: {:error, :timeout},
+-      else: Admission.update_until(exchange.gate, exchange.lease, bytes, make_ref(), deadline)
++      else: update_accounting(exchange, accounting(exchange, bytes), deadline)
+   catch
+     :exit, {:timeout, _} -> {:error, :timeout}
+     :exit, _ -> {:error, :closed}
+   end
+ 
++  defp update_accounting(%{funding: nil} = exchange, bytes, deadline),
++    do: Admission.update_until(exchange.gate, exchange.lease, bytes, make_ref(), deadline)
++
++  defp update_accounting(exchange, accounting, deadline) do
++    if accounting.transport_bytes <= exchange.funding.total,
++      do:
++        Admission.repartition_until(
++          exchange.gate,
++          exchange.lease,
++          accounting,
++          make_ref(),
++          deadline
++        ),
++      else:
++        Admission.update_until(exchange.gate, exchange.lease, accounting, make_ref(), deadline)
++  end
++
++  @doc false
++  def settle_funding(%{funding: nil}), do: :ok
++  def settle_funding(exchange), do: update_body_retention(exchange, retained_bytes(exchange))
++
++  @doc false
++  def fund(exchange, total, credit, memberships),
++    do: %{exchange | funding: %{total: total, credit: credit, memberships: memberships}}
++
++  @doc false
++  def accounting(%{funding: nil}, retained), do: retained
++
++  def accounting(%{funding: funding}, retained) do
++    temporary = max(funding.total - retained, 0)
++
++    %{
++      retained_bytes: retained,
++      temporary_bytes: temporary,
++      transport_bytes: retained + temporary,
++      websocket_bytes: 0,
++      memberships: funding.memberships,
++      pending_processes: 0
++    }
++  end
++
+   @doc false
+   def defer_body_retention(exchange, bytes) do
+     deadline = Gaoxy.Lifecycle.deadline(50)
+@@ -537,7 +581,8 @@
+     request =
+       :gen_server.send_request(
+         exchange.gate,
+-        {:update_until, exchange.lease, bytes, make_ref(), deadline}
++        {if(exchange.funding, do: :repartition_until, else: :update_until), exchange.lease,
++         accounting(exchange, bytes), make_ref(), deadline}
+       )
+ 
+     _ = :gen_server.receive_response(request, 0)
+@@ -554,7 +599,8 @@
+     do:
+       update_body_retention(
+         exchange,
+-        retained_bytes(exchange) + max(0, extra - completion_credit(exchange))
++        retained_bytes(exchange) +
++          if(exchange.funding, do: extra, else: max(0, extra - completion_credit(exchange)))
+       )
+ 
+   defp completion_credit(%{transport: nil, protocol_bytes: bytes}) when bytes > 0, do: bytes
+@@ -586,7 +632,7 @@
+ 
+     max(byte_size(exchange.buffer), exchange.poll_buffer_bytes) + headers + trailers +
+       response_trailers + exchange.route_bytes + exchange.protocol_bytes +
+-      exchange.adapter_body_bytes
++      exchange.adapter_body_bytes - if(exchange.funding, do: exchange.funding.credit, else: 0)
+   end
+ 
+   def body_complete?(%{request: %{body: :tunnel}}), do: false
+--- before/apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex
++++ apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex
+@@ -12,13 +12,13 @@
+   def start(socket, context) do
+     options = context.spec.handler_options
+     h2 = options.h2_limits
+-    reserves = Limits.reservation(options.http_limits, h2)
+     member = Map.get(context, :connection_member, make_ref())
+ 
+     with :ok <- Limits.validate_budget(options.http_limits, h2, context.spec.limits),
+          :ok <- Limits.validate_host(if(Socket.secure?(socket), do: :tls, else: :tcp)),
+          :ok <- tls_policy(socket),
+-         :ok <- receive_options(socket),
++         {:ok, delivery} <- receive_options(socket),
++         reserves = Limits.reservation(options.http_limits, h2, delivery),
+          {:ok, lease} <- owner_lease(context, reserves.connection, member),
+          {:ok, writer} <-
+            Task.Supervisor.start_child(Gaoxy.HTTP.Tasks, fn ->
+@@ -50,6 +50,8 @@
+           h2: h2,
+           reserves: reserves,
+           decode_reservation: 0,
++          funded_floor: nil,
++          accounted_bytes: reserves.connection,
+           buffer: "",
+           preface: false,
+           first: true,
+@@ -110,6 +112,26 @@
+       {:error, reason} = error when reason in [:closed, :einval, :enotconn] ->
+         disconnected_option_error(socket, error)
+ 
++      :ok ->
++        if Socket.secure?(socket) do
++          # SSL may coalesce multiple records; keep its conservative profile.
++          {:ok, Limits.max_delivery()}
++        else
++          case Socket.getopts(socket, [:buffer]) do
++            {:ok, options} ->
++              case Keyword.get(options, :buffer) do
++                bytes when is_integer(bytes) and bytes > 0 ->
++                  {:ok, max(bytes, Limits.receive_buffer())}
++
++                _ ->
++                  {:error, :unsupported_http2_receive_buffer}
++              end
++
++            error ->
++              disconnected_option_error(socket, error)
++          end
++        end
++
+       result ->
+         result
+     end
+@@ -159,29 +181,64 @@
+   end
+ 
+   defp resize_connection(state, decode_bytes) do
+-    # The native active-once/TLS envelope remains committed before the next
+-    # callback can allocate. Actual parser, HPACK table, control and stream state
+-    # replace the unrelated blanket connection allowance.
+-    retained =
++    # Only completion credit is reusable. The independent receive/copy floor
++    # and the current decoder peak remain promised before further allocation.
++    state =
++      if budgeted?(state) and Map.get(state, :funded_floor) == nil do
++        # Pay the bounded integer representation of these two bookkeeping
++        # fields before replacing their initial values.
++        Map.merge(state, %{
++          funded_floor: retained_connection(state) + state.reserves.connection + 32,
++          accounted_bytes: state.reserves.connection
++        })
++      else
++        state
++      end
++
++    retained = if budgeted?(state), do: retained_connection(state), else: 0
++
++    total =
+       if budgeted?(state),
+-        do: :erlang.external_size(Map.drop(state, [:decode_reservation])),
+-        else: 0
+-
+-    temporary = state.reserves.connection + decode_bytes
++        do: max(state.funded_floor, retained + state.reserves.receive) + decode_bytes,
++        else: state.reserves.connection + decode_bytes
++
++    temporary = total - retained
+     accounting = connection_accounting(state, retained, temporary, state.connection_member)
+ 
+-    case Admission.update_until(
++    mutation =
++      if budgeted?(state) and total <= state.accounted_bytes,
++        do: :repartition_until,
++        else: :update_until
++
++    case apply(Admission, mutation, [
+            state.gate,
+            state.lease,
+            accounting,
+            make_ref(),
+            Lifecycle.deadline(50)
+-         ) do
+-      :ok -> {:ok, %{state | decode_reservation: decode_bytes}}
+-      {:error, reason} -> {:error, reason, state}
++         ]) do
++      :ok ->
++        next = %{state | decode_reservation: decode_bytes}
++        {:ok, if(budgeted?(state), do: Map.put(next, :accounted_bytes, total), else: next)}
++
++      {:error, reason} ->
++        {:error, reason, state}
+     end
+   catch
+     :exit, _ -> {:error, :closed, state}
++  end
++
++  # Retained slices must not pin an entire old delivery. The independent
++  # receive/copy floor pays these copies before parser and consumer handoff.
++  defp detach(bytes) do
++    if :binary.referenced_byte_size(bytes) > byte_size(bytes),
++      do: :binary.copy(bytes),
++      else: bytes
++  end
++
++  defp retained_connection(state) do
++    :erlang.external_size(Map.drop(state, [:decode_reservation])) +
++      Enum.reduce(state.streams, 0, fn {_, stream}, total -> total + stream.delivered_wire end)
+   end
+ 
+   defp progress(state) do
+@@ -227,7 +284,7 @@
+         {:close, state}
+ 
+       true ->
+-        state = %{state | buffer: state.buffer <> bytes}
++        state = %{state | buffer: detach(state.buffer <> bytes)}
+         state = parse(state, state.h2.control_turn)
+         network_continue(socket, progress(partial_timer(state)))
+     end
+@@ -258,7 +315,11 @@
+             else: initial
+ 
+         state =
+-          enqueue(%{state | preface: true, buffer: rest}, Frame.encode(4, 0, 0, initial), nil)
++          enqueue(
++            %{state | preface: true, buffer: detach(rest)},
++            Frame.encode(4, 0, 0, initial),
++            nil
++          )
+ 
+         parse(state, left)
+       else
+@@ -278,7 +339,7 @@
+         failure(state, reason)
+ 
+       {:ok, frame, rest} ->
+-        state = %{state | buffer: rest}
++        state = %{state | buffer: detach(rest)}
+         state = rate(state, frame)
+ 
+         state =
+@@ -445,7 +506,10 @@
+               decode_headers(state, id, block, ended, stream_error)
+ 
+             true ->
+-              %{state | continuation: %{id: id, block: block, ended: ended, error: stream_error}}
++              %{
++                state
++                | continuation: %{id: id, block: detach(block), ended: ended, error: stream_error}
++              }
+           end
+         else
+           {:error, reason} -> failure(state, reason)
+@@ -468,7 +532,7 @@
+ 
+       if Frame.flag?(flags, 4),
+         do: decode_headers(%{state | continuation: nil}, cont.id, block, cont.ended, cont.error),
+-        else: %{state | continuation: %{cont | block: block}}
++        else: %{state | continuation: %{cont | block: detach(block)}}
+     end
+   end
+ 
+@@ -528,7 +592,7 @@
+                   stream
+                   | recv_window: stream.recv_window - size,
+                     received: received,
+-                    input: stream.input <> bytes,
++                    input: detach(stream.input <> bytes),
+                     queued_wire: stream.queued_wire + size,
+                     eof: ended
+                 }
+@@ -729,7 +793,8 @@
+                 stream.deadline,
+                 {Stream, :run,
+                  [self(), id, stream.token, state.gate, protocol_bytes, stream.deadline]},
+-                metadata
++                metadata,
++                :phase_receipt
+               )
+ 
+             timer =
+@@ -996,6 +1061,8 @@
+         demand = stream.demand
+         count = min(demand.credit, byte_size(stream.input))
+         <<bytes::binary-size(^count), rest::binary>> = stream.input
++        bytes = detach(bytes)
++        rest = detach(rest)
+         ended = rest == "" and stream.eof
+         wire = if rest == "", do: stream.queued_wire, else: count
+         send(stream.worker, {:gaoxy_websocket_data, stream.token, demand.ref, bytes, ended})
+@@ -1014,6 +1081,8 @@
+         Process.cancel_timer(read.timer)
+         count = min(read.credit, byte_size(stream.input))
+         <<bytes::binary-size(^count), rest::binary>> = stream.input
++        bytes = detach(bytes)
++        rest = detach(rest)
+         ended = rest == "" and stream.eof
+         # Payload credit follows the next consumer call; padding travels with the final piece.
+         wire = if rest == "", do: stream.queued_wire, else: count
+@@ -1461,7 +1530,7 @@
+     Process.send_after(self(), :h2_close, Lifecycle.remaining(deadline))
+ 
+     enqueue(
+-      %{state | draining: true},
++      Map.put(%{state | draining: true}, :drain_deadline, deadline),
+       Frame.encode(7, 0, 0, <<state.accepted::32, 0::32>>),
+       nil,
+       deadline
+@@ -1536,6 +1605,18 @@
+       protocol_bytes: protocol_bytes
+     }
+ 
++    exchange =
++      if budgeted?(state) do
++        Exchange.fund(
++          exchange,
++          protocol_bytes + 2 * stream.request.head_bytes,
++          state.reserves.stream,
++          %{h2_stream: {state.lease, id}, request: token}
++        )
++      else
++        exchange
++      end
++
+     send(worker, {:h2_dispatch, self(), exchange, state.spec.handler_options.endpoint})
+ 
+     start_next(
+@@ -1760,7 +1841,7 @@
+     %{state | retiring_streams: retirements}
+   end
+ 
+-  defp settle_retired(state) do
++  defp settle_retired(state, deadline \\ nil) do
+     retired =
+       Enum.reduce(state.retiring_streams, %{}, fn {id, retired}, pending ->
+         stream_done =
+@@ -1771,7 +1852,7 @@
+                 state.lease,
+                 :h2_stream,
+                 id,
+-                Lifecycle.deadline(50)
++                deadline || Lifecycle.deadline(50)
+               )
+             end)
+ 
+@@ -1790,7 +1871,7 @@
+                        state.lease,
+                        lease,
+                        retired.operation,
+-                       Lifecycle.deadline(50)
++                       deadline || Lifecycle.deadline(50)
+                      )
+ 
+                    {:spawn, token} ->
+@@ -1799,11 +1880,11 @@
+                        state.lease,
+                        token,
+                        retired.operation,
+-                       Lifecycle.deadline(50)
++                       deadline || Lifecycle.deadline(50)
+                      )
+                  end
+                end)) or
+-            (buffers_done and definite_spawn_rejection?(retired.outcome))
++            (buffers_done and definite_spawn_rejection?(retired.outcome, retired.token))
+ 
+         retired = %{retired | stream_done: stream_done, resources_done: resources_done}
+ 
+@@ -1830,7 +1911,10 @@
+ 
+   # These errors are returned before reserve/activation can create a child.
+   # An ambiguous timeout, cancelled worker or stale token is never absence proof.
+-  defp definite_spawn_rejection?({:error, reason}),
++  defp definite_spawn_rejection?({:error, {:not_reserved, token, :deadline_exceeded}}, token),
++    do: true
++
++  defp definite_spawn_rejection?({:error, reason}, _token),
+     do:
+       reason in [
+         :byte_limit,
+@@ -1845,7 +1929,7 @@
+         :process_capacity
+       ]
+ 
+-  defp definite_spawn_rejection?(_), do: false
++  defp definite_spawn_rejection?(_, _), do: false
+ 
+   defp stream_output?(state, id) do
+     state.outgoing_block == id or
+@@ -1886,14 +1970,135 @@
+   end
+ 
+   def close(state) when is_map(state) do
+-    Enum.each(state.streams, fn {_, stream} ->
+-      cancel_start(state, stream)
+-      if stream.worker, do: Process.exit(stream.worker, :kill)
+-    end)
+-
+-    send(state.writer, :stop)
++    # local_closed plus a cleared, successful write slot proves completion. A
++    # peer can close immediately after END_STREAM while that worker commits its
++    # final Admission bookkeeping. Keep the parent alive for that bounded join.
++    deadline =
++      Lifecycle.earlier(
++        Lifecycle.deadline(Lifecycle.cleanup_headroom()),
++        Map.get(state, :drain_deadline, :infinity)
++      )
++
++    state = settle_final_write(state, deadline)
++
++    {completed, deadline} =
++      Enum.reduce(state.streams, {%{}, deadline}, fn {_, stream}, {completed, deadline} ->
++        cancel_start(state, stream)
++
++        cond do
++          stream.worker == nil ->
++            {completed, deadline}
++
++          stream.local_closed and stream.eof and stream.write == nil and not stream.write_failed ->
++            monitor = Process.monitor(stream.worker)
++
++            {Map.put(completed, monitor, stream.worker),
++             Lifecycle.earlier(deadline, stream.deadline)}
++
++          true ->
++            Process.exit(stream.worker, :kill)
++            {completed, deadline}
++        end
++      end)
++
++    join_completed(completed, deadline)
++
++    if budgeted?(state) do
++      monitor = Process.monitor(state.writer)
++      send(state.writer, :stop)
++
++      if writer_terminal?(state.writer, monitor, deadline) do
++        # Writer DOWN proves its independent frame references are gone. Drop
++        # every parent stream/carry/output reference before resource proof;
++        # Admission still independently joins child DOWN/EXIT and commits.
++        state = Enum.reduce(Map.keys(state.streams), state, &discard(&2, &1, false))
++
++        state = %{
++          state
++          | buffer: "",
++            continuation: nil,
++            output: :queue.new(),
++            inflight: nil,
++            inflight_write: nil,
++            outgoing_block: nil
++        }
++
++        if Lifecycle.remaining(deadline) > 0, do: settle_retired(state, deadline)
++      end
++    else
++      send(state.writer, :stop)
++    end
++
+     :ok
+   end
+ 
+   def close(_), do: :ok
++
++  # A socket close can overtake the writer's receipt even though the peer has
++  # already received END_STREAM. Accept only that original final-write token;
++  # never treat a queued FIN or peer close itself as successful completion.
++  defp settle_final_write(
++         %{inflight: {token, callback}, inflight_write: %{id: id, deadline: write_deadline}} =
++           state,
++         deadline
++       ) do
++    stream = state.streams[id]
++    final = match?({:headers, ^id, _}, callback) or match?({:data, ^id, true, _}, callback)
++
++    if stream && stream.local_closed && stream.eof && final do
++      await_final_write(state, token, Lifecycle.earlier(deadline, write_deadline))
++    else
++      state
++    end
++  end
++
++  defp settle_final_write(state, _deadline), do: state
++
++  defp await_final_write(state, token, deadline) do
++    writer = state.writer
++
++    receive do
++      {:h2_write_started, ^writer, ^token} = receipt ->
++        case message(state, receipt) do
++          :close -> state
++          next -> await_final_write(next, token, deadline)
++        end
++
++      {:h2_written, ^writer, ^token, :ok} = receipt ->
++        case message(state, receipt) do
++          :close -> state
++          next -> next
++        end
++
++      {:h2_written, ^writer, ^token, _} ->
++        state
++    after
++      Lifecycle.remaining(deadline) -> state
++    end
++  end
++
++  defp writer_terminal?(writer, monitor, deadline) do
++    receive do
++      {:DOWN, ^monitor, :process, ^writer, _} -> true
++    after
++      Lifecycle.remaining(deadline) ->
++        Process.demonitor(monitor, [:flush])
++        false
++    end
++  end
++
++  defp join_completed(completed, _deadline) when map_size(completed) == 0, do: :ok
++
++  defp join_completed(completed, deadline) do
++    receive do
++      {:DOWN, monitor, :process, _, _} when is_map_key(completed, monitor) ->
++        join_completed(Map.delete(completed, monitor), deadline)
++    after
++      Lifecycle.remaining(deadline) ->
++        Enum.each(completed, fn {monitor, worker} ->
++          Process.demonitor(monitor, [:flush])
++          Process.exit(worker, :kill)
++        end)
++    end
++  end
+ end
+--- before/apps/gaoxy_http/lib/gaoxy/http/http2/limits.ex
++++ apps/gaoxy_http/lib/gaoxy/http/http2/limits.ex
+@@ -34,6 +34,7 @@
+   def normalize(_), do: {:error, :invalid_http2_limits}
+ 
+   def receive_buffer, do: @receive_buffer
++  def max_delivery, do: @max_delivery
+ 
+   def validate_host(transport) do
+     active = Application.get_env(:ssl, :internal_active_n, 100)
+@@ -44,11 +45,13 @@
+        else: {:error, :unsupported_http2_host}
+   end
+ 
+-  def reservation(http, h2) do
++  def reservation(http, h2, delivery \\ @max_delivery) do
+     %{
+       # A native active-once delivery is already promised while the owner is
+       # waiting. Retained decoder/parser/stream state is measured separately.
+-      connection: 4 * http.max_buffer_bytes + 8 * @max_delivery,
++      connection: 4 * http.max_buffer_bytes + 8 * delivery,
++      receive: 2 * http.max_buffer_bytes + 8 * delivery,
++      completion: 2 * http.max_buffer_bytes,
+       decode: decode_reservation(h2, h2.max_header_block),
+       stream: 2 * http.max_header_bytes + 4 * http.max_read_chunk + 65_536,
+       writer: 4 * 16_384 + 1_024
+--- before/apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex
++++ apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex
+@@ -68,15 +68,25 @@
+ 
+             # Request completion does not prove stream/output completion. The
+             # parent separately retires those resources after its writer settles.
+-            with :ok <-
+-                   Gaoxy.Admission.end_request(
+-                     gate,
+-                     lease,
+-                     Exchange.retained_bytes(final),
+-                     Lifecycle.deadline(50)
+-                   ) do
+-              send(owner, {:h2_stream_done, self(), id, token, outcome})
+-            end
++            settled =
++              if match?({:websocket, _, _, _, _}, final.response) do
++                # Upgrade already removed HTTP request membership. The shared
++                # WebSocket driver completes its own callback/send lifetime;
++                # never restore the pre-upgrade HTTP completion reservation.
++                :ok
++              else
++                with :ok <- Exchange.settle_funding(final) do
++                  Gaoxy.Admission.end_request(
++                    gate,
++                    lease,
++                    Exchange.accounting(final, Exchange.retained_bytes(final)),
++                    Lifecycle.deadline(50)
++                  )
++                end
++              end
++
++            if settled == :ok,
++              do: send(owner, {:h2_stream_done, self(), id, token, outcome})
+           end
+ 
+         {:DOWN, ^monitor, :process, ^owner, _} ->
+@@ -93,11 +103,12 @@
+   end
+ 
+   defp request_lifetime(%{limits: %{request_timeout: :infinity}} = exchange) do
+-    with :ok <-
++    with :ok <- Exchange.settle_funding(exchange),
++         :ok <-
+            Gaoxy.Admission.begin_request(
+              exchange.gate,
+              exchange.lease,
+-             Exchange.retained_bytes(exchange),
++             Exchange.accounting(exchange, Exchange.retained_bytes(exchange)),
+              :infinity
+            ),
+          :ok <- Gaoxy.HTTP.HTTP2.Transport.operation(exchange, :infinite_request) do
+--- before/apps/gaoxy_http/lib/gaoxy/http/http2/worker_accounting.ex
++++ apps/gaoxy_http/lib/gaoxy/http/http2/worker_accounting.ex
+@@ -182,10 +182,18 @@
+         status: e(:committed)
+       )
+ 
+-    payload = t([e(:spawn_request), parent, token, accounting, d, mfa, metadata])
++    payload =
++      t([e(:spawn_request), parent, token, accounting, d, mfa, metadata, e(:phase_receipt)])
++
+     from = t([o, alias_tag(ref)])
+     success = t([e(:ok), pid, ref])
+-    finite = t([e(:error), reason_cap()])
++
++    finite =
++      max(
++        t([e(:error), reason_cap()]),
++        t([e(:error), t([e(:not_reserved), token, e(:deadline_exceeded)])])
++      )
++
+     reply = max(success, finite)
+ 
+     public_result =
+@@ -268,6 +276,7 @@
+         route_bytes: e(0),
+         resource_pins: e([]),
+         protocol_bytes: e(n),
++        funding: m(total: e(w), credit: e(p), memberships: memberships),
+         adapter_body_bytes: e(0),
+         poll_buffer_bytes: e(0),
+         transport: e(Transport),
+--- before/apps/gaoxy_http/lib/gaoxy/http/websocket.ex
++++ apps/gaoxy_http/lib/gaoxy/http/websocket.ex
+@@ -20,6 +20,10 @@
+     input_credit: 0,
+     pending_output: [],
+     input_events: [],
++    completion_credit: 0,
++    funded_floor: nil,
++    funded_websocket_bytes: 0,
++    memberships: nil,
+     closing: false,
+     initialized: false
+   ]
+@@ -123,6 +127,10 @@
+       limits: limits,
+       deadline: deadline,
+       buffer: exchange.buffer,
++      # A server control frame is at most 125 payload bytes plus two header
++      # bytes. Its encoder/output copies remain funded through graceful close.
++      completion_credit: if(exchange.funding, do: 2 * 127, else: 0),
++      memberships: if(exchange.funding, do: Map.delete(exchange.funding.memberships, :request)),
+       decoder: Frame.decoder(max_frame_size: limits.max_frame_size),
+       message:
+         Message.new(
+@@ -130,6 +138,8 @@
+           max_fragments: limits.max_fragments
+         )
+     }
++
++    ws = fund_completion(ws)
+ 
+     with {:ok, headers} <- handshake(exchange.request, response_headers),
+          # Upgrade is a single transition from the completed H1 request to a new
+@@ -192,9 +202,10 @@
+ 
+   @doc false
+   def reserve_input(ws, credit) do
+-    ws = %{ws | input_credit: credit}
+-
+-    case account(ws) do
++    previous = ws
++    ws = fund_completion(%{ws | input_credit: credit})
++
++    case account(ws, 0, previous) do
+       :ok -> {:ok, ws}
+       error -> error
+     end
+@@ -322,6 +333,14 @@
+              retained(ws, 0, bytes),
+              deadline
+            ) do
++      ws =
++        if ws.memberships do
++          paid = retained(ws, 0, bytes)
++          %{ws | funded_floor: paid.transport_bytes, funded_websocket_bytes: paid.websocket_bytes}
++        else
++          ws
++        end
++
+       result(ws, apply(ws.handler, function, args))
+     else
+       {:error, reason} -> {:close, %{ws | reason: {:error, reason}}}
+@@ -397,9 +416,14 @@
+   # result and invalidate that watchdog before any synchronous transport call.
+   defp complete(ws, state, messages) do
+     messages = if is_tuple(messages), do: [messages], else: messages
+-    ws = %{ws | app_state: state, pending_output: messages}
+-
+-    case Admission.end_websocket_callback(ws.exchange.gate, ws.exchange.lease, retained(ws)) do
++    previous = ws
++    ws = fund_completion(%{ws | app_state: state, pending_output: messages})
++
++    result =
++      with :ok <- if(ws.memberships, do: account(ws, 0, previous), else: :ok),
++           do: Admission.end_websocket_callback(ws.exchange.gate, ws.exchange.lease, retained(ws))
++
++    case result do
+       :ok -> {:continue, ws}
+       {:error, reason} -> {:close, %{ws | reason: {:error, reason}}}
+     end
+@@ -428,9 +452,9 @@
+   defp push_next(%{pending_output: [{opcode, payload} | rest]} = ws) do
+     case send_frame(ws, opcode, payload || "") do
+       :ok ->
+-        next = %{ws | pending_output: rest}
+-
+-        case account(next) do
++        next = fund_completion(%{ws | pending_output: rest})
++
++        case account(next, 0, ws) do
+           :ok -> push_next(next)
+           {:error, reason} -> {:close, %{next | reason: {:error, reason}}}
+         end
+@@ -526,6 +550,8 @@
+   end
+ 
+   defp idle(ws) do
++    ws = fund_completion(ws)
++
+     case Admission.retain(ws.exchange.gate, ws.exchange.lease, retained(ws)) do
+       :ok -> {:continue, ws}
+       {:error, reason} -> {:close, %{ws | reason: {:error, reason}}}
+@@ -564,7 +590,7 @@
+     exchange_bytes =
+       if ws.exchange.transport, do: Gaoxy.HTTP.Exchange.retained_bytes(ws.exchange), else: 0
+ 
+-    %{
++    categories = %{
+       transport_bytes:
+         exchange_bytes + 2 * byte_size(ws.buffer) + 2 * ws.input_credit +
+           :erlang.external_size(ws.decoder) + staging,
+@@ -573,10 +599,61 @@
+           :erlang.external_size(ws.pending_output) + :erlang.external_size(ws.input_events) +
+           callback_bytes
+     }
+-  end
+-
+-  defp account(ws, staging \\ 0),
+-    do: Admission.update(ws.exchange.gate, ws.exchange.lease, retained(ws, staging))
++
++    if ws.memberships do
++      transport = categories.transport_bytes
++      temporary = max((ws.funded_floor || transport + ws.completion_credit) - transport, 0)
++
++      %{
++        retained_bytes: categories.transport_bytes + categories.websocket_bytes,
++        temporary_bytes: temporary,
++        transport_bytes: categories.transport_bytes + temporary,
++        websocket_bytes: categories.websocket_bytes,
++        memberships: ws.memberships,
++        pending_processes: 0
++      }
++    else
++      categories
++    end
++  end
++
++  defp fund_completion(%{memberships: nil} = ws), do: ws
++
++  defp fund_completion(ws) do
++    # Keep a fixed funded total across send staging and its release. Adding a
++    # fresh temporary reserve to every new retained value would require growth
++    # even for an already-funded close frame during drain.
++    accounting = retained(ws)
++    transport = accounting.transport_bytes - accounting.temporary_bytes
++
++    %{
++      ws
++      | funded_floor: transport + ws.completion_credit,
++        funded_websocket_bytes: accounting.websocket_bytes
++    }
++  end
++
++  defp account(ws, staging \\ 0, previous \\ nil) do
++    accounting = retained(ws, staging)
++
++    if ws.memberships do
++      deadline = Lifecycle.earlier(ws.deadline, Lifecycle.deadline(50))
++      paid = previous || ws
++      total = accounting.retained_bytes + accounting.temporary_bytes
++      funded = paid.funded_floor + paid.funded_websocket_bytes
++      mutation = if total <= funded, do: :repartition_until, else: :update_until
++
++      apply(Admission, mutation, [
++        ws.exchange.gate,
++        ws.exchange.lease,
++        accounting,
++        make_ref(),
++        deadline
++      ])
++    else
++      Admission.update(ws.exchange.gate, ws.exchange.lease, accounting)
++    end
++  end
+ 
+   defp within?(_, :infinity), do: true
+   defp within?(value, limit), do: value <= limit
+--- before/apps/gaoxy_http/test/http2_websocket_idle_test.exs
++++ apps/gaoxy_http/test/http2_websocket_idle_test.exs
+@@ -97,6 +97,78 @@
+     assert state.streams == %{}
+     assert socket.read_timeout == 40
+     Hell.Handler.set_read_timeout(socket, :infinity)
++  end
++
++  test "expired final HEADERS start receipt closes without granting completion proof" do
++    {socket, state} = fixture(40)
++    {:noreply, {_, state}} = open(socket, state, 1)
++    stream = %{state.streams[1] | local_closed: true, eof: true}
++    monitor = Process.monitor(stream.worker)
++    token = make_ref()
++
++    state =
++      state
++      |> Map.put(:streams, %{1 => stream})
++      |> Map.merge(%{
++        writer: self(),
++        inflight: {token, {:headers, 1, stream.write.from}},
++        inflight_write: %{id: 1, deadline: Gaoxy.Lifecycle.now() - 1},
++        inflight_started: false,
++        outgoing_started: false,
++        outgoing_block: 1
++      })
++
++    send(self(), {:h2_write_started, self(), token})
++    assert :ok = Gaoxy.HTTP.HTTP2.Connection.close(state)
++    assert_receive {:DOWN, ^monitor, :process, _, :killed}, 500
++    assert_received :stop
++  end
++
++  test "wire-complete stragglers share one existing close deadline" do
++    workers =
++      for _ <- 1..2,
++          do:
++            spawn(fn ->
++              receive do
++                :never -> :ok
++              end
++            end)
++
++    monitors = Enum.map(workers, &Process.monitor/1)
++    on_exit(fn -> Enum.each(workers, &Process.exit(&1, :kill)) end)
++    deadline = Gaoxy.Lifecycle.deadline(40)
++
++    streams =
++      workers
++      |> Enum.with_index()
++      |> Map.new(fn {worker, id} ->
++        {id,
++         %{
++           worker: worker,
++           startup: nil,
++           local_closed: true,
++           eof: true,
++           write: nil,
++           write_failed: false,
++           deadline: :infinity
++         }}
++      end)
++
++    started = Gaoxy.Lifecycle.now()
++
++    assert :ok =
++             Gaoxy.HTTP.HTTP2.Connection.close(%{
++               streams: streams,
++               writer: self(),
++               drain_deadline: deadline
++             })
++
++    assert Gaoxy.Lifecycle.now() - started < 500
++
++    for {worker, monitor} <- Enum.zip(workers, monitors),
++        do: assert_receive({:DOWN, ^monitor, :process, ^worker, :killed}, 500)
++
++    assert_received :stop
+   end
+ 
+   defp open(socket, state, id, write_timeout \\ 1_000) do
+--- before/apps/gaoxy_http/test/http2_websocket_network_test.exs
++++ apps/gaoxy_http/test/http2_websocket_network_test.exs
+@@ -94,6 +94,7 @@
+     assert {:ok, _, fields} = HPACK.decode(HPACK.new_decoder(max_dynamic_size: 0), block)
+     assert {":status", "200"} in fields
+     assert {0, 1, 3, "/sibling"} = next(socket, 0, 3)
++    assert %{rejected: 0} = Gaoxy.status(server, :http)
+     :ok = :gen_tcp.close(socket)
+     assert :ok = Gaoxy.stop(server)
+   end
+--- before/apps/gaoxy_http/test/http2_worker_accounting_test.exs
++++ apps/gaoxy_http/test/http2_worker_accounting_test.exs
+@@ -239,11 +239,21 @@
+       status: :committed
+     }
+ 
+-    payload = {:spawn_request, s.lease, r.token, accounting, r.deadline, mfa, metadata}
++    payload =
++      {:spawn_request, s.lease, r.token, accounting, r.deadline, mfa, metadata, :phase_receipt}
++
+     success = {:ok, worker, child_lease}
+-    # This is the longest ordinary source-controlled finite reason, checked
+-    # against all native/core finite constructors by the source checkpoint.
+-    failure = {:error, :safety_sample_unavailable}
++    # Instantiate the larger ordinary rejection or authenticated phase proof.
++    # Keep the term itself so every enclosing constructor is checked independently.
++    failure =
++      Enum.max_by(
++        [
++          {:error, :safety_sample_unavailable},
++          {:error, {:not_reserved, r.token, :deadline_exceeded}}
++        ],
++        c
++      )
++
+     reply = max_size(success, failure, c)
+ 
+     public_result =
+@@ -330,6 +340,7 @@
+       route_bytes: 0,
+       resource_pins: [],
+       protocol_bytes: n,
++      funding: %{total: w, credit: s.reserves.stream, memberships: memberships},
+       poll_buffer_bytes: 0,
+       transport: Transport,
+       transport_state: transport,
+--- before/apps/gaoxy_http/test/mixed_connection_lifecycle_test.exs
++++ apps/gaoxy_http/test/mixed_connection_lifecycle_test.exs
+@@ -77,10 +77,13 @@
+     refute selected.settings_ack
+     assert Process.read_timer(first.detector_timer) == false
+ 
++    assert {:ok, [buffer: delivery]} = Hell.Socket.getopts(socket, [:buffer])
++
+     reserves =
+       Limits.reservation(
+         context.spec.handler_options.http_limits,
+-        context.spec.handler_options.h2_limits
++        context.spec.handler_options.h2_limits,
++        max(delivery, Limits.receive_buffer())
+       )
+ 
+     assert :sys.get_state(selected.gate).leases[selected.lease].bytes == reserves.connection
+@@ -194,10 +197,14 @@
+     {socket, context, _} = context()
+     assert {:continue, state} = Connection.handle_connection(socket, context)
+ 
++    :ok = Hell.Socket.setopts(socket, buffer: Limits.receive_buffer())
++    assert {:ok, [buffer: delivery]} = Hell.Socket.getopts(socket, [:buffer])
++
+     reserves =
+       Limits.reservation(
+         context.spec.handler_options.http_limits,
+-        context.spec.handler_options.h2_limits
++        context.spec.handler_options.h2_limits,
++        max(delivery, Limits.receive_buffer())
+       )
+ 
+     {:ok, _other} =
+--- before/apps/gaoxy_http/test/native_proxy_seams_test.exs
++++ apps/gaoxy_http/test/native_proxy_seams_test.exs
+@@ -552,8 +552,9 @@
+         collect_updates(gate, lease, [bytes | acc])
+ 
+       {:trace, ^gate, :receive,
+-       {:"$gen_call", _from, {:update_until, ^lease, bytes, operation, deadline}}}
+-      when is_reference(operation) and is_integer(deadline) ->
++       {:"$gen_call", _from, {action, ^lease, bytes, operation, deadline}}}
++      when action in [:update_until, :repartition_until] and is_reference(operation) and
++             is_integer(deadline) ->
+         collect_updates(gate, lease, [bytes | acc])
+     after
+       0 -> Enum.reverse(acc)
+--- before/apps/gaoxy_http/test/resource_budget_h2_test.exs
++++ apps/gaoxy_http/test/resource_budget_h2_test.exs
+@@ -12,6 +12,46 @@
+       send(owner, {:budget_h2, self(), exchange.transport_state, exchange.gate, exchange.lease})
+ 
+       receive do
++        {:terminal_hold, hook} ->
++          {:ok, final} = Response.send_resp(exchange, 200, [], "/terminal")
++          worker = self()
++          lease = final.lease
++
++          :ok =
++            :sys.install(
++              final.gate,
++              {hook,
++               fn previous, event, _ ->
++                 case event do
++                   {:in, {:"$gen_call", {^worker, _}, {:repartition_until, ^lease, _, _, _}}} ->
++                     send(owner, {:terminal_pending, worker, final.gate, hook})
++
++                     receive do
++                       {:release_terminal, ^hook} -> :ok
++                     after
++                       2_000 -> raise "terminal test barrier expired"
++                     end
++
++                   _ ->
++                     :ok
++                 end
++
++                 previous
++               end, nil}
++            )
++
++          {:ok, final}
++
++        :read_hold ->
++          {:more, bytes, exchange} = Exchange.read_body_step(exchange, 128, 1_000)
++          send(owner, {:held_body, self(), bytes, :binary.referenced_byte_size(bytes)})
++
++          receive do
++            :continue -> echo(exchange, bytes)
++          after
++            Gaoxy.Lifecycle.remaining(exchange.deadline) -> {:error, :timeout, exchange}
++          end
++
+         :respond ->
+           if exchange.request.path == "/upload",
+             do: echo(exchange, ""),
+@@ -54,6 +94,291 @@
+     close(server, socket)
+   end
+ 
++  test "definite pre-reserve expiry retires its attempt and reuses the same connection slot" do
++    server = server(h2_limits: %{max_streams: 1})
++    socket = connect(server)
++    send_headers(socket, 1, "/first")
++    assert_receive {:budget_h2, first, {owner, 1, _}, gate, _}, @timeout
++    {_, initial} = :sys.get_state(owner)
++    template = initial.streams[1]
++    send(first, :respond)
++    assert response(socket, 1) == {"200", "/first"}
++    await(server, &(&1.active_requests == 0 and &1.active_h2_streams == 0))
++    token = make_ref()
++
++    # Install the exact queued-start checkpoint with an elapsed deadline. The
++    # actual connection owns the public async request and receives its genuine
++    # Admission response alias; no forged receipt or timeout-as-proof is used.
++    :sys.replace_state(owner, fn {transport, state} ->
++      limit = Gaoxy.Lifecycle.now() - 1
++
++      stream = %{
++        template
++        | id: 3,
++          token: token,
++          worker: nil,
++          monitor: nil,
++          lease: nil,
++          startup: nil,
++          deadline: limit
++      }
++
++      {:ok, {:native_http2_worker_v1, protocol_bytes, bytes}} =
++        Gaoxy.HTTP.HTTP2.WorkerAccounting.reservation(state, stream)
++
++      accounting = %{
++        retained_bytes: bytes - state.reserves.stream,
++        temporary_bytes: state.reserves.stream,
++        transport_bytes: bytes
++      }
++
++      request =
++        Gaoxy.Admission.spawn_request(
++          gate,
++          state.lease,
++          token,
++          accounting,
++          limit,
++          {Gaoxy.HTTP.HTTP2.Stream, :run, [owner, 3, token, gate, protocol_bytes, limit]},
++          [kind: :h2_stream, memberships: %{h2_stream: {state.lease, 3}, request: token}],
++          :phase_receipt
++        )
++
++      startup = %{
++        request: request,
++        timer: Process.send_after(owner, {:h2_worker_start_timeout, 3, token}, 0),
++        token: token,
++        parent_lease: state.lease,
++        protocol_bytes: protocol_bytes,
++        bytes: bytes,
++        deadline: limit
++      }
++
++      {transport,
++       %{state | streams: %{3 => %{stream | startup: startup}}, starting: 3, highest: 3}}
++    end)
++
++    assert {3, 0, 3, <<7::32>>} = recv_frame(socket)
++
++    await(server, fn budget ->
++      {_, state} = :sys.get_state(owner)
++
++      budget.active_requests == 0 and budget.active_h2_streams == 0 and
++        state.streams == %{} and state.retiring_streams == %{} and state.retirement_timer == nil
++    end)
++
++    refute_receive {:budget_h2, _, {^owner, 3, _}, _, _}, 0
++    send_headers(socket, 5, "/after-expiry")
++    assert_receive {:budget_h2, next, {^owner, 5, _}, ^gate, _}, @timeout
++    send(next, :respond)
++    assert response(socket, 5) == {"200", "/after-expiry"}
++    close(server, socket)
++  end
++
++  test "peer close cancels unfinished streams and releases parent-owned quota and buffers" do
++    server = server()
++    socket = connect(server)
++    send_headers(socket, 1, "/live")
++    assert_receive {:budget_h2, first, {owner, 1, _}, _, _}, @timeout
++    send_headers(socket, 3, "/upload", false)
++    assert_receive {:budget_h2, second, {^owner, 3, _}, _, _}, @timeout
++    :ok = :gen_tcp.send(socket, Frame.encode(0, 0, 3, :binary.copy("p", 1_024)))
++
++    await(server, fn _ ->
++      {_, state} = :sys.get_state(owner)
++      byte_size(state.streams[3].input) == 1_024
++    end)
++
++    first_monitor = Process.monitor(first)
++    second_monitor = Process.monitor(second)
++    :ok = :gen_tcp.close(socket)
++    assert_receive {:DOWN, ^first_monitor, :process, ^first, :killed}, @timeout
++    assert_receive {:DOWN, ^second_monitor, :process, ^second, :killed}, @timeout
++
++    await(
++      server,
++      &(&1.usage == 0 and &1.active_connections == 0 and &1.active_requests == 0 and
++          &1.active_h2_streams == 0)
++    )
++  end
++
++  test "peer close after END_STREAM joins final bookkeeping before worker termination" do
++    server = server()
++    socket = connect(server)
++    send_headers(socket, 1, "/terminal")
++    assert_receive {:budget_h2, worker, {owner, 1, _}, gate, _}, @timeout
++    hook = make_ref()
++    on_exit(fn -> send(gate, {:release_terminal, hook}) end)
++    monitor = Process.monitor(worker)
++    :erlang.trace_pattern({Gaoxy.HTTP.HTTP2.Connection, :close, 1}, true, [:local])
++    :erlang.trace(owner, true, [:call])
++
++    on_exit(fn ->
++      :erlang.trace_pattern({Gaoxy.HTTP.HTTP2.Connection, :close, 1}, false, [:local])
++    end)
++
++    send(worker, {:terminal_hold, hook})
++    assert response(socket, 1) == {"200", "/terminal"}
++    assert_receive {:terminal_pending, ^worker, ^gate, ^hook}, @timeout
++    :ok = :gen_tcp.close(socket)
++
++    assert_receive {:trace, ^owner, :call, {Gaoxy.HTTP.HTTP2.Connection, :close, [closing]}},
++                   @timeout
++
++    assert closing.streams[1].local_closed and closing.streams[1].eof
++    assert closing.streams[1].write == nil
++    assert Process.alive?(worker)
++    send(gate, {:release_terminal, hook})
++    assert_receive {:DOWN, ^monitor, :process, ^worker, :normal}, @timeout
++    await(server, &(&1.usage == 0 and &1.active_requests == 0 and &1.active_h2_streams == 0))
++  end
++
++  test "TCP receive floor follows effective buffer and retained slices detach before handoff" do
++    server = server(h2_limits: %{control_turn: 1})
++    socket = connect(server)
++    send_headers(socket, 1, "/upload", false)
++    assert_receive {:budget_h2, worker, {owner, 1, _}, gate, _}, @timeout
++    {transport, state} = :sys.get_state(owner)
++    assert {:ok, [buffer: delivery]} = Hell.Socket.getopts(transport, [:buffer])
++    assert delivery > 0 and delivery <= Limits.receive_buffer()
++    assert state.reserves.receive == 2 * state.limits.max_buffer_bytes + 8 * delivery
++    assert state.reserves.connection == 4 * state.limits.max_buffer_bytes + 8 * delivery
++    assert state.reserves.connection < Limits.reservation(state.limits, state.h2).connection
++
++    body = :binary.copy("b", 5_000)
++    # Ignored extension, DATA and a partial next frame share a wire write. A
++    # one-frame parser turn exercises carry retention through local messages.
++    next = IO.iodata_to_binary(Frame.encode(0, 1, 1, "end"))
++    <<partial::binary-size(5), rest::binary>> = next
++
++    :ok =
++      :gen_tcp.send(socket, [
++        Frame.encode(99, 0, 0, :binary.copy("x", 5_000)),
++        Frame.encode(0, 0, 1, body),
++        partial
++      ])
++
++    await(server, fn _ ->
++      {_, current} = :sys.get_state(owner)
++      current.buffer == partial and current.streams[1].input == body
++    end)
++
++    {_, state} = :sys.get_state(owner)
++    assert :binary.referenced_byte_size(state.buffer) == byte_size(partial)
++    assert :binary.referenced_byte_size(state.streams[1].input) == byte_size(body)
++    send(worker, :read_hold)
++    assert_receive {:held_body, ^worker, held, 128}, @timeout
++    assert held == :binary.copy("b", 128)
++    {_, state} = :sys.get_state(owner)
++    assert state.streams[1].delivered_wire == 128
++    assert :binary.referenced_byte_size(state.streams[1].input) == 4_872
++    lease = :sys.get_state(gate).leases[state.lease]
++    assert lease.accounting.temporary_bytes >= state.reserves.receive
++
++    assert lease.accounting.retained_bytes >=
++             :erlang.external_size(Map.drop(state, [:decode_reservation])) + 128
++
++    :ok = :gen_tcp.send(socket, rest)
++    send(worker, :continue)
++    assert response(socket, 1) == {"200", body <> "end"}
++
++    {_, block} =
++      HPACK.encode_headers(
++        HPACK.new_encoder(),
++        fields("/continued") ++ [{"x-long", :binary.copy("h", 5_000)}],
++        indexing: :never,
++        huffman: :never
++      )
++
++    <<first::binary-size(2_000), last::binary>> = block
++
++    :ok =
++      :gen_tcp.send(socket, [
++        Frame.encode(99, 0, 0, :binary.copy("x", 5_000)),
++        Frame.encode(1, 1, 3, first)
++      ])
++
++    await(server, fn _ ->
++      {_, current} = :sys.get_state(owner)
++      current.continuation != nil and current.continuation.block == first
++    end)
++
++    {_, continued} = :sys.get_state(owner)
++    assert :binary.referenced_byte_size(continued.continuation.block) == byte_size(first)
++    :ok = :gen_tcp.send(socket, Frame.encode(9, 4, 3, last))
++    assert_receive {:budget_h2, headers_worker, {^owner, 3, _}, ^gate, _}, @timeout
++    send(headers_worker, :respond)
++    assert response(socket, 3) == {"200", "/continued"}
++    # A partial-only delivery takes the decoder's :more path. Model a native
++    # slice backed by one complete driver buffer, with no preceding full frame.
++    carry = <<12_000::24, 99, 0, 0::32>> <> :binary.copy("c", 4_000)
++    backed = carry <> :binary.copy("x", Limits.receive_buffer() - byte_size(carry))
++    backed = :binary.copy(backed)
++    slice = binary_part(backed, 0, byte_size(carry))
++    assert :binary.referenced_byte_size(slice) == Limits.receive_buffer()
++
++    :sys.replace_state(owner, fn {transport, current} ->
++      {:continue, next} = Gaoxy.HTTP.HTTP2.Connection.data(slice, transport, current)
++      {transport, next}
++    end)
++
++    {_, partial_only} = :sys.get_state(owner)
++    assert partial_only.buffer == carry
++    assert :binary.referenced_byte_size(partial_only.buffer) == byte_size(carry)
++    close(server, socket)
++  end
++
++  test "drain completion preserves receive floor and rejects growth beyond funded total" do
++    server = server()
++    socket = connect(server)
++    send_headers(socket, 1, "/live")
++    assert_receive {:budget_h2, worker, {owner, 1, _}, gate, _}, @timeout
++    {_, original} = :sys.get_state(owner)
++    :ok = Gaoxy.Admission.drain(gate, Gaoxy.Lifecycle.deadline(@timeout))
++    assert {7, 0, 0, _} = recv_frame(socket)
++    # A legal partial extension frame occupies receive carry during drain.
++    partial = <<16_000::24, 99, 0, 0::32>> <> :binary.copy("p", 8_000)
++    :ok = :gen_tcp.send(socket, partial)
++
++    await(server, fn _ ->
++      {_, current} = :sys.get_state(owner)
++      current.buffer == partial
++    end)
++
++    {_, state} = :sys.get_state(owner)
++    accounting = :sys.get_state(gate).leases[state.lease].accounting
++    assert state.accounted_bytes == original.funded_floor
++    assert accounting.temporary_bytes >= state.reserves.receive
++    assert accounting.retained_bytes + accounting.temporary_bytes == state.accounted_bytes
++    observer = self()
++
++    :sys.replace_state(owner, fn {transport, current} ->
++      too_large = %{
++        accounting
++        | retained_bytes: accounting.retained_bytes + current.reserves.completion + 1,
++          transport_bytes: accounting.transport_bytes + current.reserves.completion + 1
++      }
++
++      result =
++        Gaoxy.Admission.update_until(
++          gate,
++          current.lease,
++          too_large,
++          make_ref(),
++          Gaoxy.Lifecycle.deadline(50)
++        )
++
++      send(observer, {:beyond_funding, result})
++      {transport, current}
++    end)
++
++    assert_receive {:beyond_funding, {:error, :draining}}
++    assert Process.alive?(worker)
++    send(worker, :respond)
++    assert response(socket, 1) == {"200", "/live"}
++    close(server, socket)
++  end
++
+   test "HPACK insertion and indexed reuse retain actual decoder state without a decode high water" do
+     server = server()
+     socket = connect(server)
+@@ -71,8 +396,10 @@
+     assert state.decode_reservation == 0
+     lease = :sys.get_state(gate).leases[state.lease]
+ 
+-    assert lease.accounting.temporary_bytes ==
+-             Limits.reservation(state.limits, state.h2).connection
++    assert lease.accounting.retained_bytes + lease.accounting.temporary_bytes ==
++             max(state.funded_floor, lease.accounting.retained_bytes + state.reserves.receive)
++
++    assert lease.accounting.temporary_bytes >= state.reserves.receive
+ 
+     assert lease.accounting.retained_bytes >= :erlang.external_size(state.decoder)
+     assert lease.bytes < 20_000_000
+--- before/apps/gaoxy_http/test/websocket_default_capacity_network_test.exs
++++ apps/gaoxy_http/test/websocket_default_capacity_network_test.exs
+@@ -56,6 +56,7 @@
+ 
+       assert transport <= 1_048_576
+       assert retained >= 0
++      assert %{rejected: 0} = Gaoxy.status(server, :http)
+     end
+ 
+     ping_and_close(socket)
+--- before/apps/gaoxy_http/test/websocket_stream_test.exs
++++ apps/gaoxy_http/test/websocket_stream_test.exs
+@@ -188,6 +188,11 @@
+           }
+         }
+ 
++        exchange =
++          if Keyword.get(session, :funded, false),
++            do: Exchange.fund(%{exchange | protocol_bytes: 1_024}, 4_096, 1_024, %{}),
++            else: exchange
++
+         handler = Keyword.get(session, :handler, Handler)
+         {:ok, exchange} = WebSocket.prepare(exchange, {handler, owner, options})
+         send(owner, {:result, self(), apply(Stream, :run, [exchange, limits])})
+@@ -195,6 +200,21 @@
+ 
+     on_exit(fn -> if Process.alive?(worker), do: Process.exit(worker, :kill) end)
+     {worker, token, gate}
++  end
++
++  test "funded close reuses completion bytes during drain without new admission" do
++    {worker, token, gate} = start_session([], Transport, :h2, funded: true)
++    assert_receive {:opened, ^worker, [], _, exchange}
++    assert_receive {:initialized, ^worker}
++    assert_receive {:demand, ^worker, 64, ref, _}
++    before = Admission.status(gate)
++    assert :ok = Admission.drain(gate, Lifecycle.deadline(2_000))
++    assert_receive {:written, ^worker, <<0x88, 2, 1001::16>>, _}
++    send(worker, {:gaoxy_websocket_data, token, ref, masked(8, <<1001::16>>), false})
++    assert_receive {:terminated, :shutdown}
++    assert_receive {:result, ^worker, {:ok, _}}
++    assert Admission.status(gate).rejected == before.rejected
++    refute is_nil(exchange.funding)
+   end
+ 
+   test "default upgraded ownership has no inactivity or lifetime watchdog" do

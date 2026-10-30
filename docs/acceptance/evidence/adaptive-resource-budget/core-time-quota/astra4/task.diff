@@ -1,0 +1,733 @@
+--- before/apps/gaoxy/lib/gaoxy/admission.ex
++++ apps/gaoxy/lib/gaoxy/admission.ex
+@@ -20,6 +20,12 @@
+ 
+   def update_until(gate, lease, accounting, operation, deadline),
+     do: GenServer.call(gate, {:update_until, lease, accounting, operation, deadline}, 50)
++
++  # Explicitly reuse an admitted completion envelope. Omitted fields retain
++  # their existing values; memberships/process credits cannot change here.
++  # Ordinary scalar updates keep their historical replacement semantics.
++  def repartition_until(gate, lease, accounting, operation, deadline),
++    do: GenServer.call(gate, {:repartition_until, lease, accounting, operation, deadline}, 50)
+ 
+   def end_request(gate, lease, accounting, deadline),
+     do: GenServer.call(gate, {:end_request, lease, accounting, deadline}, 50)
+@@ -357,8 +363,9 @@
+     end
+   end
+ 
+-  def handle_call({:update_until, ref, bytes, operation, deadline}, {pid, _}, state) do
+-    fingerprint = :crypto.hash(:sha256, :erlang.term_to_binary({pid, ref, bytes}))
++  def handle_call({action, ref, bytes, operation, deadline}, {pid, _}, state)
++      when action in [:update_until, :repartition_until] do
++    fingerprint = :crypto.hash(:sha256, :erlang.term_to_binary({action, pid, ref, bytes}))
+     cached = state.update_receipts[operation]
+ 
+     cond do
+@@ -383,7 +390,12 @@
+       true ->
+         case state.leases[ref] do
+           %{pid: ^pid} = lease ->
+-            case replace_accounting(state, lease, bytes) do
++            result =
++              if action == :repartition_until,
++                do: repartition_accounting(state, lease, bytes),
++                else: replace_accounting(state, lease, bytes)
++
++            case result do
+               {:ok, replacement} ->
+                 commit_lease(
+                   state,
+@@ -391,7 +403,8 @@
+                   replacement,
+                   deadline,
+                   &Function.identity/1,
+-                  {operation, fingerprint}
++                  {operation, fingerprint},
++                  if(action == :repartition_until, do: :repartition, else: :replace)
+                 )
+ 
+               {:error, reason} ->
+@@ -1222,7 +1235,8 @@
+          replacement,
+          deadline,
+          after_commit \\ &Function.identity/1,
+-         operation \\ nil
++         operation \\ nil,
++         mutation \\ :replace
+        ) do
+     lease = state.leases[ref]
+     args = if state.budget, do: Budget.arguments(lease, replacement.accounting), else: []
+@@ -1250,7 +1264,7 @@
+       remember_update(state, operation, {:error, reason})
+     end
+ 
+-    case Budget.run(state, :replace, args, deadline, commit, remember_rejection) do
++    case Budget.run(state, mutation, args, deadline, commit, remember_rejection) do
+       {:error, reason, state} when reason in [:budget_timeout, :budget_unavailable] ->
+         state = if operation, do: %{state | update_pending: operation}, else: state
+         reject(state, reason)
+@@ -1454,17 +1468,25 @@
+       {:error, :byte_limit}
+     else
+       with {:ok, replacement} <- Accounting.replace(lease, bytes),
+-           :ok <-
+-             Accounting.validate(
+-               state.leases,
+-               state.cleanups,
+-               lease,
+-               replacement,
+-               if(state.budget, do: 9_223_372_036_854_775_807, else: state.limits.max_bytes)
+-             ) do
+-        {:ok, replacement}
+-      end
+-    end
++           do: validate_accounting(state, lease, replacement)
++    end
++  end
++
++  defp repartition_accounting(state, lease, bytes) do
++    with {:ok, replacement} <- Accounting.repartition(lease, bytes),
++         do: validate_accounting(state, lease, replacement)
++  end
++
++  defp validate_accounting(state, lease, replacement) do
++    with :ok <-
++           Accounting.validate(
++             state.leases,
++             state.cleanups,
++             lease,
++             replacement,
++             if(state.budget, do: 9_223_372_036_854_775_807, else: state.limits.max_bytes)
++           ),
++         do: {:ok, replacement}
+   end
+ 
+   defp transport_bytes(state),
+--- before/apps/gaoxy/lib/gaoxy/admission/accounting.ex
++++ apps/gaoxy/lib/gaoxy/admission/accounting.ex
+@@ -8,6 +8,14 @@
+     do: %{transport_bytes: transport, websocket_bytes: websocket}
+ 
+   def categories(%{bytes: bytes}), do: %{transport_bytes: bytes, websocket_bytes: 0}
++
++  def repartition(%{accounting: previous} = lease, input) when is_map(input) do
++    with {:ok, replacement} <- replace(lease, Map.merge(previous, input)),
++         :ok <- Gaoxy.ResourceBudget.validate_repartition(previous, replacement.accounting),
++         do: {:ok, replacement}
++  end
++
++  def repartition(_, _), do: {:error, :invalid_repartition}
+ 
+   def replace(lease, input) do
+     previous =
+--- before/apps/gaoxy/lib/gaoxy/resource_budget.ex
++++ apps/gaoxy/lib/gaoxy/resource_budget.ex
+@@ -16,6 +16,13 @@
+   Accounting uses orthogonal retained/temporary and transport/WebSocket byte sums,
+   logical quota memberships and pending process credits. Both byte sums must agree.
+   Membership identities are service-scoped; connection-local IDs can be pairs.
++
++  `repartition/6` converts already-funded retained/temporary ownership without
++  increasing its total, changing quota memberships or pending process credits.
++  The caller must confirm that the old retained resources were relinquished
++  before replenishing temporary credit. This preserves an existing completion
++  envelope during drain or pressure; new growth still uses `replace/6`.
++  Transport category caps, owner/revision fencing and deadlines still apply.
+ 
+   `allocations/2` returns up to 64 canonical rows plus an integer cursor or `:done`,
+   the gate's `watermark`, and `next_operation`. After confirming gate death, one
+@@ -60,6 +67,9 @@
+   def replace(client, token, revision, accounting, operation, deadline),
+     do: mutation(client, operation, deadline, {:replace, token, revision, accounting})
+ 
++  def repartition(client, token, revision, accounting, operation, deadline),
++    do: mutation(client, operation, deadline, {:repartition, token, revision, accounting})
++
+   def transfer(client, token, revision, owner, operation, deadline),
+     do: mutation(client, operation, deadline, {:transfer, token, revision, owner})
+ 
+@@ -189,6 +199,21 @@
+   end
+ 
+   def normalize_accounting(_), do: {:error, :invalid_accounting}
++
++  @doc false
++  def validate_repartition(old, new) do
++    cond do
++      new.retained_bytes + new.temporary_bytes > old.retained_bytes + old.temporary_bytes ->
++        {:error, :credit_exceeded}
++
++      new.memberships != old.memberships or new.pending_processes != old.pending_processes ->
++        {:error, :invalid_repartition}
++
++      true ->
++        :ok
++    end
++  end
++
+   defp valid_id?({connection, local}), do: scalar_id?(connection) and scalar_id?(local)
+   defp valid_id?(id), do: scalar_id?(id)
+ 
+--- before/apps/gaoxy/lib/gaoxy/resource_budget/ledger.ex
++++ apps/gaoxy/lib/gaoxy/resource_budget/ledger.ex
+@@ -614,7 +614,14 @@
+   end
+ 
+   defp execute(state, client, gate, action, actor, sequence)
+-       when elem(action, 0) in [:replace, :transfer, :release, :activate, :retain_stream] do
++       when elem(action, 0) in [
++              :replace,
++              :repartition,
++              :transfer,
++              :release,
++              :activate,
++              :retain_stream
++            ] do
+     token = elem(action, 1)
+     revision = elem(action, 2)
+ 
+@@ -625,6 +632,26 @@
+            (actor == row.owner or authorized?(state, gate, actor)) ||
+              {:error, :unauthorized_owner} do
+       case action do
++        {:repartition, _, _, input} ->
++          service = state.services[gate.service]
++          instance = state.instances[service.instance]
++
++          with {:ok, accounting} <- Gaoxy.ResourceBudget.normalize_accounting(input),
++               :ok <- Gaoxy.ResourceBudget.validate_repartition(row.accounting, accounting),
++               true <-
++                 Enum.all?(
++                   [row.owner, gate.owner, service.owner, instance.owner],
++                   &Process.alive?/1
++                 ) ||
++                   {:error, :orphaned} do
++            # No new envelope is promised. Replenishment follows confirmed
++            # relinquishment of retained bytes belonging to this allocation.
++            # Keep the resulting split in canonical totals: subsequent growth
++            # still pays the complete Safety debit against the latest sample.
++            updated = %{row | accounting: accounting, revision: revision + 1}
++            commit(state, client, gate, row, updated, false, sequence)
++          end
++
+         {:replace, _, _, input} ->
+           with {:ok, accounting} <- Gaoxy.ResourceBudget.normalize_accounting(input) do
+             updated = %{row | accounting: accounting, revision: revision + 1}
+--- before/apps/gaoxy/lib/gaoxy/service.ex
++++ apps/gaoxy/lib/gaoxy/service.ex
+@@ -58,27 +58,51 @@
+   end
+ 
+   defp init_registered(table, live, id, instance, spec, scope, service, generation, budget) do
+-    with {:ok, spec} <- prepare_dispatcher(spec),
+-         {:ok, policy} <- RegistryPolicy.register(scope) do
++    with {:ok, policy} <- RegistryPolicy.register(scope) do
+       case Admission.start_link(
+              {spec.limits, scope |> Map.put(:service_pid, self()) |> Map.put(:budget, budget)}
+            ) do
+         {:ok, gate} ->
+           case Admission.budget_client(gate) do
+             {:ok, client} ->
+-              init_backend(
+-                table,
+-                live,
+-                id,
+-                instance,
+-                spec,
+-                scope,
+-                service,
+-                generation,
+-                Map.put(budget, :client, client),
+-                gate,
+-                policy
+-              )
++              budget = Map.put(budget, :client, client)
++
++              # Preparation can block while instance stop fences new admission.
++              # Establish the gate first so this already-started service can
++              # finish startup and its existing activation rollback normally.
++              case prepare_dispatcher(spec) do
++                {:ok, spec} ->
++                  init_backend(
++                    table,
++                    live,
++                    id,
++                    instance,
++                    spec,
++                    scope,
++                    service,
++                    generation,
++                    budget,
++                    gate,
++                    policy
++                  )
++
++                {:error, reason} ->
++                  gate_terminal =
++                    Lifecycle.protect(fn ->
++                      if Process.alive?(gate), do: GenServer.stop(gate), else: :ok
++                    end) == :ok
++
++                  Reconciler.finish(
++                    budget,
++                    gate,
++                    %{},
++                    Lifecycle.deadline(Lifecycle.cleanup_headroom()),
++                    gate_terminal
++                  )
++
++                  RegistryPolicy.cancel(policy)
++                  {:stop, reason}
++              end
+ 
+             {:error, reason} ->
+               if Process.alive?(gate), do: GenServer.stop(gate)
+--- before/apps/gaoxy/test/resource_budget_admission_test.exs
++++ apps/gaoxy/test/resource_budget_admission_test.exs
+@@ -146,6 +146,184 @@
+     assert {:ok, _} = Admission.acquire(g, 0)
+     assert {:error, :active_limit} = Admission.acquire(g, 0)
+     assert %{usage: 50, transport_bytes: 20, websocket_bytes: 30, requests: 0} = snapshot(b)
++  end
++
++  test "committed credit repartitions repeatedly during drain without adding ownership" do
++    b = budget()
++    g = gate(b)
++    original = %{retained_bytes: 20, temporary_bytes: 80, transport_bytes: 100}
++
++    assert {:ok, lease} =
++             Admission.acquire(g, original, kind: :connection, memberships: %{connection: :one})
++
++    assert :ok =
++             Admission.begin_request(
++               g,
++               lease,
++               Map.put(original, :memberships, %{connection: :one}),
++               deadline()
++             )
++
++    assert :ok = Admission.drain(g, deadline())
++
++    for _ <- 1..3 do
++      for {retained, temporary} <- [{70, 30}, {20, 80}] do
++        accounting = %{retained_bytes: retained, temporary_bytes: temporary}
++
++        assert :ok =
++                 apply(Admission, :repartition_until, [
++                   g,
++                   lease,
++                   accounting,
++                   make_ref(),
++                   deadline()
++                 ])
++
++        assert %{
++                 usage: 100,
++                 retained_bytes: ^retained,
++                 temporary_bytes: ^temporary,
++                 connections: 1,
++                 requests: 1
++               } = snapshot(b)
++
++        if retained == 70 do
++          replacement = Map.put(original, :memberships, %{connection: :one, request: lease})
++
++          assert {:error, :draining} =
++                   Admission.update_until(g, lease, replacement, make_ref(), deadline())
++        end
++      end
++    end
++
++    assert {:error, :credit_exceeded} =
++             apply(Admission, :repartition_until, [
++               g,
++               lease,
++               %{retained_bytes: 21, temporary_bytes: 80, transport_bytes: 101},
++               make_ref(),
++               deadline()
++             ])
++
++    assert {:error, :invalid_repartition} =
++             apply(Admission, :repartition_until, [
++               g,
++               lease,
++               %{pending_processes: 1},
++               make_ref(),
++               deadline()
++             ])
++
++    assert {:error, :invalid_repartition} =
++             apply(Admission, :repartition_until, [
++               g,
++               lease,
++               %{memberships: %{connection: :two}},
++               make_ref(),
++               deadline()
++             ])
++
++    assert {:error, :draining} = Admission.acquire(g, 0)
++
++    assert %{usage: 100, retained_bytes: 20, temporary_bytes: 80, connections: 1, requests: 1} =
++             snapshot(b)
++  end
++
++  test "repartition preserves deadline ownership and operation identity" do
++    b = budget()
++    g = gate(b)
++
++    assert {:ok, lease} =
++             Admission.acquire(g, %{retained_bytes: 20, temporary_bytes: 80, transport_bytes: 100})
++
++    input = %{retained_bytes: 70, temporary_bytes: 30}
++    operation = make_ref()
++    expired = deadline() - 2000
++
++    assert {:error, :deadline_exceeded} =
++             apply(Admission, :repartition_until, [g, lease, input, make_ref(), expired])
++
++    assert %{retained_bytes: 20, temporary_bytes: 80} = snapshot(b)
++    assert :ok = apply(Admission, :repartition_until, [g, lease, input, operation, deadline()])
++    assert :ok = apply(Admission, :repartition_until, [g, lease, input, operation, expired])
++
++    assert {:error, :operation_conflict} =
++             Admission.update_until(g, lease, input, operation, deadline())
++
++    task =
++      Task.async(fn ->
++        apply(Admission, :repartition_until, [g, lease, input, make_ref(), deadline()])
++      end)
++
++    assert {:error, :stale_generation} = Task.await(task)
++    assert %{usage: 100, retained_bytes: 70, temporary_bytes: 30} = snapshot(b)
++  end
++
++  test "repartition cannot increase the explicit transport category allowance" do
++    b = budget()
++    g = gate(b, %{max_bytes: 80})
++
++    assert {:ok, lease} =
++             Admission.acquire(g, %{
++               retained_bytes: 20,
++               temporary_bytes: 80,
++               transport_bytes: 50,
++               websocket_bytes: 50
++             })
++
++    assert :ok = Admission.drain(g, deadline())
++
++    assert {:error, :byte_limit} =
++             apply(Admission, :repartition_until, [
++               g,
++               lease,
++               %{transport_bytes: 81, websocket_bytes: 19},
++               make_ref(),
++               deadline()
++             ])
++
++    assert :ok =
++             apply(Admission, :repartition_until, [
++               g,
++               lease,
++               %{transport_bytes: 80, websocket_bytes: 20},
++               make_ref(),
++               deadline()
++             ])
++
++    assert %{
++             usage: 100,
++             retained_bytes: 20,
++             temporary_bytes: 80,
++             transport_bytes: 80,
++             websocket_bytes: 20
++           } = snapshot(b)
++  end
++
++  test "legacy local gates also enforce their transport cap during repartition" do
++    g =
++      start_supervised!(
++        {Admission,
++         {%{max_active: 2, max_bytes: 50, callback_timeout: 5_000},
++          %{instance: make_ref(), service: :legacy, generation: make_ref()}}}
++      )
++
++    assert {:ok, lease} = Admission.acquire(g, 50, drain_notify: true)
++    assert :ok = Admission.begin_request(g, lease, 50, deadline())
++
++    assert :ok =
++             Admission.upgrade(g, lease, %{transport_bytes: 50, websocket_bytes: 50}, deadline())
++
++    assert {:error, :byte_limit} =
++             apply(Admission, :repartition_until, [
++               g,
++               lease,
++               %{transport_bytes: 51, websocket_bytes: 49},
++               make_ref(),
++               deadline()
++             ])
++
++    assert %{transport_bytes: 50, websocket_bytes: 50} = Admission.status(g)
+   end
+ 
+   test "expired internal updates never execute while public queued update compatibility remains" do
+--- before/apps/gaoxy/test/resource_budget_owner_test.exs
++++ apps/gaoxy/test/resource_budget_owner_test.exs
+@@ -420,6 +420,257 @@
+     assert {:ok, _} = reserve(c, peak, 1)
+     assert :ok = api(:refresh, [server])
+     assert {:error, :system_memory_pressure} = reserve(c, 11 * @mib, 2)
++  end
++
++  test "repartition and replenishment preserve safety debit across sampled retained baselines" do
++    {:ok, available} = Agent.start_link(fn -> 1000 * @mib end)
++    on_exit(fn -> if Process.alive?(available), do: Agent.stop(available) end)
++
++    probe = fn _ ->
++      {:ok,
++       %{
++         available_bytes: Agent.get(available, & &1),
++         cgroup_headroom_bytes: nil,
++         sampled_at: System.monotonic_time(:millisecond),
++         high_pressure?: false
++       }}
++    end
++
++    {_, server} = setup_budget(safety_probe: probe)
++    {instance, client} = scope(server)
++
++    split = fn retained ->
++      %{
++        retained_bytes: retained * @mib,
++        temporary_bytes: (150 - retained) * @mib,
++        transport_bytes: 150 * @mib
++      }
++    end
++
++    assert {:ok, original} = reserve(client, split.(100), 1)
++    Agent.update(available, fn _ -> 100 * @mib end)
++    assert :ok = api(:refresh, [server])
++    assert {:error, :system_memory_pressure} = reserve(client, 1, 2)
++
++    assert {:ok, full} =
++             api(:repartition, [
++               client,
++               original.token,
++               original.revision,
++               split.(150),
++               3,
++               deadline()
++             ])
++
++    assert {:error, :system_memory_pressure} = reserve(client, 1, 4)
++
++    assert {:ok, rearmed} =
++             api(:repartition, [client, full.token, full.revision, split.(100), 5, deadline()])
++
++    assert {:error, :system_memory_pressure} = reserve(client, 1, 6)
++
++    assert {:ok, full} =
++             api(:repartition, [
++               client,
++               rearmed.token,
++               rearmed.revision,
++               split.(150),
++               7,
++               deadline()
++             ])
++
++    assert :ok = api(:refresh, [server])
++    assert {:ok, other} = reserve(client, 50 * @mib, 8)
++    assert {:error, :system_memory_pressure} = reserve(client, 1, 9)
++
++    assert {:ok, rearmed} =
++             api(:repartition, [client, full.token, full.revision, split.(0), 10, deadline()])
++
++    assert %{retained_bytes: retained, temporary_bytes: temporary} = snapshot(server, instance)
++    assert {retained, temporary} == {50 * @mib, 150 * @mib}
++    assert {:error, :system_memory_pressure} = reserve(client, 1, 11)
++
++    assert {:ok, full} =
++             api(:repartition, [
++               client,
++               rearmed.token,
++               rearmed.revision,
++               split.(150),
++               12,
++               deadline()
++             ])
++
++    assert {:error, :system_memory_pressure} = reserve(client, 1, 13)
++    assert {:ok, _} = release(client, other, 14)
++    assert {:ok, _} = release(client, full, 15)
++    assert %{usage: 0} = snapshot(server, instance)
++  end
++
++  test "prepaid repartition survives pressured refresh hard-limit shrink and drain" do
++    {:ok, control} = Agent.start_link(fn -> false end)
++    on_exit(fn -> if Process.alive?(control), do: Agent.stop(control) end)
++
++    {_, server} =
++      setup_budget(
++        capacity_probe: fn ->
++          %{
++            capacity: if(Agent.get(control, & &1), do: 50 * @mib, else: 1000 * @mib),
++            fallback?: false,
++            source: :controlled
++          }
++        end,
++        safety_probe: fn _ ->
++          if Agent.get(control, & &1),
++            do: {:error, :safety_sample_unavailable},
++            else:
++              {:ok,
++               %{
++                 available_bytes: 1000 * @mib,
++                 cgroup_headroom_bytes: nil,
++                 sampled_at: System.monotonic_time(:millisecond),
++                 high_pressure?: false
++               }}
++        end
++      )
++
++    {instance, client} = scope(server)
++
++    split = fn retained ->
++      %{
++        retained_bytes: retained * @mib,
++        temporary_bytes: (100 - retained) * @mib,
++        transport_bytes: 100 * @mib
++      }
++    end
++
++    assert {:ok, original} = reserve(client, split.(0), 1)
++    Agent.update(control, fn _ -> true end)
++    assert :ok = api(:refresh, [server])
++    assert %{state: :over_limit} = snapshot(server, instance)
++
++    assert {:ok, materialized} =
++             api(:repartition, [
++               client,
++               original.token,
++               original.revision,
++               split.(100),
++               2,
++               deadline()
++             ])
++
++    assert {:error, :memory_hard_limit} = reserve(client, 0, 3)
++    assert {:ok, _} = api(:set_mode, [client, :draining, 4, deadline()])
++
++    assert {:ok, rearmed} =
++             api(:repartition, [
++               client,
++               materialized.token,
++               materialized.revision,
++               split.(0),
++               5,
++               deadline()
++             ])
++
++    assert {:error, :draining} = reserve(client, 0, 6)
++    assert {:ok, _} = release(client, rearmed, 7)
++    assert %{usage: 0} = snapshot(server, instance)
++  end
++
++  test "canonical repartition retains revision deadline and quota fences" do
++    {_, server} = setup_budget()
++    {instance, client} = scope(server)
++    original = %{retained_bytes: 20, temporary_bytes: 80, transport_bytes: 100}
++    converted = %{original | retained_bytes: 80, temporary_bytes: 20}
++    assert {:ok, first} = reserve(client, original, 1)
++
++    assert {:error, :deadline_exceeded} =
++             api(:repartition, [
++               client,
++               first.token,
++               first.revision,
++               converted,
++               2,
++               deadline() - 10_000
++             ])
++
++    assert {:error, :credit_exceeded} =
++             api(:repartition, [
++               client,
++               first.token,
++               first.revision,
++               %{converted | retained_bytes: 81, transport_bytes: 101},
++               3,
++               deadline()
++             ])
++
++    assert {:error, :invalid_repartition} =
++             api(:repartition, [
++               client,
++               first.token,
++               first.revision,
++               Map.put(converted, :pending_processes, 1),
++               4,
++               deadline()
++             ])
++
++    assert {:error, :invalid_repartition} =
++             api(:repartition, [
++               client,
++               first.token,
++               first.revision,
++               Map.put(converted, :memberships, %{request: make_ref()}),
++               5,
++               deadline()
++             ])
++
++    assert {:ok, second} =
++             api(:repartition, [client, first.token, first.revision, converted, 6, deadline()])
++
++    assert {:ok, ^second} =
++             api(:repartition, [
++               client,
++               first.token,
++               first.revision,
++               converted,
++               6,
++               deadline() - 10_000
++             ])
++
++    assert {:error, :operation_conflict} =
++             api(:replace, [client, first.token, first.revision, converted, 6, deadline()])
++
++    assert {:error, :stale_revision} =
++             api(:repartition, [client, first.token, first.revision, original, 7, deadline()])
++
++    assert %{usage: 100, retained_bytes: 80, temporary_bytes: 20} = snapshot(server, instance)
++  end
++
++  test "repartition never lends an orphaned owner's existing credit" do
++    {_, server} = setup_budget()
++    {instance, client} = scope(server)
++
++    worker = spawn(fn -> receive do: (:stop -> :ok) end)
++    on_exit(fn -> if Process.alive?(worker), do: Process.exit(worker, :kill) end)
++    monitor = Process.monitor(worker)
++    accounting = %{retained_bytes: 20, temporary_bytes: 80, transport_bytes: 100}
++
++    assert {:ok, first} =
++             api(:reserve, [client, worker, :writer, accounting, 1, deadline()])
++
++    Process.exit(worker, :kill)
++    assert_receive {:DOWN, ^monitor, :process, ^worker, :killed}
++
++    assert {:error, :orphaned} =
++             api(:repartition, [
++               client,
++               first.token,
++               first.revision,
++               %{accounting | retained_bytes: 80, temporary_bytes: 20},
++               2,
++               deadline()
++             ])
++
++    assert %{usage: 100, retained_bytes: 20, temporary_bytes: 80} = snapshot(server, instance)
+   end
+ 
+   test "capacity shrink preserves admitted work and release permits automatic recovery" do

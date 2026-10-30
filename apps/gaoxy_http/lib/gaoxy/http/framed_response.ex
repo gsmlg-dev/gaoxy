@@ -190,11 +190,7 @@ defmodule Gaoxy.HTTP.FramedResponse do
     size = min(remaining, 16_384)
 
     with :ok <-
-           Gaoxy.Admission.update(
-             exchange.gate,
-             exchange.lease,
-             Exchange.retained_bytes(exchange) + 2 * size
-           ),
+           Exchange.reserve_body_retention(exchange, 2 * size),
          {:ok, bytes} <- :file.pread(file, offset, size),
          true <- byte_size(bytes) == size || {:error, :file_short_read},
          :ok <- write(exchange, [bytes], size == remaining),
@@ -211,18 +207,10 @@ defmodule Gaoxy.HTTP.FramedResponse do
 
       true ->
         with :ok <-
-               Gaoxy.Admission.update(
-                 exchange.gate,
-                 exchange.lease,
-                 Exchange.retained_bytes(exchange) + 2 * byte_size(bytes)
-               ),
+               Exchange.reserve_body_retention(exchange, 2 * byte_size(bytes)),
              :ok <- exchange.transport.operation(exchange, {:data, bytes, ended and tail == []}),
              :ok <-
-               Gaoxy.Admission.update(
-                 exchange.gate,
-                 exchange.lease,
-                 Exchange.retained_bytes(exchange)
-               ) do
+               Exchange.update_body_retention(exchange, Exchange.retained_bytes(exchange)) do
           if tail == [], do: :ok, else: write(exchange, tail, ended)
         end
     end

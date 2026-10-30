@@ -16,11 +16,13 @@ defmodule Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest do
     def call(conn, _), do: Plug.Conn.send_resp(conn, 200, "backend-options")
   end
 
-  defp assert_host(instance, id, dir) do
+  defp assert_host(instance, id, dir, expected_connections \\ 16_384) do
     assert {:ok, service, _} = GenServer.call(instance, {:lookup, id})
     backend = :sys.get_state(service).backend
     # Observe the running dependency host, rather than only the normalized declaration.
-    assert %{event_batch: 1, poll_interval: 1, max_connections: 64} = :sys.get_state(backend)
+    assert %{event_batch: 1, poll_interval: 1, max_connections: ^expected_connections} =
+             :sys.get_state(backend)
+
     assert %{local: {:ok, {ip, port}}} = Gaoxy.info(instance, id)
     assert port > 0
     root = Path.expand("../../..", __DIR__)
@@ -102,6 +104,24 @@ defmodule Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest do
     Process.unlink(instance)
     on_exit(fn -> if Process.alive?(instance), do: Gaoxy.stop(instance, 1_000) end)
     listener = assert_host(instance, :http3, dir)
+    stop_and_rebind(instance, fn -> Gaoxy.stop(instance, 2_000) end, listener)
+  end
+
+  @tag :tmp_dir
+  test "explicit legacy active cap preserves the 64-connection HTTP3 host limit", %{tmp_dir: dir} do
+    certificates(dir)
+
+    assert {:ok, instance} =
+             HTTP3.start_link(
+               endpoint: {Endpoint, []},
+               tls: tls(dir),
+               limits: %{max_active: 64},
+               abyss_options: [event_batch: 1, poll_interval: 1]
+             )
+
+    Process.unlink(instance)
+    on_exit(fn -> if Process.alive?(instance), do: Gaoxy.stop(instance, 1_000) end)
+    listener = assert_host(instance, :http3, dir, 64)
     stop_and_rebind(instance, fn -> Gaoxy.stop(instance, 2_000) end, listener)
   end
 

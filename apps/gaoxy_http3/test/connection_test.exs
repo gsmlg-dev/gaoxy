@@ -1,5 +1,6 @@
 defmodule Gaoxy.HTTP.HTTP3.ConnectionTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
   alias Gaoxy.HTTP.Exchange
   alias Gaoxy.HTTP.HTTP3.{Connection, Headers, Operations, Options, Protocol}
   alias QuicHttp3.{Frame, Qpack}
@@ -36,6 +37,53 @@ defmodule Gaoxy.HTTP.HTTP3.ConnectionTest do
     assert gate == self()
     assert {:ok, ^state} = Connection.handle_event(:tick, state)
     assert {:ok, ^state} = Connection.handle_event(:writable, state)
+  end
+
+  test "native operation headroom leaves small callback windows usable without renewing deadlines" do
+    at = -1_000
+
+    for window <- [1, 2, 40] do
+      assert {:ok, spec} =
+               Options.normalize(
+                 endpoint: {Endpoint, %{}},
+                 limits: %{callback_timeout: window},
+                 tls: %{certfile: "c", keyfile: "k"}
+               )
+
+      assert {:ok, options} =
+               Connection.operation_options(
+                 spec.limits.callback_timeout,
+                 at + window,
+                 at + 100,
+                 at
+               )
+
+      assert options[:timeout] in 1..window
+      assert options[:deadline] == window
+
+      assert :yield =
+               Connection.operation_options(
+                 spec.limits.callback_timeout,
+                 at + window,
+                 at + 100,
+                 at + window
+               )
+    end
+
+    assert {:ok, [timeout: 20, deadline: 39]} =
+             Connection.operation_options(40, at + 39, at + 100, at)
+
+    assert :yield = Connection.operation_options(40, at + 19, at + 100, at)
+
+    assert {:ok, [timeout: 50, deadline: 100]} =
+             Connection.operation_options(5_000, at + 100, at + 2_000, at)
+
+    assert :yield = Connection.operation_options(5_000, at + 49, at + 2_000, at)
+
+    assert {:ok, [timeout: 20, deadline: 4]} =
+             Connection.operation_options(40, at + 39, at + 4, at)
+
+    assert :expired = Connection.operation_options(40, at + 39, at, at)
   end
 
   test "pre-ready peer streams retain opaque keys without reading or assigning IDs" do
@@ -182,7 +230,11 @@ defmodule Gaoxy.HTTP.HTTP3.ConnectionTest do
         {Gaoxy.Admission, {spec.limits, %{instance: make_ref(), service: :resume}}}
       )
 
-    {:ok, state} = Connection.init(%{gate: gate, limits: spec.limits}, %{}, spec.handler_options)
+    {:ok, lease} = Gaoxy.Admission.acquire(gate, 0)
+
+    {:ok, state} =
+      Connection.init(%{gate: gate, lease: lease, limits: spec.limits}, %{}, spec.handler_options)
+
     key = make_ref()
     {:ok, state} = Connection.handle_event({:stream_open, key, :bidi}, state)
 
@@ -329,6 +381,12 @@ defmodule Gaoxy.HTTP.HTTP3.ConnectionTest do
               :ok = Operations.ack(table, key, token, ref)
               send(observer, {:short_read_result, self(), result})
           end
+
+          # This fixture owns only the read operation, not endpoint teardown.
+          # Keep it alive through every bounded owner turn before ending it.
+          receive do
+            :finish -> :ok
+          end
         end)
 
       on_exit(fn -> if Process.alive?(worker), do: Process.exit(worker, :kill) end)
@@ -363,9 +421,10 @@ defmodule Gaoxy.HTTP.HTTP3.ConnectionTest do
                       {:ok, unquote(bytes), true, [{"x-final", "seen"}]}},
                      1_000
 
-      assert_receive {:DOWN, ^monitor, :process, ^worker, :normal}, 1_000
       assert next.streams[key].input == <<>>
       assert next.streams[key].operation == nil
+      send(worker, :finish)
+      assert_receive {:DOWN, ^monitor, :process, ^worker, :normal}, 1_000
       :ok = Connection.terminate(:test_complete, next)
     end
   end

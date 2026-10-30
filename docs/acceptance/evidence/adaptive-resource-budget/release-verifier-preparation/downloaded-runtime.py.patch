@@ -1,0 +1,110 @@
+--- .audit/release-0.13.1/public-verification/downloaded-runtime.py
++++ .audit/adaptive-resource-budget/release-verification/downloaded-runtime.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Qualify a verified published 0.13.1 standalone on this Nix host; never publish."""
++"""Qualify an explicitly selected verified published standalone on this Nix host; never publish."""
+ import argparse
+ import hashlib
+ import importlib.metadata
+@@ -18,7 +18,8 @@
+ 
+ ROOT = Path(__file__).resolve().parents[3]
+ HERE = Path(__file__).resolve().parent
+-VERSION = '0.13.1'
++VERSION = None
++VERIFIER_SHA256 = None
+ HOST_RECEIPT = ROOT / '.audit/release-0.9.0-public-runtime/receipt.json'
+ CA = Path('/etc/ssl/certs/ca-certificates.crt')
+ SCRIPTS = [
+@@ -30,9 +31,9 @@
+     'integration/http3/upstream/origin.py', 'integration/http3/upstream/run.py',
+ ]
+ PACKAGES = {'gaoxy', 'gaoxy_http', 'gaoxy_http3', 'gaoxy_proxy', 'gaoxy_test', 'gaoxy_websock_adapter'}
+-STANDALONE = f'gaoxy-{VERSION}-linux-x86_64.tar.gz'
+-PAYLOADS = {STANDALONE, *(f'{name}-{VERSION}.tar' for name in PACKAGES)}
+-EXPECTED = PAYLOADS | {'SHA256SUMS'}
++STANDALONE = None
++PAYLOADS = set()
++EXPECTED = set()
+ 
+ 
+ def require(condition, message):
+@@ -44,7 +45,31 @@
+     return hashlib.sha256(data).hexdigest()
+ 
+ 
++def artifact_verifier():
++    path = HERE / 'verify-public-artifacts.py'
++    require(digest(path.read_bytes()) == VERIFIER_SHA256,
++            'artifact verifier differs from explicitly reviewed SHA256')
++    spec = importlib.util.spec_from_file_location('public_artifact_verifier', path)
++    module = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(module)
++    return module
++
++
++def configure(version, verifier_sha256):
++    global VERSION, STANDALONE, PAYLOADS, EXPECTED, VERIFIER_SHA256
++    require(re.fullmatch(r'[0-9a-f]{64}', verifier_sha256),
++            '--artifact-verifier-sha256 must be a full lowercase SHA256')
++    VERIFIER_SHA256 = verifier_sha256
++    module = artifact_verifier()
++    module.configure(version)
++    require(module.ROOT == ROOT, 'artifact verifier root differs')
++    VERSION, STANDALONE = module.VERSION, module.STANDALONE
++    PAYLOADS, EXPECTED = module.PAYLOADS, module.EXPECTED
++
++
+ def validate_receipt(verified, sha):
++    require(verified.get('verifier_sha256') == VERIFIER_SHA256,
++            'artifact receipt verifier digest differs from reviewed helper')
+     require(verified['status'] == 'PASS' and verified['version'] == VERSION
+             and verified['tag'] == f'v{VERSION}', 'artifact receipt is not this passing stable version')
+     require(verified['source_commit'] == sha and verified['remote_tag_sha'] == sha,
+@@ -98,6 +123,8 @@
+         package.extractall(runtime, filter='data')
+     release = runtime / 'bin/gaoxy'
+     require(release.is_file() and os.access(release, os.X_OK), 'extracted release is not executable')
++    boot = runtime / f'releases/{VERSION}/start.boot'
++    require(boot.is_file() and boot.stat().st_size > 0, 'extracted release start.boot is missing or empty')
+     return release, len(members)
+ 
+ 
+@@ -128,9 +155,8 @@
+ 
+ 
+ def remote_tag_sha():
+-    spec = importlib.util.spec_from_file_location('public_artifact_verifier', HERE / 'verify-public-artifacts.py')
+-    module = importlib.util.module_from_spec(spec)
+-    spec.loader.exec_module(module)
++    module = artifact_verifier()
++    module.configure(VERSION)
+     require(module.VERSION == VERSION and module.ROOT == ROOT, 'artifact verifier version/root differs')
+     return module.tag_sha()
+ 
+@@ -193,7 +219,8 @@
+     receipt = {'status': 'FAIL', 'source_commit': sha, 'version': VERSION,
+                'artifact_receipt': str(artifact_receipt), 'evidence': str(evidence),
+                'checks': [], 'processes_stopped': True,
+-               'runner_sha256': digest(Path(__file__).read_bytes())}
++               'runner_sha256': digest(Path(__file__).read_bytes()),
++               'artifact_verifier_sha256': VERIFIER_SHA256}
+     def save():
+         (evidence / 'receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
+     save()
+@@ -260,10 +287,13 @@
+ 
+ def main():
+     parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--version', required=True, help='explicit published version without v prefix')
++    parser.add_argument('--artifact-verifier-sha256', required=True, help='reviewed verifier SHA256 checked before import')
+     parser.add_argument('--sha', required=True, help='full exact successfully published source commit')
+     parser.add_argument('--artifact-receipt', required=True, type=Path,
+-                        help='PASS receipt from the reviewed 0.13.1 public artifact verifier')
++                        help='PASS receipt from the reviewed public artifact verifier')
+     args = parser.parse_args()
++    configure(args.version, args.artifact_verifier_sha256)
+     require(re.fullmatch(r'[0-9a-f]{40}', args.sha), '--sha must be full lowercase commit SHA')
+     return run(args.sha, args.artifact_receipt.resolve())
+ 

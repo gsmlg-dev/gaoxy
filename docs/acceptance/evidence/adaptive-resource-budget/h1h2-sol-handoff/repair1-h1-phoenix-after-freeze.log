@@ -1,0 +1,222 @@
+==> gaoxy_http3
+Compiling 3 files (.ex)
+    warning: unused alias Options
+    │
+  6 │   alias Gaoxy.HTTP.HTTP3.{Headers, Operations, Options, Protocol, Stream, Transport}
+    │   ~
+    │
+    └─ lib/gaoxy/http/http3/connection.ex:6:3
+
+Generated gaoxy_http3 app
+==> gaoxy_proxy
+Compiling 2 files (.ex)
+Generated gaoxy_proxy app
+==> gaoxy_http
+
+18:35:11.364 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+18:35:11.385 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+.
+
+  1) test independent H1 connections count requests separately and release keep-alive ownership (Gaoxy.HTTP.ResourceBudgetH1Test)
+     apps/gaoxy_http/test/resource_budget_h1_test.exs:32
+     match (=) failed
+     code:  assert %{active_connections: 2, active_requests: 2} = Gaoxy.resource_budget(server)
+     left:  %{active_connections: 2, active_requests: 2}
+     right: %{
+              mode: :ready,
+              state: :normal,
+              usage: 557218,
+              requests: 2,
+              policy: %{
+                soft_limit: nil,
+                hard_limit: nil,
+                provenance: %{source: :adaptive}
+              },
+              retained_bytes: 162,
+              transport_bytes: 557218,
+              websocket_bytes: 0,
+              leases: 2,
+              capacity: 101234290688,
+              soft_limit: 50617145344,
+              hard_limit: 101234290688,
+              vm: %{
+                state: :normal,
+                usage: 557218,
+                requests: 2,
+                retained_bytes: 162,
+                transport_bytes: 557218,
+                websocket_bytes: 0,
+                leases: 2,
+                soft_limit: 50617145344,
+                hard_limit: 101234290688,
+                pending_processes: 0,
+                temporary_bytes: 557056,
+                legacy_leases: 2,
+                connections: 1,
+                h2_streams: 0,
+                h3_streams: 0,
+                receipt_count: 8
+              },
+              detection: %{
+                metadata: %{
+                  controller_limits: [:unlimited, :unlimited,
+                   :unlimited, :unlimited],
+                  controller_locations: [
+                    {:v2,
+                     "/sys/fs/cgroup/user.slice/user-1000.slice/session-292.scope",
+                     "/sys/fs/cgroup"}
+                  ],
+                  controllers: [:v2]
+                },
+                source: :linux,
+                capacity: 101234290688,
+                reasons: [],
+                fallback?: false,
+                cgroup_limit_bytes: nil,
+                physical_bytes: 101234290688
+              },
+              safety: %{
+                retained_baseline: 0,
+                available_bytes: 58878681088,
+                cgroup_headroom_bytes: nil,
+                high_pressure?: false,
+                sampled_at: -576460745877
+              },
+              availability: :ready,
+              pending_processes: 0,
+              temporary_bytes: 557056,
+              legacy_leases: 2,
+              connections: 1,
+              h2_streams: 0,
+              h3_streams: 0,
+              rejections: %{},
+              receipt_count: 8,
+              active_connections: 1,
+              active_h2_streams: 0,
+              active_h3_streams: 0,
+              active_requests: 2,
+              orphaned?: false
+            }
+     stacktrace:
+       test/resource_budget_h1_test.exs:41: (test)
+
+
+18:35:14.886 [error] GenServer #PID<0.538.0> terminating
+** (BadMapError) expected a map, got: nil
+    (elixir 1.18.5) lib/map.ex:535: Map.get(nil, :write_timeout, 5000)
+    (gaoxy_http 0.13.1) lib/gaoxy/http/exchange.ex:511: Gaoxy.HTTP.Exchange.send_window/2
+    (gaoxy_http 0.13.1) lib/gaoxy/http/exchange.ex:487: Gaoxy.HTTP.Exchange.send_chunks/3
+    (gaoxy_http 0.13.1) lib/gaoxy/http/connection.ex:527: Gaoxy.HTTP.Connection.overload/2
+    (hell 0.1.3) lib/hell/handler.ex:692: Hell.Handler.invoke_callback/2
+    (gaoxy_http 0.13.1) lib/gaoxy/http/connection.ex:3: Gaoxy.HTTP.Connection.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Process Label: {:hell, :connection, {Gaoxy.HTTP.Connection, {{127, 0, 0, 1}, 40760}}}
+Last message: {:tcp, #Port<0.46>, "GET /refused HTTP/1.1\r\nHost: localhost\r\n\r\n"}
+State: {%Hell.Socket{socket: #Port<0.46>, transport_module: Hell.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %Hell.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3615076486.163577858.43540>, start_time: -576460742848803171, start_metadata: %{handler: Gaoxy.HTTP.Connection, telemetry_span_context: #Reference<0.3615076486.163577858.43540>, remote_address: {127, 0, 0, 1}, remote_port: 40760, parent_telemetry_span_context: #Reference<0.3615076486.163577857.56725>}, handler: Gaoxy.HTTP.Connection, span_metadata: %{handler: Gaoxy.HTTP.Connection, telemetry_span_context: #Reference<0.3615076486.163577858.43540>}}, read_timer: #Reference<0.3615076486.163577858.43543>, read_deadline: -576460712848, timer_deadline: -576460712848}, %{scope: %{instance: #Reference<0.3615076486.163577857.56675>, service: :http, generation: #Reference<0.3615076486.163577857.56681>}, buffer: "", instance: #PID<0.522.0>, closing: false, service: #PID<0.525.0>, spec: %{id: :http, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.HTTP.Connection, tls: %{}, limits: %{max_bytes: 1048576, max_streams: 65536, max_output: 65507, callback_timeout: 5000, idle_timeout: 30000, drain_timeout: 5000, max_active: 64, max_memberships: 64, max_packet: 65507, max_state: 65536, max_connections: 16384, max_requests: 1}, transport: :tcp, handler_options: %{protocols: [:http1], initialized: true, endpoint: {Gaoxy.HTTP.ResourceBudgetH1Test.Endpoint, #PID<0.521.0>}, http_limits: %{max_headers: 100, max_header_bytes: 32768, max_trailers: 32, max_trailer_bytes: 8192, request_timeout: 3000, header_timeout: 5000, write_timeout: 5000, max_read_chunk: 16384, read_timeout: 5000, max_buffer_bytes: 65536, stream_timeout: :request, max_request_line: 8192, max_body_bytes: 8388608, max_chunk_line: 1024}, extended_connect: false, h2c: :disabled, h2_limits: %{max_streams: 32, control_turn: 32, max_header_block: 16384, max_frame: 16384, table_size: 4096, receive_window: 65535, frame_timeout: 5000, control_rate: 256}}, capabilities: [], quic: %{}, abyss_options: [], budget_policy: %{max_bytes: nil, max_streams: 65536, max_active: nil, provenance: %{max_bytes: :omitted, max_streams: :omitted, max_active: :omitted, max_connections: :omitted, max_requests: :explicit, normalized_limits: %{max_bytes: 1048576, max_streams: 65536, max_active: 64, max_connections: 16384, max_requests: 1}}, max_connections: 16384, max_requests: 1}, handler_mode: :native, dispatcher: %{}, hell_options: []}, deadline: nil, phase: :idle, gate: #PID<0.526.0>, limits: %{max_headers: 100, max_header_bytes: 32768, max_trailers: 32, max_trailer_bytes: 8192, request_timeout: 3000, header_timeout: 5000, write_timeout: 5000, max_read_chunk: 16384, read_timeout: 5000, max_buffer_bytes: 65536, stream_timeout: :request, max_request_line: 8192, max_body_bytes: 8388608, max_chunk_line: 1024}, websocket: nil, lease: #Reference<0.3615076486.163577857.56784>, startup_token: #Reference<0.3615076486.163577857.56694>, first_input: nil, header_token: nil, header_timer: nil}}
+
+
+  2) test ordinary H1 request quota returns bounded 503 while an admitted sibling completes (Gaoxy.HTTP.ResourceBudgetH1Test)
+     apps/gaoxy_http/test/resource_budget_h1_test.exs:59
+     match (=) failed
+     code:  assert {:ok, bytes} = :gen_tcp.recv(socket, 0, @timeout)
+     left:  {:ok, bytes}
+     right: {:error, :closed}
+     stacktrace:
+       test/resource_budget_h1_test.exs:121: Gaoxy.HTTP.ResourceBudgetH1Test.response/2
+       test/resource_budget_h1_test.exs:66: (test)
+
+
+
+  3) test overlapping ordinary body uploads retain two requests and return credits on completion (Gaoxy.HTTP.ResourceBudgetH1Test)
+     apps/gaoxy_http/test/resource_budget_h1_test.exs:81
+     match (=) failed
+     code:  assert %{active_connections: 2, active_requests: 2} = Gaoxy.resource_budget(server)
+     left:  %{active_connections: 2, active_requests: 2}
+     right: %{
+              mode: :ready,
+              state: :normal,
+              usage: 557302,
+              requests: 2,
+              policy: %{
+                soft_limit: nil,
+                hard_limit: nil,
+                provenance: %{source: :adaptive}
+              },
+              retained_bytes: 246,
+              transport_bytes: 557302,
+              websocket_bytes: 0,
+              leases: 2,
+              capacity: 101234290688,
+              soft_limit: 50617145344,
+              hard_limit: 101234290688,
+              vm: %{
+                state: :normal,
+                usage: 557302,
+                requests: 2,
+                retained_bytes: 246,
+                transport_bytes: 557302,
+                websocket_bytes: 0,
+                leases: 2,
+                soft_limit: 50617145344,
+                hard_limit: 101234290688,
+                pending_processes: 0,
+                temporary_bytes: 557056,
+                legacy_leases: 2,
+                connections: 1,
+                h2_streams: 0,
+                h3_streams: 0,
+                receipt_count: 8
+              },
+              detection: %{
+                metadata: %{
+                  controller_limits: [:unlimited, :unlimited,
+                   :unlimited, :unlimited],
+                  controller_locations: [
+                    {:v2,
+                     "/sys/fs/cgroup/user.slice/user-1000.slice/session-292.scope",
+                     "/sys/fs/cgroup"}
+                  ],
+                  controllers: [:v2]
+                },
+                source: :linux,
+                capacity: 101234290688,
+                reasons: [],
+                fallback?: false,
+                cgroup_limit_bytes: nil,
+                physical_bytes: 101234290688
+              },
+              safety: %{
+                retained_baseline: 0,
+                available_bytes: 57914691584,
+                cgroup_headroom_bytes: nil,
+                high_pressure?: false,
+                sampled_at: -576460739841
+              },
+              availability: :ready,
+              pending_processes: 0,
+              temporary_bytes: 557056,
+              legacy_leases: 2,
+              connections: 1,
+              h2_streams: 0,
+              h3_streams: 0,
+              rejections: %{},
+              receipt_count: 8,
+              active_connections: 1,
+              active_h2_streams: 0,
+              active_h3_streams: 0,
+              active_requests: 2,
+              orphaned?: false
+            }
+     stacktrace:
+       test/resource_budget_h1_test.exs:91: (test)
+
+
+Finished in 9.4 seconds (0.00s async, 9.4s sync)
+4 tests, 3 failures
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

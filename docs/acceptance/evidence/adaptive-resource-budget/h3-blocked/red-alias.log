@@ -1,0 +1,95 @@
+==> gaoxy_http3
+
+18:51:43.682 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+18:51:43.720 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+.....
+
+  1) test a delayed admitted startup reply survives empty owner polls without replay (Gaoxy.HTTP.HTTP3.ResourceBudgetH3Test)
+     apps/gaoxy_http3/test/resource_budget_h3_test.exs:232
+     Assertion with == failed
+     code:  assert resumed.streams[key].startup == nil
+     left:  #Reference<0.0.46723.2634305810.1507655682.195899>
+     right: nil
+     stacktrace:
+       test/resource_budget_h3_test.exs:257: (test)
+
+
+
+  2) test a delayed cancellation receipt survives command-row removal and repeated retirement polls (Gaoxy.HTTP.HTTP3.ResourceBudgetH3Test)
+     apps/gaoxy_http3/test/resource_budget_h3_test.exs:266
+     Expected false or nil, got true
+     code: refute Map.has_key?(settled.streams, key)
+     arguments:
+
+         # 1
+         %{
+           #Reference<0.2634305810.1507590146.195913> => %{
+             input: "",
+             out: "",
+             request: %Gaoxy.HTTP.Request{
+               method: "GET",
+               target: nil,
+               target_form: nil,
+               version: :"HTTP/3",
+               protocol: nil,
+               path: "/",
+               query_string: nil,
+               host: nil,
+               port: nil,
+               scheme: nil,
+               peer: nil,
+               local: nil,
+               head_bytes: 0,
+               headers: [],
+               body: :none,
+               keep_alive: false,
+               expect_continue: false
+             },
+             mode: nil,
+             cancel: [],
+             worker: nil,
+             deadline: -576460719615,
+             kind: :bidi,
+             token: #Reference<0.2634305810.1507590146.195914>,
+             admission: :rejected,
+             operation: nil,
+             lease: nil,
+             cancel_deadline: -576460744615,
+             trailers: [],
+             startup: nil,
+             spawn_cancel: {:pending,
+              #Reference<0.0.47235.2634305810.1507655682.195918>},
+             retiring: true,
+             resources_terminal: false,
+             stream_terminal: true,
+             recv_fin: true,
+             abort_pending: false,
+             output_deadline: -576460744615,
+             send_done: false,
+             send_fin: false,
+             write_quantum: 16384,
+             fin_pending: false,
+             header_deadline: -576460744615,
+             resources_identity: {:spawn,
+              #Reference<0.2634305810.1507590146.195914>},
+             resources_operation: #Reference<0.2634305810.1507590146.195915>,
+             response_phase: :unset,
+             work_deadline: nil,
+             worker_finished: false
+           }
+         }
+
+         # 2
+         #Reference<0.2634305810.1507590146.195913>
+
+     stacktrace:
+       test/resource_budget_h3_test.exs:283: (test)
+
+
+Finished in 0.6 seconds (0.6s async, 0.00s sync)
+7 tests, 2 failures
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

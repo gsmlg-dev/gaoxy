@@ -129,10 +129,7 @@ defmodule Gaoxy.HTTP.HTTP2.Transport do
 
         with {:ok, exchange} <- maybe_continue(exchange),
              :ok <-
-               Exchange.update_body_retention(
-                 exchange,
-                 Exchange.retained_bytes(exchange) + 2 * credit
-               ) do
+               Exchange.reserve_body_retention(exchange, 2 * credit) do
           result =
             operation(
               exchange,

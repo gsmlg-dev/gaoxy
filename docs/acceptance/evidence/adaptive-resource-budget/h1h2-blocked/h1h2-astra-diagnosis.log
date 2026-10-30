@@ -1,0 +1,26 @@
+==> gaoxy_http
+
+19:13:18.591 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+19:13:18.619 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+Excluding tags: [:test]
+Including tags: [location: {"test/stream_lifetime_test.exs", 210}]
+
+BUDGET_TRACE {#PID<0.382.0>, {#PID<0.373.0>, #Reference<0.194049997.1242562561.237551>, 278654}, {:error, :draining}}
+
+
+  1) test shutdown terminates an infinite active stream within the public deadline (Gaoxy.HTTP.StreamLifetimeTest)
+     apps/gaoxy_http/test/stream_lifetime_test.exs:210
+     match (=) failed
+     code:  assert {:error, :closed} = :gen_tcp.recv(socket, 0, 1000)
+     left:  {:error, :closed}
+     right: {:ok, "0\r\n\r\n"}
+     stacktrace:
+       test/stream_lifetime_test.exs:227: (test)
+
+
+Finished in 0.4 seconds (0.4s async, 0.00s sync)
+13 tests, 1 failure, 12 excluded
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

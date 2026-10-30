@@ -1,7 +1,7 @@
 # Phoenix with Gaoxy
 
 This guide migrates an existing Phoenix application from Bandit to
-`gaoxy_http` **0.13.1**. It uses `MyAppWeb.Endpoint` and OTP application `:my_app`;
+`gaoxy_http` **0.14.0**. It uses `MyAppWeb.Endpoint` and OTP application `:my_app`;
 replace those names with your own. The adapter is `Gaoxy.PhoenixAdapter`.
 Gaoxy provides the listener and native H1/H2/WebSocket engine, while Phoenix
 continues to own the Endpoint pipeline, router, Channels, LiveView, sessions,
@@ -13,8 +13,8 @@ Remove your explicit `{:bandit, ...}` dependency from `mix.exs`. Add these
 entries to your existing `deps/0`, retaining the rest of your application deps:
 
 ```elixir
-{:gaoxy_http, "~> 0.13.1"},
-{:websock_adapter, "~> 0.13.1", hex: :gaoxy_websock_adapter, override: true}
+{:gaoxy_http, "~> 0.14.0"},
+{:websock_adapter, "~> 0.14.0", hex: :gaoxy_websock_adapter, override: true}
 ```
 
 The second entry is required for Phoenix: `gaoxy_websock_adapter` is the
@@ -344,9 +344,11 @@ option is accepted at the top level of `Gaoxy.HTTP.ListenerSet.plan/1`.
 The public monitoring contract is `Gaoxy.resource_budget(instance)`, where
 `instance` is the PID reported by `Gaoxy.PhoenixAdapter.listeners(Endpoint)`.
 It reports effective thresholds, usage, counters, availability and rejection
-reasons, including shared VM totals. Runtime integration and qualification of
-this adaptive-budget API are in progress; pure planning evidence does not
-establish Phoenix LiveView, network, platform or production qualification.
+reasons, including shared VM totals. The actual Phoenix fixture verifies
+adaptive H1/H2/H3 concurrency, LiveView/WebSocket, streaming and cleanup;
+independent clients also verify reload and listener shutdown. See the
+[acceptance record](acceptance/adaptive-resource-budget.md) for commands,
+source identities and remaining platform and production qualification limits.
 
 ### Service budgets: `limits`
 

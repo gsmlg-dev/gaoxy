@@ -1,0 +1,219 @@
+==> gaoxy
+
+18:17:30.861 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+18:17:30.884 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+     warning: the following conditional expression will always evaluate to true:
+
+         not queued?
+
+     where "queued?" was given the type:
+
+         # type: false
+         # from: test/resource_budget_admission_test.exs:329:15
+         queued? = false
+
+     typing violation found at:
+     │
+ 351 │         if not queued? do
+     │         ~~~~~~~~~~~~~~~~~
+     │
+     └─ test/resource_budget_admission_test.exs:351: Gaoxy.ResourceBudget.AdmissionTest."test unobserved h2_stream activated spawn retains caller-token cleanup ownership"/1
+
+     warning: the following conditional expression will always evaluate to true:
+
+         not queued?
+
+     where "queued?" was given the type:
+
+         # type: false
+         # from: test/resource_budget_admission_test.exs:329:15
+         queued? = false
+
+     typing violation found at:
+     │
+ 351 │         if not queued? do
+     │         ~~~~~~~~~~~~~~~~~
+     │
+     └─ test/resource_budget_admission_test.exs:351: Gaoxy.ResourceBudget.AdmissionTest."test unobserved h2_stream bound spawn retains caller-token cleanup ownership"/1
+
+     warning: the following conditional expression will always evaluate to false:
+
+         not queued?
+
+     where "queued?" was given the type:
+
+         # type: true
+         # from: test/resource_budget_admission_test.exs:329:15
+         queued? = true
+
+     typing violation found at:
+     │
+ 351 │         if not queued? do
+     │         ~~~~~~~~~~~~~~~~~
+     │
+     └─ test/resource_budget_admission_test.exs:351: Gaoxy.ResourceBudget.AdmissionTest."test unobserved h2_stream queued spawn retains caller-token cleanup ownership"/1
+
+     warning: the following conditional expression will always evaluate to true:
+
+         not queued?
+
+     where "queued?" was given the type:
+
+         # type: false
+         # from: test/resource_budget_admission_test.exs:329:15
+         queued? = false
+
+     typing violation found at:
+     │
+ 351 │         if not queued? do
+     │         ~~~~~~~~~~~~~~~~~
+     │
+     └─ test/resource_budget_admission_test.exs:351: Gaoxy.ResourceBudget.AdmissionTest."test unobserved h3_stream activated spawn retains caller-token cleanup ownership"/1
+
+     warning: the following conditional expression will always evaluate to true:
+
+         not queued?
+
+     where "queued?" was given the type:
+
+         # type: false
+         # from: test/resource_budget_admission_test.exs:329:15
+         queued? = false
+
+     typing violation found at:
+     │
+ 351 │         if not queued? do
+     │         ~~~~~~~~~~~~~~~~~
+     │
+     └─ test/resource_budget_admission_test.exs:351: Gaoxy.ResourceBudget.AdmissionTest."test unobserved h3_stream bound spawn retains caller-token cleanup ownership"/1
+
+     warning: the following conditional expression will always evaluate to false:
+
+         not queued?
+
+     where "queued?" was given the type:
+
+         # type: true
+         # from: test/resource_budget_admission_test.exs:329:15
+         queued? = true
+
+     typing violation found at:
+     │
+ 351 │         if not queued? do
+     │         ~~~~~~~~~~~~~~~~~
+     │
+     └─ test/resource_budget_admission_test.exs:351: Gaoxy.ResourceBudget.AdmissionTest."test unobserved h3_stream queued spawn retains caller-token cleanup ownership"/1
+
+
+18:17:35.820 [warning] resource budget warning
+.
+18:17:35.821 [warning] resource budget warning
+.......
+
+  1) test unobserved h2_stream queued spawn retains caller-token cleanup ownership (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:325
+     match (=) failed
+     code:  assert {:reply, :ok} = :gen_server.receive_response(repeated, 1000)
+     left:  {:reply, :ok}
+     right: {:reply, {:error, :stale_generation}}
+     stacktrace:
+       test/resource_budget_admission_test.exs:380: (test)
+
+
+
+  2) test unobserved h2_stream bound spawn retains caller-token cleanup ownership (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:325
+     match (=) failed
+     code:  assert {:reply, :ok} = :gen_server.receive_response(repeated, 1000)
+     left:  {:reply, :ok}
+     right: {:reply, {:error, :stale_generation}}
+     stacktrace:
+       test/resource_budget_admission_test.exs:380: (test)
+
+
+
+  3) test unobserved h2_stream activated spawn retains caller-token cleanup ownership (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:325
+     ** (UndefinedFunctionError) function Gaoxy.Admission.finish_spawn_resources/5 is undefined or private. Did you mean:
+
+           * finish_send_async/4
+           * finish_stream_resources/5
+
+     code: apply(Admission, :finish_spawn_resources, [g, parent, token, proof, deadline()])
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Admission.finish_spawn_resources(#PID<0.454.0>, #Reference<0.1957954186.160694274.184435>, #Reference<0.1957954186.160694273.191466>, #Reference<0.1957954186.160694273.191467>, -576460744871)
+       test/resource_budget_admission_test.exs:361: (test)
+
+
+18:17:35.857 [error] Process #PID<0.496.0> raised an exception
+** (UndefinedFunctionError) function Gaoxy.Admission.finish_spawn_resources/5 is undefined or private
+    (gaoxy 0.13.1) Gaoxy.Admission.finish_spawn_resources(#PID<0.494.0>, #Reference<0.1957954186.160694273.191886>, #Reference<0.1957954186.160694273.191895>, #Reference<0.1957954186.160694274.184650>, -576460744858)
+    test/resource_budget_admission_test.exs:431: anonymous fn/4 in Gaoxy.ResourceBudget.AdmissionTest."test spawn-token proof authenticates binding and retains only bounded retry receipts"/1
+
+
+  4) test unobserved h3_stream queued spawn retains caller-token cleanup ownership (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:325
+     match (=) failed
+     code:  assert {:reply, :ok} = :gen_server.receive_response(repeated, 1000)
+     left:  {:reply, :ok}
+     right: {:reply, {:error, :stale_generation}}
+     stacktrace:
+       test/resource_budget_admission_test.exs:380: (test)
+
+
+
+  5) test unobserved h3_stream bound spawn retains caller-token cleanup ownership (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:325
+     match (=) failed
+     code:  assert {:reply, :ok} = :gen_server.receive_response(repeated, 1000)
+     left:  {:reply, :ok}
+     right: {:reply, {:error, :stale_generation}}
+     stacktrace:
+       test/resource_budget_admission_test.exs:380: (test)
+
+
+
+  6) test unobserved h3_stream activated spawn retains caller-token cleanup ownership (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:325
+     ** (UndefinedFunctionError) function Gaoxy.Admission.finish_spawn_resources/5 is undefined or private. Did you mean:
+
+           * finish_send_async/4
+           * finish_stream_resources/5
+
+     code: apply(Admission, :finish_spawn_resources, [g, parent, token, proof, deadline()])
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Admission.finish_spawn_resources(#PID<0.484.0>, #Reference<0.1957954186.160694274.184538>, #Reference<0.1957954186.160694274.184542>, #Reference<0.1957954186.160694274.184543>, -576460744860)
+       test/resource_budget_admission_test.exs:361: (test)
+
+
+
+  7) test spawn-token proof authenticates binding and retains only bounded retry receipts (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:419
+     Assertion failed, no matching message after 100ms
+     The process mailbox is empty.
+     code: assert_receive {:unowned_token_proof, {:error, :stale_generation}}
+     stacktrace:
+       test/resource_budget_admission_test.exs:436: (test)
+
+
+
+  8) test cancelled activated token retains output and independent guardian until their proofs (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:485
+     ** (UndefinedFunctionError) function Gaoxy.Admission.finish_spawn_resources/5 is undefined or private. Did you mean:
+
+           * finish_send_async/4
+           * finish_stream_resources/5
+
+     code: apply(Admission, :finish_spawn_resources, [g, parent, token, make_ref(), deadline()])
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Admission.finish_spawn_resources(#PID<0.505.0>, #Reference<0.1957954186.160694274.184792>, #Reference<0.1957954186.160694274.184796>, #Reference<0.1957954186.160694274.184836>, -576460744754)
+       test/resource_budget_admission_test.exs:514: (test)
+
+........................
+Finished in 5.2 seconds (0.00s async, 5.2s sync)
+40 tests, 8 failures
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

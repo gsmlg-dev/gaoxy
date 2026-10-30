@@ -1,10 +1,65 @@
 # Adaptive resource budget
 
-Status: architecture selected; implementation and qualification in progress.
+Status: implementation and final source qualification accepted; publication pending.
 Baseline: `a6a35438c0a153cd53c87c6a55c19a70a11fb75a` on `main`.
 The approved objective is adaptive memory accounting and soft admission across
 core, native H1/H2/H3, ListenerSet and Phoenix, followed by coordinated release.
-This document describes the required contract, not completed qualification.
+This document records the implemented contract. Final source evidence is in
+[the acceptance record](../acceptance/adaptive-resource-budget.md); public
+publication and downloaded-runtime acceptance remain separate pending gates.
+
+## Completion-credit recovery contract — 2026-10-29
+
+Preserve the existing scalar Admission update contract, which retains temporary
+credit. Protocol integration must explicitly request repartition of an admitted
+allocation when retained bytes consume prepaid temporary credit or completion
+releases retained bytes for reuse. The new operation must preserve the existing
+deadline, revision, operation-identity and retry guarantees; it cannot increase
+the funded total, quota membership, pending-process count or explicit transport
+category allowance. Ordinary replacement retains its growth checks.
+
+Repartition must keep retained/temporary accounting truthful, including across
+capacity/safety refresh and completion-credit replenishment. Subsequent new
+admission still evaluates `temporary + max(retained - retained_baseline, 0)`;
+reclassification must not conceal debit or bypass a new allocation guard. Drain
+permits completion within previously funded obligations while fencing new work.
+The explicit repartition API and protocol migration are qualified by the final
+900-case source gate and independent review recorded in the acceptance record.
+
+Connection completion separates reusable credit from outstanding receive/copy
+obligations. Let `F` be the original funded floor including initial retained
+state, `R` the current measured retained state and backing ownership, `P` the
+unspendable receive/copy floor and `D` the current decoder peak. Target usage is
+`max(F, R + P) + D`; temporary ownership remains at least `P + D`. Repartition
+may materialize only previously funded completion credit. Any additional total
+or decoder obligation still needs checked admission, including during drain.
+The protocol must justify the reusable portion from actual overlapping
+lifetimes, measure backing through retirement and qualify transport-specific
+delivery bounds before reducing them. This does not permit arbitrary growth
+or spending the next receive's credit to complete the current callback.
+
+Raw TCP/TLS StreamHandler connections fund `F = 2 * D + 4 * max_state +
+3 * max_output` before initialization, where `D = 100 * B + 18_437` and `B` is the
+effective public socket buffer. Raw service defaults are 2,048 for
+`buffer`/`recbuf`, with explicit transport settings taking precedence. Keep the
+whole delivery backing through callback chunking and at least one `D` receive
+obligation through callback/output completion. Explicit service byte caps must
+fund this floor without a multiplier; smaller caps reject admission. This
+preserves ordered raw I/O after the admission barrier without extending the
+original drain deadline or changing HTTP/UDP/QUIC profiles.
+
+Before adopting init or returned callback state, retain the historical
+`external_size <= max_state` check, detach binary backing with ordinary
+uncompressed ETF encoding/decoding, and require exact term identity (`===`).
+Encoding/decode failure or identity mismatch fails closed; original returned
+state remains available for terminal cleanup. This internal normalization stays
+within the same VM and does not change distribution identity. The failed local
+ETF closure diagnostic is not the selected codec. Four state obligations fund
+old/new/encoded/decoded overlap. Output becomes a detached binary before send;
+three output obligations cover source, flattened and independent copies.
+Those commitments cover bridge ownership, not arbitrary transient allocation
+inside a user callback or NIF. Keep the original callback/drain watchdogs and
+actual terminal release proofs throughout normalization and cleanup.
 
 ## Baseline and problem
 
@@ -113,6 +168,43 @@ Preserve existing worker bootstrap and DOWN/EXIT terminal-pair semantics. Owner
 DOWN is not evidence that an asynchronous writer, socket or guardian finished.
 Transfer such obligations to their actual cleanup owner and release at its
 confirmed terminal event. Orphaned obligations remain charged until reconciled.
+
+### Native QUIC connection cleanup
+
+The native engine can outlive its attached callback process. The connection's
+native byte charge and actual connection membership therefore require an
+independent authenticated cleanup owner. Callback DOWN/EXIT, an accepted close,
+an unavailable inspection or a timeout is not native terminal proof.
+
+Before application-handler initialization, create a Service-authenticated native
+reservation pinned to that Service, including the original opaque handle
+identity, measured native bytes, one connection membership and funded guardian
+bookkeeping/process credit. Callback loss cannot release this pending record.
+Start the supervised guardian inertly, then use one canonical split mutation to
+move native ownership and the same connection membership to its cleanup record,
+leaving callback-only ownership on the callback record. The split preserves
+aggregate byte categories, quota membership, process credits and operation/
+revision/generation fencing; it cannot duplicate charge or expose a refund gap.
+Ambiguous reservation/split or failed guardian registration retains or fences
+the pending ownership. Existing scalar/request cleanup contracts remain intact.
+
+Subsequent measured native growth requires authenticated bounded accounting.
+Callback ownership and native ownership retire independently. Native release
+requires the original handle's exact public `QUIC.info` result
+`{:error, :closed}`, the existing authenticated Service cleanup receipt and
+normal guardian terminal evidence. Neither `{:error, :timeout}` nor a broadly
+matched closed-like error substitutes for that proof. Probes run outside
+Admission/Service critical handlers; an outer deadline does not shorten the
+public API's internal five-second call timeout. Healthy persistent connections
+do not inherit the initial callback deadline as a connection lifetime. Cleanup
+once triggered retains one bounded original lifecycle/drain deadline, with
+unconfirmed ownership reported and retained rather than fabricated as zero.
+
+Deterministic ordinary coverage must exercise callback loss during initial
+registration, split/rollback ambiguity, duplicate/stale/authentication cases,
+guardian loss and both orders of callback/native terminal evidence. This is the
+required recovery contract; implementation and passing acceptance remain
+separately recorded in the plan and acceptance evidence.
 
 ## Capacity detection
 
@@ -266,6 +358,14 @@ confirmed, memory can end while a zero-byte row retains an open stream quota;
 the row retires after stream completion as well. Reordering these events must
 converge to the same final ownership. Plain `end_stream/5` retains its independent
 quota-only semantics, including positive bytes lacking memory-terminal proof.
+
+For an abandoned asynchronous spawn reply, the parent may know its spawn token
+without knowing the worker lease. `finish_spawn_resources/5` accepts that token
+with the same authenticated resource-proof semantics. An O(1) index lives only
+as long as the stream lease. Cancellation is a separate signal and never proves
+output/native/guardian completion. Recent retries use the existing bounded
+receipt cache; an unknown token is not evidence that an ambiguous reservation
+never committed. Retain the original reply/outcome handling and deadline.
 
 ## Dynamic protocol accounting
 

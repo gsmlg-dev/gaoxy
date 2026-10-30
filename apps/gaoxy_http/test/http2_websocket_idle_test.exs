@@ -1,7 +1,7 @@
 defmodule Gaoxy.HTTP.HTTP2WebSocketIdleTest do
   use ExUnit.Case, async: true
   alias Gaoxy.HTTP.Connection
-  alias Gaoxy.HTTP.HTTP2.{Frame, Headers}
+  alias Gaoxy.HTTP.HTTP2.{Frame, Headers, Limits}
 
   defmodule Endpoint do
     def init(options), do: {:ok, options}
@@ -99,6 +99,78 @@ defmodule Gaoxy.HTTP.HTTP2WebSocketIdleTest do
     Hell.Handler.set_read_timeout(socket, :infinity)
   end
 
+  test "expired final HEADERS start receipt closes without granting completion proof" do
+    {socket, state} = fixture(40)
+    {:noreply, {_, state}} = open(socket, state, 1)
+    stream = %{state.streams[1] | local_closed: true, eof: true}
+    monitor = Process.monitor(stream.worker)
+    token = make_ref()
+
+    state =
+      state
+      |> Map.put(:streams, %{1 => stream})
+      |> Map.merge(%{
+        writer: self(),
+        inflight: {token, {:headers, 1, stream.write.from}},
+        inflight_write: %{id: 1, deadline: Gaoxy.Lifecycle.now() - 1},
+        inflight_started: false,
+        outgoing_started: false,
+        outgoing_block: 1
+      })
+
+    send(self(), {:h2_write_started, self(), token})
+    assert :ok = Gaoxy.HTTP.HTTP2.Connection.close(state)
+    assert_receive {:DOWN, ^monitor, :process, _, :killed}, 500
+    assert_received :stop
+  end
+
+  test "wire-complete stragglers share one existing close deadline" do
+    workers =
+      for _ <- 1..2,
+          do:
+            spawn(fn ->
+              receive do
+                :never -> :ok
+              end
+            end)
+
+    monitors = Enum.map(workers, &Process.monitor/1)
+    on_exit(fn -> Enum.each(workers, &Process.exit(&1, :kill)) end)
+    deadline = Gaoxy.Lifecycle.deadline(40)
+
+    streams =
+      workers
+      |> Enum.with_index()
+      |> Map.new(fn {worker, id} ->
+        {id,
+         %{
+           worker: worker,
+           startup: nil,
+           local_closed: true,
+           eof: true,
+           write: nil,
+           write_failed: false,
+           deadline: :infinity
+         }}
+      end)
+
+    started = Gaoxy.Lifecycle.now()
+
+    assert :ok =
+             Gaoxy.HTTP.HTTP2.Connection.close(%{
+               streams: streams,
+               writer: self(),
+               drain_deadline: deadline
+             })
+
+    assert Gaoxy.Lifecycle.now() - started < 500
+
+    for {worker, monitor} <- Enum.zip(workers, monitors),
+        do: assert_receive({:DOWN, ^monitor, :process, ^worker, :killed}, 500)
+
+    assert_received :stop
+  end
+
   defp open(socket, state, id, write_timeout \\ 1_000) do
     stream = state.streams[id]
 
@@ -123,6 +195,19 @@ defmodule Gaoxy.HTTP.HTTP2WebSocketIdleTest do
     {:ok, spec} = Gaoxy.HTTP.service_spec(endpoint: {Endpoint, []}, extended_connect: true)
     options = spec.handler_options
     limits = Map.put(options.http_limits, :extended_connect, true)
+    reserves = Limits.reservation(limits, options.h2_limits)
+
+    # This controlled gate has no adaptive runtime authority. Fund exactly the
+    # connection credit exercised by progress/1 without its old implicit cap.
+    gate_limits = %{spec.limits | max_bytes: reserves.connection}
+
+    gate =
+      start_supervised!(
+        {Gaoxy.Admission, {gate_limits, %{instance: make_ref(), service: :test}}},
+        id: make_ref()
+      )
+
+    {:ok, lease} = Gaoxy.Admission.acquire(gate, 0)
 
     {:ok, request} =
       Headers.request(
@@ -172,11 +257,18 @@ defmodule Gaoxy.HTTP.HTTP2WebSocketIdleTest do
 
     state = %{
       phase: :http2,
+      gate: gate,
+      lease: lease,
+      connection_member: lease,
+      reserves: reserves,
+      decode_reservation: 0,
       highest: 1,
       default_read_timeout: idle,
       limits: limits,
       h2: options.h2_limits,
       streams: %{1 => stream},
+      retiring_streams: %{},
+      retirement_timer: nil,
       starting: nil,
       writer_ready: false,
       output: :queue.new(),

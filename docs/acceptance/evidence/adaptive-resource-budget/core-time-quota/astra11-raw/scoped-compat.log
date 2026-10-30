@@ -1,0 +1,73 @@
+==> gaoxy
+
+02:47:01.697 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+02:47:01.727 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 814694, max_cases: 4
+
+
+02:47:02.031 [error] GenServer #PID<0.414.0> terminating
+** (stop) :fixture_init_error
+Process Label: {:hell, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 37678}}}
+Last message: {:continue, :handle_connection}
+State: {%Hell.Socket{socket: #Port<0.25>, transport_module: Hell.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %Hell.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3337681503.3192127489.109473>, start_time: -576460750288065592, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 37678, telemetry_span_context: #Reference<0.3337681503.3192127489.109473>, parent_telemetry_span_context: #Reference<0.3337681503.3192127490.103320>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3337681503.3192127489.109473>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.3337681503.3192127489.109337>, service: :init_error, generation: #Reference<0.3337681503.3192127489.109347>}, instance: #PID<0.354.0>, service: #PID<0.357.0>, spec: %{id: :init_error, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, transport: :tcp, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 1048576, max_connections: 16384, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, idle_timeout: 30000, max_output: 1024, max_requests: 65536, max_state: 1024, max_streams: 65536}, budget_policy: %{max_bytes: nil, max_connections: 16384, max_active: nil, provenance: %{max_bytes: :omitted, max_connections: :omitted, max_active: :omitted, normalized_limits: %{max_bytes: 1048576, max_connections: 16384, max_active: 64, max_requests: 65536, max_streams: 65536}, max_requests: :omitted, max_streams: :omitted}, max_requests: 65536, max_streams: 65536}, handler_mode: :stream, quic: %{}, handler_options: %{owner: #PID<0.349.0>, action: :init_error}, hell_options: [], abyss_options: []}, gate: #PID<0.358.0>, startup_token: #Reference<0.3337681503.3192127489.109366>}}
+
+02:47:02.044 [error] GenServer #PID<0.420.0> terminating
+** (RuntimeError) fixture callback crash
+    test/stream_isolation_test.exs:9: Gaoxy.StreamIsolationTest.Actions.handle_data/2
+    (gaoxy 0.14.0) lib/gaoxy/stream_bridge.ex:73: Gaoxy.StreamBridge.chunks/4
+    (hell 0.1.3) lib/hell/handler.ex:692: Hell.Handler.invoke_callback/2
+    (gaoxy 0.14.0) lib/gaoxy/stream_bridge.ex:3: Gaoxy.StreamBridge.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Process Label: {:hell, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 47466}}}
+Last message: {:tcp, #Port<0.29>, "trigger"}
+State: {%Hell.Socket{socket: #Port<0.29>, transport_module: Hell.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %Hell.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3337681503.3192127489.109503>, start_time: -576460750277575445, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 47466, telemetry_span_context: #Reference<0.3337681503.3192127489.109503>, parent_telemetry_span_context: #Reference<0.3337681503.3192127490.103379>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3337681503.3192127489.109503>}}, read_timer: #Reference<0.3337681503.3192127489.109528>, read_deadline: -576460720275, timer_deadline: -576460720275}, %{scope: %{instance: #Reference<0.3337681503.3192127489.109337>, service: :crash, generation: #Reference<0.3337681503.3192127490.103324>}, instance: #PID<0.354.0>, service: #PID<0.367.0>, spec: %{id: :crash, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, transport: :tcp, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 1048576, max_connections: 16384, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, idle_timeout: 30000, max_output: 1024, max_requests: 65536, max_state: 1024, max_streams: 65536}, budget_policy: %{max_bytes: nil, max_connections: 16384, max_active: nil, provenance: %{max_bytes: :omitted, max_connections: :omitted, max_active: :omitted, normalized_limits: %{max_bytes: 1048576, max_connections: 16384, max_active: 64, max_requests: 65536, max_streams: 65536}, max_requests: :omitted, max_streams: :omitted}, max_requests: 65536, max_streams: 65536}, handler_mode: :stream, quic: %{}, handler_options: %{owner: #PID<0.349.0>, action: :crash}, hell_options: [], abyss_options: []}, app: %{owner: #PID<0.349.0>, action: :crash}, gate: #PID<0.368.0>, lease: #Reference<0.3337681503.3192127490.103678>, startup_token: #Reference<0.3337681503.3192127490.103338>, funded: 449546, delivery_bytes: 0, delivery_limit: 223237}}
+
+02:47:02.064 [error] GenServer #PID<0.432.0> terminating
+** (stop) :state_limit
+Process Label: {:hell, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 40322}}}
+Last message: {:tcp, #Port<0.37>, "trigger"}
+State: {%Hell.Socket{socket: #Port<0.37>, transport_module: Hell.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %Hell.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3337681503.3192127490.103968>, start_time: -576460750251189153, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 40322, telemetry_span_context: #Reference<0.3337681503.3192127490.103968>, parent_telemetry_span_context: #Reference<0.3337681503.3192127490.103450>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3337681503.3192127490.103968>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.3337681503.3192127489.109337>, service: :state, generation: #Reference<0.3337681503.3192127490.103407>}, instance: #PID<0.354.0>, service: #PID<0.386.0>, spec: %{id: :state, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, transport: :tcp, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 1048576, max_connections: 16384, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, idle_timeout: 30000, max_output: 1024, max_requests: 65536, max_state: 1024, max_streams: 65536}, budget_policy: %{max_bytes: nil, max_connections: 16384, max_active: nil, provenance: %{max_bytes: :omitted, max_connections: :omitted, max_active: :omitted, normalized_limits: %{max_bytes: 1048576, max_connections: 16384, max_active: 64, max_requests: 65536, max_streams: 65536}, max_requests: :omitted, max_streams: :omitted}, max_requests: 65536, max_streams: 65536}, handler_mode: :stream, quic: %{}, handler_options: %{owner: #PID<0.349.0>, action: :state}, hell_options: [], abyss_options: []}, app: %{owner: #PID<0.349.0>, action: :state, retained: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}, gate: #PID<0.387.0>, lease: #Reference<0.3337681503.3192127490.103972>, startup_token: #Reference<0.3337681503.3192127490.103420>, funded: 449546, delivery_bytes: 7, delivery_limit: 223237}}
+
+02:47:02.076 [error] GenServer #PID<0.438.0> terminating
+** (stop) :output_limit
+Process Label: {:hell, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 47516}}}
+Last message: {:tcp, #Port<0.41>, "trigger"}
+State: {%Hell.Socket{socket: #Port<0.41>, transport_module: Hell.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %Hell.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3337681503.3192127490.104118>, start_time: -576460750241057282, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 47516, telemetry_span_context: #Reference<0.3337681503.3192127490.104118>, parent_telemetry_span_context: #Reference<0.3337681503.3192127490.103499>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3337681503.3192127490.104118>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.3337681503.3192127489.109337>, service: :output, generation: #Reference<0.3337681503.3192127490.103454>}, instance: #PID<0.354.0>, service: #PID<0.395.0>, spec: %{id: :output, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, transport: :tcp, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 1048576, max_connections: 16384, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, idle_timeout: 30000, max_output: 1024, max_requests: 65536, max_state: 1024, max_streams: 65536}, budget_policy: %{max_bytes: nil, max_connections: 16384, max_active: nil, provenance: %{max_bytes: :omitted, max_connections: :omitted, max_active: :omitted, normalized_limits: %{max_bytes: 1048576, max_connections: 16384, max_active: 64, max_requests: 65536, max_streams: 65536}, max_requests: :omitted, max_streams: :omitted}, max_requests: 65536, max_streams: 65536}, handler_mode: :stream, quic: %{}, handler_options: %{owner: #PID<0.349.0>, action: :output}, hell_options: [], abyss_options: []}, app: %{owner: #PID<0.349.0>, action: :output}, gate: #PID<0.396.0>, lease: #Reference<0.3337681503.3192127490.104122>, startup_token: #Reference<0.3337681503.3192127490.103467>, funded: 449546, delivery_bytes: 7, delivery_limit: 223237}}
+............
+02:47:08.601 [warning] resource budget warning
+..................
+02:47:08.779 [warning] resource budget warning
+....
+02:47:08.826 [warning] resource budget warning
+.
+02:47:08.890 [warning] resource budget warning
+...
+02:47:08.933 [warning] resource budget warning
+...
+02:47:08.940 [warning] resource budget warning
+........
+02:47:08.965 [warning] resource budget warning
+...
+02:47:09.003 [warning] resource budget warning
+....
+02:47:09.017 [warning] resource budget warning
+.........
+02:47:09.408 [warning] resource budget warning
+
+02:47:09.421 [error] Gaoxy.ResourceBudget.Ledger #PID<0.1064.0> received unexpected message in handle_info/2: :release_native_commit
+
+.....
+02:47:09.436 [warning] resource budget warning
+.
+02:47:09.438 [info] The function passed as a handler with ID #Reference<0.3337681503.3192127490.107474> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+.
+Finished in 7.5 seconds (6.7s async, 0.8s sync)
+72 tests, 0 failures
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

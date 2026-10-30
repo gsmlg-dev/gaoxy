@@ -1,0 +1,460 @@
+==> gaoxy_http
+
+18:08:37.280 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+18:08:37.308 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+
+
+  1) test independent H1 connections count requests separately and release keep-alive ownership (Gaoxy.HTTP.ResourceBudgetH1Test)
+     apps/gaoxy_http/test/resource_budget_h1_test.exs:32
+     match (=) failed
+     code:  assert %{active_connections: 2, active_requests: 2} = Gaoxy.resource_budget(server)
+     left:  %{active_connections: 2, active_requests: 2}
+     right: %{
+              mode: :ready,
+              state: :normal,
+              usage: 162,
+              requests: 2,
+              policy: %{
+                soft_limit: nil,
+                hard_limit: nil,
+                provenance: %{source: :adaptive}
+              },
+              retained_bytes: 162,
+              soft_limit: 50617145344,
+              hard_limit: 101234290688,
+              vm: %{
+                state: :normal,
+                usage: 162,
+                requests: 2,
+                retained_bytes: 162,
+                soft_limit: 50617145344,
+                hard_limit: 101234290688,
+                leases: 2,
+                pending_processes: 0,
+                temporary_bytes: 0,
+                legacy_leases: 2,
+                transport_bytes: 162,
+                connections: 0,
+                h2_streams: 0,
+                h3_streams: 0,
+                receipt_count: 8,
+                websocket_bytes: 0
+              },
+              detection: %{
+                metadata: %{
+                  controller_limits: [:unlimited, :unlimited,
+                   :unlimited, :unlimited],
+                  controller_locations: [
+                    {:v2,
+                     "/sys/fs/cgroup/user.slice/user-1000.slice/session-292.scope",
+                     "/sys/fs/cgroup"}
+                  ],
+                  controllers: [:v2]
+                },
+                source: :linux,
+                capacity: 101234290688,
+                fallback?: false,
+                reasons: [],
+                cgroup_limit_bytes: nil,
+                physical_bytes: 101234290688
+              },
+              capacity: 101234290688,
+              safety: %{
+                retained_baseline: 81,
+                available_bytes: 59239473152,
+                cgroup_headroom_bytes: nil,
+                high_pressure?: false,
+                sampled_at: -576460749797
+              },
+              availability: :ready,
+              leases: 2,
+              pending_processes: 0,
+              temporary_bytes: 0,
+              legacy_leases: 2,
+              transport_bytes: 162,
+              connections: 0,
+              h2_streams: 0,
+              h3_streams: 0,
+              rejections: %{},
+              receipt_count: 8,
+              active_connections: 0,
+              active_h2_streams: 0,
+              active_h3_streams: 0,
+              active_requests: 2,
+              orphaned?: false,
+              websocket_bytes: 0
+            }
+     stacktrace:
+       test/resource_budget_h1_test.exs:41: (test)
+
+
+
+  2) test ordinary H1 request quota returns bounded 503 while an admitted sibling completes (Gaoxy.HTTP.ResourceBudgetH1Test)
+     apps/gaoxy_http/test/resource_budget_h1_test.exs:59
+     match (=) failed
+     code:  assert {:ok, bytes} = :gen_tcp.recv(socket, 0, @timeout)
+     left:  {:ok, bytes}
+     right: {:error, :closed}
+     stacktrace:
+       test/resource_budget_h1_test.exs:121: Gaoxy.HTTP.ResourceBudgetH1Test.response/2
+       test/resource_budget_h1_test.exs:66: (test)
+
+
+
+  3) test overlapping ordinary body uploads retain two requests and return credits on completion (Gaoxy.HTTP.ResourceBudgetH1Test)
+     apps/gaoxy_http/test/resource_budget_h1_test.exs:81
+     match (=) failed
+     code:  assert %{active_connections: 2, active_requests: 2} = Gaoxy.resource_budget(server)
+     left:  %{active_connections: 2, active_requests: 2}
+     right: %{
+              mode: :ready,
+              state: :normal,
+              usage: 246,
+              requests: 2,
+              policy: %{
+                soft_limit: nil,
+                hard_limit: nil,
+                provenance: %{source: :adaptive}
+              },
+              retained_bytes: 246,
+              soft_limit: 50617145344,
+              hard_limit: 101234290688,
+              vm: %{
+                state: :normal,
+                usage: 246,
+                requests: 2,
+                retained_bytes: 246,
+                soft_limit: 50617145344,
+                hard_limit: 101234290688,
+                leases: 2,
+                pending_processes: 0,
+                temporary_bytes: 0,
+                legacy_leases: 2,
+                transport_bytes: 246,
+                connections: 0,
+                h2_streams: 0,
+                h3_streams: 0,
+                receipt_count: 8,
+                websocket_bytes: 0
+              },
+              detection: %{
+                metadata: %{
+                  controller_limits: [:unlimited, :unlimited,
+                   :unlimited, :unlimited],
+                  controller_locations: [
+                    {:v2,
+                     "/sys/fs/cgroup/user.slice/user-1000.slice/session-292.scope",
+                     "/sys/fs/cgroup"}
+                  ],
+                  controllers: [:v2]
+                },
+                source: :linux,
+                capacity: 101234290688,
+                fallback?: false,
+                reasons: [],
+                cgroup_limit_bytes: nil,
+                physical_bytes: 101234290688
+              },
+              capacity: 101234290688,
+              safety: %{
+                retained_baseline: 0,
+                available_bytes: 58888417280,
+                cgroup_headroom_bytes: nil,
+                high_pressure?: false,
+                sampled_at: -576460743785
+              },
+              availability: :ready,
+              leases: 2,
+              pending_processes: 0,
+              temporary_bytes: 0,
+              legacy_leases: 2,
+              transport_bytes: 246,
+              connections: 0,
+              h2_streams: 0,
+              h3_streams: 0,
+              rejections: %{},
+              receipt_count: 8,
+              active_connections: 0,
+              active_h2_streams: 0,
+              active_h3_streams: 0,
+              active_requests: 2,
+              orphaned?: false,
+              websocket_bytes: 0
+            }
+     stacktrace:
+       test/resource_budget_h1_test.exs:91: (test)
+
+
+
+  4) test one H2 connection owns overlapping streams independently and releases completed work (Gaoxy.HTTP.ResourceBudgetH2Test)
+     apps/gaoxy_http/test/resource_budget_h2_test.exs:34
+     match (=) failed
+     code:  assert %{active_connections: 1, active_requests: 2, active_h2_streams: 2} = Gaoxy.resource_budget(server)
+     left:  %{active_connections: 1, active_requests: 2, active_h2_streams: 2}
+     right: %{
+              mode: :ready,
+              state: :normal,
+              usage: 31325235,
+              requests: 2,
+              policy: %{
+                soft_limit: nil,
+                hard_limit: nil,
+                provenance: %{source: :adaptive}
+              },
+              retained_bytes: 31325235,
+              soft_limit: 50617145344,
+              hard_limit: 101234290688,
+              vm: %{
+                state: :normal,
+                usage: 31325235,
+                requests: 2,
+                retained_bytes: 31325235,
+                soft_limit: 50617145344,
+                hard_limit: 101234290688,
+                leases: 4,
+                pending_processes: 0,
+                temporary_bytes: 0,
+                legacy_leases: 4,
+                transport_bytes: 31325235,
+                connections: 0,
+                h2_streams: 0,
+                h3_streams: 0,
+                receipt_count: 8,
+                websocket_bytes: 0
+              },
+              detection: %{
+                metadata: %{
+                  controller_limits: [:unlimited, :unlimited,
+                   :unlimited, :unlimited],
+                  controller_locations: [
+                    {:v2,
+                     "/sys/fs/cgroup/user.slice/user-1000.slice/session-292.scope",
+                     "/sys/fs/cgroup"}
+                  ],
+                  controllers: [:v2]
+                },
+                source: :linux,
+                capacity: 101234290688,
+                fallback?: false,
+                reasons: [],
+                cgroup_limit_bytes: nil,
+                physical_bytes: 101234290688
+              },
+              capacity: 101234290688,
+              safety: %{
+                retained_baseline: 0,
+                available_bytes: 59254648832,
+                cgroup_headroom_bytes: nil,
+                high_pressure?: false,
+                sampled_at: -576460740776
+              },
+              availability: :ready,
+              leases: 4,
+              pending_processes: 0,
+              temporary_bytes: 0,
+              legacy_leases: 4,
+              transport_bytes: 31325235,
+              connections: 0,
+              h2_streams: 0,
+              h3_streams: 0,
+              rejections: %{},
+              receipt_count: 8,
+              active_connections: 0,
+              active_h2_streams: 0,
+              active_h3_streams: 0,
+              active_requests: 2,
+              orphaned?: false,
+              websocket_bytes: 0
+            }
+     stacktrace:
+       test/resource_budget_h2_test.exs:42: (test)
+
+
+
+  5) test HPACK insertion and indexed reuse retain actual decoder state without a decode high water (Gaoxy.HTTP.ResourceBudgetH2Test)
+     apps/gaoxy_http/test/resource_budget_h2_test.exs:54
+     Assertion with == failed
+     code:  assert state.decode_reservation == 0
+     left:  26497928
+     right: 0
+     stacktrace:
+       test/resource_budget_h2_test.exs:65: (test)
+
+
+
+  6) test request quota refuses only its stream and preserves HPACK indexing and its live sibling (Gaoxy.HTTP.ResourceBudgetH2Test)
+     apps/gaoxy_http/test/resource_budget_h2_test.exs:85
+     match (=) failed
+     code:  assert %{active_connections: 1, active_requests: 1, active_h2_streams: 1} = Gaoxy.resource_budget(server)
+     left:  %{active_connections: 1, active_requests: 1, active_h2_streams: 1}
+     right: %{
+              mode: :ready,
+              state: :normal,
+              usage: 31162784,
+              requests: 1,
+              policy: %{
+                soft_limit: nil,
+                hard_limit: nil,
+                provenance: %{source: :adaptive}
+              },
+              retained_bytes: 31162784,
+              soft_limit: 50617145344,
+              hard_limit: 101234290688,
+              vm: %{
+                state: :normal,
+                usage: 31162784,
+                requests: 1,
+                retained_bytes: 31162784,
+                soft_limit: 50617145344,
+                hard_limit: 101234290688,
+                leases: 3,
+                pending_processes: 0,
+                temporary_bytes: 0,
+                legacy_leases: 3,
+                transport_bytes: 31162784,
+                connections: 0,
+                h2_streams: 0,
+                h3_streams: 0,
+                receipt_count: 7,
+                websocket_bytes: 0
+              },
+              detection: %{
+                metadata: %{
+                  controller_limits: [:unlimited, :unlimited,
+                   :unlimited, :unlimited],
+                  controller_locations: [
+                    {:v2,
+                     "/sys/fs/cgroup/user.slice/user-1000.slice/session-292.scope",
+                     "/sys/fs/cgroup"}
+                  ],
+                  controllers: [:v2]
+                },
+                source: :linux,
+                capacity: 101234290688,
+                fallback?: false,
+                reasons: [],
+                cgroup_limit_bytes: nil,
+                physical_bytes: 101234290688
+              },
+              capacity: 101234290688,
+              safety: %{
+                retained_baseline: 0,
+                available_bytes: 59236024320,
+                cgroup_headroom_bytes: nil,
+                high_pressure?: false,
+                sampled_at: -576460740619
+              },
+              availability: :ready,
+              leases: 3,
+              pending_processes: 0,
+              temporary_bytes: 0,
+              legacy_leases: 3,
+              transport_bytes: 31162784,
+              connections: 0,
+              h2_streams: 0,
+              h3_streams: 0,
+              rejections: %{request_limit: 1},
+              receipt_count: 7,
+              active_connections: 0,
+              active_h2_streams: 0,
+              active_h3_streams: 0,
+              active_requests: 1,
+              orphaned?: false,
+              websocket_bytes: 0
+            }
+     stacktrace:
+       test/resource_budget_h2_test.exs:95: (test)
+
+
+
+  7) test overlapping H2 uploads retain request and stream memberships until their own completion (Gaoxy.HTTP.ResourceBudgetH2Test)
+     apps/gaoxy_http/test/resource_budget_h2_test.exs:108
+     match (=) failed
+     code:  assert %{active_connections: 1, active_requests: 2, active_h2_streams: 2} = Gaoxy.resource_budget(server)
+     left:  %{active_connections: 1, active_requests: 2, active_h2_streams: 2}
+     right: %{
+              mode: :ready,
+              state: :normal,
+              usage: 31369289,
+              requests: 2,
+              policy: %{
+                soft_limit: nil,
+                hard_limit: nil,
+                provenance: %{source: :adaptive}
+              },
+              retained_bytes: 31369289,
+              soft_limit: 50617145344,
+              hard_limit: 101234290688,
+              vm: %{
+                state: :normal,
+                usage: 31369289,
+                requests: 2,
+                retained_bytes: 31369289,
+                soft_limit: 50617145344,
+                hard_limit: 101234290688,
+                leases: 4,
+                pending_processes: 0,
+                temporary_bytes: 0,
+                legacy_leases: 4,
+                transport_bytes: 31369289,
+                connections: 0,
+                h2_streams: 0,
+                h3_streams: 0,
+                receipt_count: 7,
+                websocket_bytes: 0
+              },
+              detection: %{
+                metadata: %{
+                  controller_limits: [:unlimited, :unlimited,
+                   :unlimited, :unlimited],
+                  controller_locations: [
+                    {:v2,
+                     "/sys/fs/cgroup/user.slice/user-1000.slice/session-292.scope",
+                     "/sys/fs/cgroup"}
+                  ],
+                  controllers: [:v2]
+                },
+                source: :linux,
+                capacity: 101234290688,
+                fallback?: false,
+                reasons: [],
+                cgroup_limit_bytes: nil,
+                physical_bytes: 101234290688
+              },
+              capacity: 101234290688,
+              safety: %{
+                retained_baseline: 0,
+                available_bytes: 59237089280,
+                cgroup_headroom_bytes: nil,
+                high_pressure?: false,
+                sampled_at: -576460740568
+              },
+              availability: :ready,
+              leases: 4,
+              pending_processes: 0,
+              temporary_bytes: 0,
+              legacy_leases: 4,
+              transport_bytes: 31369289,
+              connections: 0,
+              h2_streams: 0,
+              h3_streams: 0,
+              rejections: %{},
+              receipt_count: 7,
+              active_connections: 0,
+              active_h2_streams: 0,
+              active_h3_streams: 0,
+              active_requests: 2,
+              orphaned?: false,
+              websocket_bytes: 0
+            }
+     stacktrace:
+       test/resource_budget_h2_test.exs:114: (test)
+
+
+Finished in 10.1 seconds (0.00s async, 10.1s sync)
+7 tests, 7 failures
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed
+[os_mon] memory supervisor port (memsup): Erlang has closed

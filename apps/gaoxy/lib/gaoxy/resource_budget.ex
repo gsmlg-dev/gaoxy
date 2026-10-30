@@ -17,6 +17,13 @@ defmodule Gaoxy.ResourceBudget do
   logical quota memberships and pending process credits. Both byte sums must agree.
   Membership identities are service-scoped; connection-local IDs can be pairs.
 
+  `repartition/6` converts already-funded retained/temporary ownership without
+  increasing its total, changing quota memberships or pending process credits.
+  The caller must confirm that the old retained resources were relinquished
+  before replenishing temporary credit. This preserves an existing completion
+  envelope during drain or pressure; new growth still uses `replace/6`.
+  Transport category caps, owner/revision fencing and deadlines still apply.
+
   `allocations/2` returns up to 64 canonical rows plus an integer cursor or `:done`,
   the gate's `watermark`, and `next_operation`. After confirming gate death, one
   live registered service/instance reconciler reads that sequence and serializes
@@ -57,8 +64,20 @@ defmodule Gaoxy.ResourceBudget do
   def reserve(client, owner, kind, accounting, operation, deadline),
     do: mutation(client, operation, deadline, {:reserve, owner, kind, accounting})
 
+  @doc false
+  def reserve_native(client, service, accounting, operation, deadline),
+    do: mutation(client, operation, deadline, {:reserve_native, service, accounting})
+
+  @doc false
+  def split_native(client, token, revision, guardian, callback, operation, deadline),
+    do:
+      mutation(client, operation, deadline, {:split_native, token, revision, guardian, callback})
+
   def replace(client, token, revision, accounting, operation, deadline),
     do: mutation(client, operation, deadline, {:replace, token, revision, accounting})
+
+  def repartition(client, token, revision, accounting, operation, deadline),
+    do: mutation(client, operation, deadline, {:repartition, token, revision, accounting})
 
   def transfer(client, token, revision, owner, operation, deadline),
     do: mutation(client, operation, deadline, {:transfer, token, revision, owner})
@@ -189,6 +208,21 @@ defmodule Gaoxy.ResourceBudget do
   end
 
   def normalize_accounting(_), do: {:error, :invalid_accounting}
+
+  @doc false
+  def validate_repartition(old, new) do
+    cond do
+      new.retained_bytes + new.temporary_bytes > old.retained_bytes + old.temporary_bytes ->
+        {:error, :credit_exceeded}
+
+      new.memberships != old.memberships or new.pending_processes != old.pending_processes ->
+        {:error, :invalid_repartition}
+
+      true ->
+        :ok
+    end
+  end
+
   defp valid_id?({connection, local}), do: scalar_id?(connection) and scalar_id?(local)
   defp valid_id?(id), do: scalar_id?(id)
 

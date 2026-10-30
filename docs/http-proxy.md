@@ -146,11 +146,13 @@ HTTP framing carry.
 
 Each active request reserves eight such receive/carry windows, eight configured
 upload windows, and twice the opening field footprint: roughly 8 MiB at the
-defaults. Native retained bytes are charged separately. The core's default
-1 MiB service budget rejects these proxy sessions; set an explicit budget for
-the required concurrency. This is a capacity allowance for retained payloads
-and copies. It excludes kernel/OTP internal buffers, process metadata and
-arbitrary trusted application allocations; it does not measure total BEAM memory.
+defaults. Native retained bytes are charged separately. Omitted service caps
+use adaptive shared memory admission. An explicit `max_bytes` remains a hard
+transport/cleanup cap and must cover the required concurrency. See the
+[resource budget guide](resource-budget.md) for policy and quotas. This is a
+capacity allowance for retained payloads and copies. It excludes kernel/OTP
+internal buffers, process metadata and arbitrary trusted application allocations;
+it does not measure total BEAM memory.
 
 HTTP/2, HTTP/3, forward proxy/CONNECT, pools, load balancing, health checks and
 configuration reload remain later milestones. Message-level WebSocket forwarding

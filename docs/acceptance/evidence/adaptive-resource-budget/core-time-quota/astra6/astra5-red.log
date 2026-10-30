@@ -1,0 +1,141 @@
+==> gaoxy
+
+22:57:59.165 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+22:57:59.216 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+
+22:58:05.703 [warning] resource budget warning
+.
+22:58:05.706 [warning] resource budget warning
+.
+22:58:05.713 [info] The function passed as a handler with ID #Reference<0.1071158274.3425697794.46793> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+22:58:05.725 [warning] resource budget warning
+
+
+  1) test status and work telemetry distinguish retained temporary and total high waters (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:105
+     match (=) failed
+     code:  assert %{
+              retained_bytes: 20,
+              temporary_bytes: 80,
+              usage: 100,
+              retained_high_water: 20,
+              temporary_high_water: 80,
+              usage_high_water: 100,
+              transport_bytes: 100
+            } = Admission.status(g)
+     left:  %{
+              retained_bytes: 20,
+              temporary_bytes: 80,
+              usage: 100,
+              retained_high_water: 20,
+              temporary_high_water: 80,
+              usage_high_water: 100,
+              transport_bytes: 100
+            }
+     right: %{
+              active: 1,
+              rejected: 0,
+              retained_high_water: 100,
+              retained_bytes: 100,
+              transport_bytes: 100,
+              cleanup_pending: 0,
+              websocket_bytes: 0,
+              transport_high_water: 100,
+              websocket_high_water: 0,
+              queued_items: 0,
+              queued_bytes: 0
+            }
+     stacktrace:
+       test/resource_budget_admission_test.exs:118: (test)
+
+
+
+  2) test guardian retained metrics survive receipt until the actual terminal boundary (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:135
+     match (=) failed
+     code:  assert %{retained_bytes: 25, temporary_bytes: 80, usage: 105, cleanup_pending: 1} = Admission.status(g)
+     left:  %{retained_bytes: 25, temporary_bytes: 80, usage: 105, cleanup_pending: 1}
+     right: %{
+              active: 1,
+              rejected: 0,
+              retained_high_water: 105,
+              retained_bytes: 105,
+              transport_bytes: 105,
+              cleanup_pending: 1,
+              websocket_bytes: 0,
+              transport_high_water: 105,
+              websocket_high_water: 0,
+              queued_items: 0,
+              queued_bytes: 0
+            }
+     stacktrace:
+       test/resource_budget_admission_test.exs:146: (test)
+
+
+
+  3) test phase receipt proves only authenticated valid-token pre-reserve expiry (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:162
+     ** (UndefinedFunctionError) function Gaoxy.Admission.spawn_request/8 is undefined or private. Did you mean:
+
+           * spawn_request/6
+           * spawn_request/7
+
+     code: request = phase_spawn(g, parent, token, expired)
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Admission.spawn_request(#PID<0.395.0>, #Reference<0.1071158274.3425697794.47040>, #Reference<0.1071158274.3425697794.47044>, 20, -576460745163, {Gaoxy.ResourceBudget.AdmissionTest, :token_worker, [#PID<0.387.0>, #Reference<0.1071158274.3425697794.47044>]}, [kind: :h2_stream, memberships: %{request: #Reference<0.1071158274.3425697794.47044>, h2_stream: {#Reference<0.1071158274.3425697794.47040>, 1}}], :phase_receipt)
+       test/resource_budget_admission_test.exs:168: (test)
+
+
+
+  4) test live retained and recently retired spawn tokens cannot receive absence proofs (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:181
+     ** (UndefinedFunctionError) function Gaoxy.Admission.spawn_request/8 is undefined or private. Did you mean:
+
+           * spawn_request/6
+           * spawn_request/7
+
+     code: request = phase_spawn(g, parent, token, deadline())
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Admission.spawn_request(#PID<0.404.0>, #Reference<0.1071158274.3425697793.55930>, #Reference<0.1071158274.3425697793.55935>, 20, -576460743156, {Gaoxy.ResourceBudget.AdmissionTest, :token_worker, [#PID<0.396.0>, #Reference<0.1071158274.3425697793.55935>]}, [kind: :h2_stream, memberships: %{request: #Reference<0.1071158274.3425697793.55935>, h2_stream: {#Reference<0.1071158274.3425697793.55930>, 1}}], :phase_receipt)
+       test/resource_budget_admission_test.exs:187: (test)
+
+
+
+  5) test pending canonical reservation cannot be mistaken for definite absence (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:203
+     ** (UndefinedFunctionError) function Gaoxy.Admission.spawn_request/8 is undefined or private. Did you mean:
+
+           * spawn_request/6
+           * spawn_request/7
+
+     code: request = phase_spawn(g, parent, token, System.monotonic_time(:millisecond) + 20)
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Admission.spawn_request(#PID<0.413.0>, #Reference<0.1071158274.3425697794.47252>, #Reference<0.1071158274.3425697794.47256>, 20, -576460744134, {Gaoxy.ResourceBudget.AdmissionTest, :token_worker, [#PID<0.405.0>, #Reference<0.1071158274.3425697794.47256>]}, [kind: :h2_stream, memberships: %{request: #Reference<0.1071158274.3425697794.47256>, h2_stream: {#Reference<0.1071158274.3425697794.47252>, 1}}], :phase_receipt)
+       test/resource_budget_admission_test.exs:210: (test)
+
+
+
+  6) test phase receipt preserves ambiguous post-reserve activation expiry ownership (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:222
+     ** (UndefinedFunctionError) function Gaoxy.Admission.spawn_request/8 is undefined or private. Did you mean:
+
+           * spawn_request/6
+           * spawn_request/7
+
+     code: request = phase_spawn(g, parent, token, System.monotonic_time(:millisecond) + 200)
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Admission.spawn_request(#PID<0.422.0>, #Reference<0.1071158274.3425697794.47378>, #Reference<0.1071158274.3425697794.47382>, 20, -576460743952, {Gaoxy.ResourceBudget.AdmissionTest, :token_worker, [#PID<0.414.0>, #Reference<0.1071158274.3425697794.47382>]}, [kind: :h2_stream, memberships: %{request: #Reference<0.1071158274.3425697794.47382>, h2_stream: {#Reference<0.1071158274.3425697794.47378>, 1}}], :phase_receipt)
+       test/resource_budget_admission_test.exs:229: (test)
+
+..........................................
+Finished in 6.7 seconds (0.00s async, 6.7s sync)
+50 tests, 6 failures
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed
+[os_mon] memory supervisor port (memsup): Erlang has closed

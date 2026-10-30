@@ -66,7 +66,27 @@ defmodule Gaoxy.HTTP.HTTP2.Stream do
                 _ -> {:error, :response_failed}
               end
 
-            send(owner, {:h2_stream_done, self(), id, token, outcome})
+            # Request completion does not prove stream/output completion. The
+            # parent separately retires those resources after its writer settles.
+            settled =
+              if match?({:websocket, _, _, _, _}, final.response) do
+                # Upgrade already removed HTTP request membership. The shared
+                # WebSocket driver completes its own callback/send lifetime;
+                # never restore the pre-upgrade HTTP completion reservation.
+                :ok
+              else
+                with :ok <- Exchange.settle_funding(final) do
+                  Gaoxy.Admission.end_request(
+                    gate,
+                    lease,
+                    Exchange.accounting(final, Exchange.retained_bytes(final)),
+                    Lifecycle.deadline(50)
+                  )
+                end
+              end
+
+            if settled == :ok,
+              do: send(owner, {:h2_stream_done, self(), id, token, outcome})
           end
 
         {:DOWN, ^monitor, :process, ^owner, _} ->
@@ -83,11 +103,12 @@ defmodule Gaoxy.HTTP.HTTP2.Stream do
   end
 
   defp request_lifetime(%{limits: %{request_timeout: :infinity}} = exchange) do
-    with :ok <-
+    with :ok <- Exchange.settle_funding(exchange),
+         :ok <-
            Gaoxy.Admission.begin_request(
              exchange.gate,
              exchange.lease,
-             Exchange.retained_bytes(exchange),
+             Exchange.accounting(exchange, Exchange.retained_bytes(exchange)),
              :infinity
            ),
          :ok <- Gaoxy.HTTP.HTTP2.Transport.operation(exchange, :infinite_request) do

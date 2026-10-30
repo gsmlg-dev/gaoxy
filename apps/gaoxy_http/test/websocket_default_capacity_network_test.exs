@@ -56,6 +56,7 @@ defmodule Gaoxy.HTTP.WebSocket.DefaultCapacityNetworkTest do
 
       assert transport <= 1_048_576
       assert retained >= 0
+      assert %{rejected: 0} = Gaoxy.status(server, :http)
     end
 
     ping_and_close(socket)

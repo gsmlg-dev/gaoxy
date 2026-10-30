@@ -13,7 +13,7 @@ defmodule Gaoxy.QUIC do
   defmodule Connection do
     @moduledoc false
     @enforce_keys [:handle, :gate, :lease, :limits, :scope]
-    defstruct @enforce_keys ++ [:service, :instance]
+    defstruct @enforce_keys ++ [:service, :instance, :native_cleanup]
   end
 
   defmodule Stream do

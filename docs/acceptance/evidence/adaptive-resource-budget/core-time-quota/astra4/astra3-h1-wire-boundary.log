@@ -1,0 +1,49 @@
+==> gaoxy_http
+
+22:32:50.729 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+22:32:50.760 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+..
+
+  1) test active upload survives supervised 5000ms drain and completes cleanup (Gaoxy.HTTP.SupervisedShutdownBudgetTest)
+     apps/gaoxy_http/test/supervised_shutdown_budget_test.exs:64
+     match (=) failed
+     code:  assert {:error, :closed} = :gen_tcp.recv(socket, 0, 1000)
+     left:  {:error, :closed}
+     right: {:ok,
+             "HTTP/1.1 500 Internal Server Error\r\nconnection: close\r\ncontent-length: 0\r\n\r\n"}
+     stacktrace:
+       test/supervised_shutdown_budget_test.exs:137: Gaoxy.HTTP.SupervisedShutdownBudgetTest.stop_and_assert/2
+       test/supervised_shutdown_budget_test.exs:83: (test)
+
+
+
+  2) test active upload survives supervised 5500ms drain and completes cleanup (Gaoxy.HTTP.SupervisedShutdownBudgetTest)
+     apps/gaoxy_http/test/supervised_shutdown_budget_test.exs:64
+     match (=) failed
+     code:  assert {:error, :closed} = :gen_tcp.recv(socket, 0, 1000)
+     left:  {:error, :closed}
+     right: {:ok,
+             "HTTP/1.1 500 Internal Server Error\r\nconnection: close\r\ncontent-length: 0\r\n\r\n"}
+     stacktrace:
+       test/supervised_shutdown_budget_test.exs:137: Gaoxy.HTTP.SupervisedShutdownBudgetTest.stop_and_assert/2
+       test/supervised_shutdown_budget_test.exs:83: (test)
+
+........
+
+  3) test shutdown terminates an infinite active stream within the public deadline (Gaoxy.HTTP.StreamLifetimeTest)
+     apps/gaoxy_http/test/stream_lifetime_test.exs:210
+     match (=) failed
+     code:  assert {:error, :closed} = :gen_tcp.recv(socket, 0, 1000)
+     left:  {:error, :closed}
+     right: {:ok, "0\r\n\r\n"}
+     stacktrace:
+       test/stream_lifetime_test.exs:227: (test)
+
+
+Finished in 2.3 seconds (2.3s async, 0.00s sync)
+13 tests, 3 failures
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

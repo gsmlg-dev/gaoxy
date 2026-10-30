@@ -25,6 +25,7 @@ defmodule Gaoxy.HTTP.Exchange do
     route_bytes: 0,
     resource_pins: [],
     protocol_bytes: 0,
+    funding: nil,
     adapter_body_bytes: 0,
     poll_buffer_bytes: 0,
     transport: nil,
@@ -73,10 +74,12 @@ defmodule Gaoxy.HTTP.Exchange do
         deadline = if timeout == :infinity, do: :infinity, else: Gaoxy.Lifecycle.deadline(timeout)
 
         with :ok <-
+               settle_funding(exchange),
+             :ok <-
                Admission.begin_stream(
                  exchange.gate,
                  exchange.lease,
-                 retained_bytes(exchange),
+                 accounting(exchange, retained_bytes(exchange)),
                  deadline,
                  min(Gaoxy.Lifecycle.remaining(exchange.deadline), 5_000)
                ),
@@ -235,7 +238,7 @@ defmodule Gaoxy.HTTP.Exchange do
           | poll_buffer_bytes: max(exchange.poll_buffer_bytes, 2 * byte_size(exchange.buffer) + 2)
         }
 
-        case Admission.update(next.gate, next.lease, retained_bytes(next)) do
+        case update_body_retention(next, retained_bytes(next)) do
           :ok -> recv_connection(next, wait_ms)
           {:error, reason} -> {:error, reason, exchange}
         end
@@ -259,13 +262,13 @@ defmodule Gaoxy.HTTP.Exchange do
       {:ok, byte} ->
         exchange = %{exchange | buffer: exchange.buffer <> byte}
 
-        case Admission.update(exchange.gate, exchange.lease, retained_bytes(exchange)) do
+        case update_body_retention(exchange, retained_bytes(exchange)) do
           :ok -> {:more, exchange}
           {:error, reason} -> {:error, reason, exchange}
         end
 
       {:error, reason} ->
-        _ = Admission.update(exchange.gate, exchange.lease, retained_bytes(exchange))
+        _ = update_body_retention(exchange, retained_bytes(exchange))
         if reason == :timeout, do: wait_expired(exchange), else: {:error, reason, exchange}
     end
   end
@@ -292,7 +295,7 @@ defmodule Gaoxy.HTTP.Exchange do
     deadline = min(exchange.deadline, Gaoxy.Lifecycle.deadline(exchange.limits.write_timeout))
 
     result =
-      with :ok <- update_body_retention(exchange, retained_bytes(exchange) + byte_size(bytes)),
+      with :ok <- reserve_body_retention(exchange, byte_size(bytes)),
            :ok <-
              Admission.start_send_until(
                exchange.gate,
@@ -343,10 +346,7 @@ defmodule Gaoxy.HTTP.Exchange do
 
   defp do_read_body(exchange, credit, read_deadline) do
     # Decoding can retain the input while producing a body piece and copied tail.
-    case update_body_retention(
-           exchange,
-           retained_bytes(exchange) + byte_size(exchange.buffer)
-         ) do
+    case reserve_body_retention(exchange, byte_size(exchange.buffer)) do
       :ok -> decode_body(exchange, credit, read_deadline)
       {:error, reason} -> {:error, reason, exchange}
     end
@@ -407,7 +407,7 @@ defmodule Gaoxy.HTTP.Exchange do
         {:error, :buffer_limit, exchange}
 
       true ->
-        case update_body_retention(exchange, retained_bytes(exchange) + size) do
+        case reserve_body_retention(exchange, size) do
           :ok -> recv_body(exchange, size, credit, read_deadline)
           {:error, reason} -> {:error, reason, exchange}
         end
@@ -481,16 +481,25 @@ defmodule Gaoxy.HTTP.Exchange do
   defp send_chunks(exchange, pending, limit) do
     {chunk, size, rest} = take_chunk(pending, limit, [], 0)
 
-    with :ok <-
-           Admission.update(exchange.gate, exchange.lease, retained_bytes(exchange) + size),
-         {:ok, operation} <- Admission.start_send(exchange.gate, exchange.lease, size) do
-      result = if size == 0, do: :ok, else: send_window(exchange, chunk)
-      :ok = Admission.finish_send(exchange.gate, exchange.lease, operation, result)
-      :ok = Admission.update(exchange.gate, exchange.lease, retained_bytes(exchange))
+    operation = make_ref()
+    deadline = operation_deadline(exchange)
 
-      case result do
-        :ok -> send_chunks(exchange, rest, limit)
-        error -> error
+    with :ok <- reserve_body_retention(exchange, size),
+         :ok <-
+           Admission.start_send_until(exchange.gate, exchange.lease, size, operation, deadline) do
+      result = if size == 0, do: :ok, else: send_window(exchange, chunk)
+      _ = Admission.finish_send_async(exchange.gate, exchange.lease, operation, result)
+
+      case update_body_retention(exchange, retained_bytes(exchange)) do
+        :ok ->
+          case result do
+            :ok -> send_chunks(exchange, rest, limit)
+            error -> error
+          end
+
+        error ->
+          defer_body_retention(exchange, retained_bytes(exchange))
+          if result == :ok, do: error, else: result
       end
     end
   end
@@ -514,22 +523,99 @@ defmodule Gaoxy.HTTP.Exchange do
 
   @doc false
   def update_body_retention(exchange, bytes) do
-    case Gaoxy.Lifecycle.remaining(exchange.deadline) do
-      0 -> {:error, :timeout}
-      remaining -> Admission.update(exchange.gate, exchange.lease, bytes, min(remaining, 5_000))
-    end
+    deadline = operation_deadline(exchange)
+
+    if Gaoxy.Lifecycle.remaining(deadline) == 0,
+      do: {:error, :timeout},
+      else: update_accounting(exchange, accounting(exchange, bytes), deadline)
   catch
     :exit, {:timeout, _} -> {:error, :timeout}
     :exit, _ -> {:error, :closed}
   end
 
+  defp update_accounting(%{funding: nil} = exchange, bytes, deadline),
+    do: Admission.update_until(exchange.gate, exchange.lease, bytes, make_ref(), deadline)
+
+  defp update_accounting(exchange, accounting, deadline) do
+    if accounting.transport_bytes <= exchange.funding.total,
+      do:
+        Admission.repartition_until(
+          exchange.gate,
+          exchange.lease,
+          accounting,
+          make_ref(),
+          deadline
+        ),
+      else:
+        Admission.update_until(exchange.gate, exchange.lease, accounting, make_ref(), deadline)
+  end
+
+  @doc false
+  def settle_funding(%{funding: nil}), do: :ok
+  def settle_funding(exchange), do: update_body_retention(exchange, retained_bytes(exchange))
+
+  @doc false
+  def fund(exchange, total, credit, memberships),
+    do: %{exchange | funding: %{total: total, credit: credit, memberships: memberships}}
+
+  @doc false
+  def accounting(%{funding: nil}, retained), do: retained
+
+  def accounting(%{funding: funding}, retained) do
+    temporary = max(funding.total - retained, 0)
+
+    %{
+      retained_bytes: retained,
+      temporary_bytes: temporary,
+      transport_bytes: retained + temporary,
+      websocket_bytes: 0,
+      memberships: funding.memberships,
+      pending_processes: 0
+    }
+  end
+
   @doc false
   def defer_body_retention(exchange, bytes) do
-    request = :gen_server.send_request(exchange.gate, {:update, exchange.lease, bytes})
+    deadline = Gaoxy.Lifecycle.deadline(50)
+
+    request =
+      :gen_server.send_request(
+        exchange.gate,
+        {if(exchange.funding, do: :repartition_until, else: :update_until), exchange.lease,
+         accounting(exchange, bytes), make_ref(), deadline}
+      )
+
     _ = :gen_server.receive_response(request, 0)
     :ok
   catch
     :exit, _ -> :ok
+  end
+
+  # Completion buffers have already been promised by the admitted protocol
+  # lease. Spend that credit instead of asking again while the budget is under
+  # pressure; genuinely larger obligations still require projected admission.
+  @doc false
+  def reserve_body_retention(exchange, extra) when is_integer(extra) and extra >= 0,
+    do:
+      update_body_retention(
+        exchange,
+        retained_bytes(exchange) +
+          if(exchange.funding, do: extra, else: max(0, extra - completion_credit(exchange)))
+      )
+
+  defp completion_credit(%{transport: nil, protocol_bytes: bytes}) when bytes > 0, do: bytes
+
+  defp completion_credit(%{transport: Gaoxy.HTTP.HTTP2.Transport} = exchange),
+    do: min(exchange.protocol_bytes, 4 * exchange.limits.max_read_chunk + 65_536)
+
+  defp completion_credit(_), do: 0
+
+  defp operation_deadline(exchange) do
+    deadline = exchange.deadline
+
+    if is_integer(deadline),
+      do: min(deadline, Gaoxy.Lifecycle.deadline(50)),
+      else: Gaoxy.Lifecycle.deadline(50)
   end
 
   @doc false
@@ -546,7 +632,7 @@ defmodule Gaoxy.HTTP.Exchange do
 
     max(byte_size(exchange.buffer), exchange.poll_buffer_bytes) + headers + trailers +
       response_trailers + exchange.route_bytes + exchange.protocol_bytes +
-      exchange.adapter_body_bytes
+      exchange.adapter_body_bytes - if(exchange.funding, do: exchange.funding.credit, else: 0)
   end
 
   def body_complete?(%{request: %{body: :tunnel}}), do: false

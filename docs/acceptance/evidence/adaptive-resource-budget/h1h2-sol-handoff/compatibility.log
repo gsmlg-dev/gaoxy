@@ -1,0 +1,831 @@
+==> gaoxy_http
+
+18:46:08.344 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+18:46:08.377 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+....................................................................................................................DEADLINE_TRACE %{schedulers: 2, dropped: 0, test: :"test a suspended H2 body-read owner is bounded by the hard deadline and returns timeout", events_us: [{0, {:out, {:proc_lib, :sync_start, 2}}}, {71, {:in, {:proc_lib, :sync_start, 2}}}, {80, {:gen_call, :infinity, :fixture_call}}, {85, {:out, {:gen, :do_call, 4}}}, {403, {:in, {:gen, :do_call, 4}}}, {407, :gen_return}, {557, {:gen_call, :infinity, :fixture_call}}, {565, {:out, {:gen, :do_call, 4}}}, {824, {:in, {:gen, :do_call, 4}}}, {828, :gen_return}, {831, {:gen_call, 5000, :fixture_call}}, {836, {:out, {:gen, :do_call, 4}}}, {910, {:in, {:gen, :do_call, 4}}}, {916, :gen_return}, {922, {:gen_call, 5000, :fixture_call}}, {927, {:out, {:gen, :do_call, 4}}}, {949, {:in, {:gen, :do_call, 4}}}, {952, :gen_return}, {954, :request_start}, {961, {:out, {:code_server, :call, 1}}}, {1671, {:in, {:code_server, :call, 1}}}, {1676, {:out, {:erlang, :prepare_loading_1, 2}}}, {1726, {:in, {:erlang, :prepare_loading_1, 2}}}, {2473, {:out, {:code_server, :call, 1}}}, {3491, {:in, {:code_server, :call, 1}}}, {3496, {:out, {:code_server, :call, 1}}}, {4129, {:in, {:code_server, :call, 1}}}, {4144, {:gen_call, 27, {:read, 1, 1000}}}, {4150, {:out, {:gen, :do_call, 4}}}, {31710, {:deadline_witness, %{late_ms: 1, run_queues: [0, 2, 0]}}}, {31719, {:in, {:gen, :do_call, 4}}}, {31726, {:gen_exception, {:exit, :timeout}}}, {31729, :request_done}, {31733, {:gen_call, 5000, :fixture_call}}, {31738, {:out, {:gen, :do_call, 4}}}, {31985, {:in, {:gen, :do_call, 4}}}, {31993, :gen_return}], witness: :observed, logical_processors: 48}
+.DEADLINE_TRACE %{schedulers: 2, dropped: 0, test: :"test read-triggered H1 Continue cannot wait past the deadline at a delayed gate", events_us: [{0, {:out, {:proc_lib, :sync_start, 2}}}, {156, {:in, {:proc_lib, :sync_start, 2}}}, {165, {:gen_call, :infinity, :fixture_call}}, {172, {:out, {:gen, :do_call, 4}}}, {519, {:in, {:gen, :do_call, 4}}}, {522, :gen_return}, {526, {:gen_call, 5000, :fixture_call}}, {531, {:out, {:gen, :do_call, 4}}}, {571, {:in, {:gen, :do_call, 4}}}, {575, :gen_return}, {579, :request_start}, {587, {:gen_call, 50, :fixture_call}}, {591, {:out, {:gen, :do_call, 4}}}, {987, {:in, {:gen, :do_call, 4}}}, {992, :gen_return}, {995, :fixture_status_start}, {998, {:gen_call, 5000, :fixture_call}}, {1002, {:out, {:gen, :do_call, 4}}}, {1056, {:in, {:gen, :do_call, 4}}}, {1058, :gen_return}, {1059, :fixture_status_done}, {1062, {:gen_call, 5000, :fixture_call}}, {1064, {:out, {:gen, :do_call, 4}}}, {1205, {:in, {:gen, :do_call, 4}}}, {1208, :gen_return}, {1210, :fixture_suspend_done}, {1218, {:gen_call, 50, :fixture_call}}, {1227, {:out, {:gen, :do_call, 4}}}, {31497, {:deadline_witness, %{late_ms: 1, run_queues: [0, 1, 0]}}}, {52264, {:in, {:gen, :do_call, 4}}}, {52272, {:gen_exception, {:exit, :timeout}}}, {52285, :native_read_done}, {52291, :request_done}, {52299, {:gen_call, 5000, :fixture_call}}, {52305, {:out, {:gen, :do_call, 4}}}, {52475, {:in, {:gen, :do_call, 4}}}, {52482, :gen_return}, {52486, {:gen_call, 5000, :fixture_call}}, {52491, {:out, {:gen, :do_call, 4}}}, {52841, {:in, {:gen, :do_call, 4}}}, {52847, :gen_return}, {52851, {:gen_call, 5000, :fixture_call}}, {52855, {:out, {:gen, :do_call, 4}}}, {52937, {:in, {:gen, :do_call, 4}}}, {52941, :gen_return}], witness: :observed, logical_processors: 48}
+.DEADLINE_TRACE %{schedulers: 2, dropped: 0, test: :"test read-triggered H2 Continue cannot outwait the hard deadline at a suspended owner", events_us: [{0, {:out, {:proc_lib, :sync_start, 2}}}, {182, {:in, {:proc_lib, :sync_start, 2}}}, {192, {:gen_call, :infinity, :fixture_call}}, {198, {:out, {:gen, :do_call, 4}}}, {681, {:in, {:gen, :do_call, 4}}}, {687, :gen_return}, {840, {:gen_call, :infinity, :fixture_call}}, {848, {:out, {:gen, :do_call, 4}}}, {1366, {:in, {:gen, :do_call, 4}}}, {1371, :gen_return}, {1374, {:gen_call, 5000, :fixture_call}}, {1380, {:out, {:gen, :do_call, 4}}}, {1624, {:in, {:gen, :do_call, 4}}}, {1630, :gen_return}, {1636, {:gen_call, 5000, :fixture_call}}, {1640, {:out, {:gen, :do_call, 4}}}, {1765, {:in, {:gen, :do_call, 4}}}, {1769, :gen_return}, {1770, :request_start}, {1778, {:gen_call, 50, :fixture_call}}, {1782, {:out, {:gen, :do_call, 4}}}, {2110, {:in, {:gen, :do_call, 4}}}, {2116, :gen_return}, {2123, {:gen_call, 29, {:write, -576460748236, {:head, 100, [], false}}}}, {2128, {:out, {:gen, :do_call, 4}}}, {32005, {:deadline_witness, %{late_ms: 1, run_queues: [2, 0, 0]}}}, {32014, {:in, {:gen, :do_call, 4}}}, {32020, {:gen_exception, {:exit, :timeout}}}, {32033, :request_done}, {32036, {:gen_call, 5000, :fixture_call}}, {32041, {:out, {:gen, :do_call, 4}}}, {32159, {:in, {:gen, :do_call, 4}}}, {32165, :gen_return}], witness: :observed, logical_processors: 48}
+.
+18:46:10.787 [info] The function passed as a handler with ID #Reference<0.421557244.1774977025.261658> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+........................................................
+
+  1) test valid opening fences an already queued owner idle notification and retains write deadline (Gaoxy.HTTP.HTTP2WebSocketIdleTest)
+     apps/gaoxy_http/test/http2_websocket_idle_test.exs:11
+     ** (KeyError) key :retiring_streams not found in: %{
+       first: false,
+       output: {[
+          {<<0, 0, 14, 1, 4, 0, 0, 0, 1, 32, 16, 7, 58, 115, 116, 97, 116, 117, 115,
+             3, 50, 48, 48>>,
+           {:headers, 1, {#PID<0.1081.0>, #Reference<0.421557244.1774977026.257762>}},
+           -576460744761}
+        ], []},
+       starting: nil,
+       buffer: "",
+       closing: false,
+       h2: %{
+         max_streams: 32,
+         max_frame: 16384,
+         table_size: 4096,
+         max_header_block: 16384,
+         receive_window: 65535,
+         control_rate: 256,
+         control_turn: 32,
+         frame_timeout: 5000
+       },
+       phase: :http2,
+       draining: false,
+       limits: %{
+         extended_connect: true,
+         max_headers: 100,
+         max_header_bytes: 32768,
+         max_trailers: 32,
+         max_trailer_bytes: 8192,
+         max_read_chunk: 16384,
+         max_buffer_bytes: 65536,
+         request_timeout: 30000,
+         stream_timeout: :request,
+         header_timeout: 5000,
+         max_body_bytes: 8388608,
+         max_chunk_line: 1024,
+         max_request_line: 8192,
+         read_timeout: 5000,
+         write_timeout: 5000
+       },
+       streams: %{
+         1 => %{
+           eof: false,
+           id: 1,
+           monitor: nil,
+           request: %Gaoxy.HTTP.Request{
+             method: "CONNECT",
+             target: "/ws",
+             target_form: :origin,
+             version: :"HTTP/2",
+             protocol: "websocket",
+             path: "/ws",
+             query_string: "",
+             host: "localhost",
+             port: 80,
+             scheme: :http,
+             peer: nil,
+             local: nil,
+             head_bytes: 285,
+             headers: [{"sec-websocket-version", "13"}],
+             body: :tunnel,
+             keep_alive: true,
+             expect_continue: false
+           },
+           read: nil,
+           write: %{
+             timer: #Reference<0.421557244.1774977026.257768>,
+             deadline: -576460744761,
+             kind: :headers,
+             token: #Reference<0.421557244.1774977026.257767>,
+             from: {#PID<0.1081.0>, #Reference<0.421557244.1774977026.257762>}
+           },
+           worker: #PID<0.1081.0>,
+           deadline: :infinity,
+           write_failed: false,
+           token: #Reference<0.421557244.1774977026.257758>,
+           local_closed: false,
+           committed: true,
+           websocket: true,
+           poll: nil,
+           startup: nil,
+           renderer_blocks: 1,
+           renderer_projection_bytes: 129,
+           queued_wire: 0,
+           delivered_wire: 0
+         }
+       },
+       preface: true,
+       continuation: nil,
+       highest: 1,
+       default_read_timeout: 30,
+       writer_ready: false,
+       outgoing_block: nil,
+       close_after_write: false,
+       settings_ack: true,
+       rate_start: -576460745792,
+       rate: 0,
+       partial_timer: nil,
+       partial_token: nil
+     }
+     code: {:noreply, {socket, state}} = open(socket, state, 1)
+     stacktrace:
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:1765: Gaoxy.HTTP.HTTP2.Connection.settle_retired/1
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:188: Gaoxy.HTTP.HTTP2.Connection.progress/1
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:766: Gaoxy.HTTP.HTTP2.Connection.call/4
+       test/http2_websocket_idle_test.exs:15: (test)
+
+
+
+  2) test rejected opening preserves the original finite owner interval (Gaoxy.HTTP.HTTP2WebSocketIdleTest)
+     apps/gaoxy_http/test/http2_websocket_idle_test.exs:24
+     ** (KeyError) key :retiring_streams not found in: %{
+       first: false,
+       output: {[], []},
+       starting: nil,
+       buffer: "",
+       closing: false,
+       h2: %{
+         max_streams: 32,
+         max_frame: 16384,
+         table_size: 4096,
+         max_header_block: 16384,
+         receive_window: 65535,
+         control_rate: 256,
+         control_turn: 32,
+         frame_timeout: 5000
+       },
+       phase: :http2,
+       draining: false,
+       limits: %{
+         extended_connect: false,
+         max_headers: 100,
+         max_header_bytes: 32768,
+         max_trailers: 32,
+         max_trailer_bytes: 8192,
+         max_read_chunk: 16384,
+         max_buffer_bytes: 65536,
+         request_timeout: 30000,
+         stream_timeout: :request,
+         header_timeout: 5000,
+         max_body_bytes: 8388608,
+         max_chunk_line: 1024,
+         max_request_line: 8192,
+         read_timeout: 5000,
+         write_timeout: 5000
+       },
+       streams: %{
+         1 => %{
+           eof: false,
+           id: 1,
+           monitor: nil,
+           request: %Gaoxy.HTTP.Request{
+             method: "CONNECT",
+             target: "/ws",
+             target_form: :origin,
+             version: :"HTTP/2",
+             protocol: "websocket",
+             path: "/ws",
+             query_string: "",
+             host: "localhost",
+             port: 80,
+             scheme: :http,
+             peer: nil,
+             local: nil,
+             head_bytes: 285,
+             headers: [{"sec-websocket-version", "13"}],
+             body: :tunnel,
+             keep_alive: true,
+             expect_continue: false
+           },
+           read: nil,
+           write: nil,
+           worker: #PID<0.1084.0>,
+           deadline: -576460744751,
+           write_failed: false,
+           token: #Reference<0.421557244.1774977026.257791>,
+           local_closed: false,
+           committed: false,
+           websocket: false,
+           poll: nil,
+           startup: nil,
+           renderer_blocks: 0,
+           renderer_projection_bytes: 0,
+           queued_wire: 0,
+           delivered_wire: 0
+         }
+       },
+       preface: true,
+       continuation: nil,
+       highest: 1,
+       default_read_timeout: 30,
+       writer_ready: false,
+       outgoing_block: nil,
+       close_after_write: false,
+       settings_ack: true,
+       rate_start: -576460745751,
+       rate: 0,
+       partial_timer: nil,
+       partial_token: nil
+     }
+     code: {:noreply, {same, state}} = open(socket, state, 1)
+     stacktrace:
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:1765: Gaoxy.HTTP.HTTP2.Connection.settle_retired/1
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:188: Gaoxy.HTTP.HTTP2.Connection.progress/1
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:766: Gaoxy.HTTP.HTTP2.Connection.call/4
+       test/http2_websocket_idle_test.exs:27: (test)
+
+
+
+  3) test only the last completed WebSocket restores a fresh original owner interval (Gaoxy.HTTP.HTTP2WebSocketIdleTest)
+     apps/gaoxy_http/test/http2_websocket_idle_test.exs:36
+     ** (KeyError) key :retiring_streams not found in: %{
+       first: false,
+       output: {[], []},
+       starting: nil,
+       buffer: "",
+       closing: false,
+       h2: %{
+         max_streams: 32,
+         max_frame: 16384,
+         table_size: 4096,
+         max_header_block: 16384,
+         receive_window: 65535,
+         control_rate: 256,
+         control_turn: 32,
+         frame_timeout: 5000
+       },
+       phase: :http2,
+       draining: false,
+       limits: %{
+         extended_connect: true,
+         max_headers: 100,
+         max_header_bytes: 32768,
+         max_trailers: 32,
+         max_trailer_bytes: 8192,
+         max_read_chunk: 16384,
+         max_buffer_bytes: 65536,
+         request_timeout: 30000,
+         stream_timeout: :request,
+         header_timeout: 5000,
+         max_body_bytes: 8388608,
+         max_chunk_line: 1024,
+         max_request_line: 8192,
+         read_timeout: 5000,
+         write_timeout: 5000
+       },
+       streams: %{
+         1 => %{
+           eof: true,
+           id: 1,
+           monitor: nil,
+           request: %Gaoxy.HTTP.Request{
+             method: "CONNECT",
+             target: "/ws",
+             target_form: :origin,
+             version: :"HTTP/2",
+             protocol: "websocket",
+             path: "/ws",
+             query_string: "",
+             host: "localhost",
+             port: 80,
+             scheme: :http,
+             peer: nil,
+             local: nil,
+             head_bytes: 285,
+             headers: [{"sec-websocket-version", "13"}],
+             body: :tunnel,
+             keep_alive: true,
+             expect_continue: false
+           },
+           read: nil,
+           write: nil,
+           worker: #PID<0.1087.0>,
+           deadline: -576460744745,
+           write_failed: false,
+           token: #Reference<0.421557244.1774977026.257815>,
+           local_closed: true,
+           committed: false,
+           websocket: true,
+           poll: nil,
+           startup: nil,
+           renderer_blocks: 0,
+           renderer_projection_bytes: 0,
+           queued_wire: 0,
+           delivered_wire: 0
+         },
+         3 => %{
+           eof: true,
+           id: 3,
+           monitor: nil,
+           request: %Gaoxy.HTTP.Request{
+             method: "CONNECT",
+             target: "/ws",
+             target_form: :origin,
+             version: :"HTTP/2",
+             protocol: "websocket",
+             path: "/ws",
+             query_string: "",
+             host: "localhost",
+             port: 80,
+             scheme: :http,
+             peer: nil,
+             local: nil,
+             head_bytes: 285,
+             headers: [{"sec-websocket-version", "13"}],
+             body: :tunnel,
+             keep_alive: true,
+             expect_continue: false
+           },
+           read: nil,
+           write: nil,
+           worker: #PID<0.1087.0>,
+           deadline: -576460744745,
+           write_failed: false,
+           token: #Reference<0.421557244.1774977026.257818>,
+           local_closed: true,
+           committed: false,
+           websocket: true,
+           poll: nil,
+           startup: nil,
+           renderer_blocks: 0,
+           renderer_projection_bytes: 0,
+           queued_wire: 0,
+           delivered_wire: 0
+         }
+       },
+       preface: true,
+       continuation: nil,
+       highest: 1,
+       default_read_timeout: 40,
+       writer_ready: false,
+       outgoing_block: nil,
+       close_after_write: false,
+       settings_ack: true,
+       rate_start: -576460745745,
+       rate: 0,
+       partial_timer: nil,
+       partial_token: nil
+     }
+     code: Connection.handle_info(
+     stacktrace:
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:1765: Gaoxy.HTTP.HTTP2.Connection.settle_retired/1
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:188: Gaoxy.HTTP.HTTP2.Connection.progress/1
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:1250: Gaoxy.HTTP.HTTP2.Connection.info/3
+       test/http2_websocket_idle_test.exs:44: (test)
+
+
+
+  4) test peer reset restores idle through the public network continuation contract (Gaoxy.HTTP.HTTP2WebSocketIdleTest)
+     apps/gaoxy_http/test/http2_websocket_idle_test.exs:63
+     ** (KeyError) key :retiring_streams not found in: %{
+       first: false,
+       output: {[], []},
+       starting: nil,
+       buffer: "",
+       closing: false,
+       h2: %{
+         max_streams: 32,
+         max_frame: 16384,
+         table_size: 4096,
+         max_header_block: 16384,
+         receive_window: 65535,
+         control_rate: 256,
+         control_turn: 32,
+         frame_timeout: 5000
+       },
+       phase: :http2,
+       draining: false,
+       limits: %{
+         extended_connect: true,
+         max_headers: 100,
+         max_header_bytes: 32768,
+         max_trailers: 32,
+         max_trailer_bytes: 8192,
+         max_read_chunk: 16384,
+         max_buffer_bytes: 65536,
+         request_timeout: 30000,
+         stream_timeout: :request,
+         header_timeout: 5000,
+         max_body_bytes: 8388608,
+         max_chunk_line: 1024,
+         max_request_line: 8192,
+         read_timeout: 5000,
+         write_timeout: 5000
+       },
+       streams: %{},
+       preface: true,
+       continuation: nil,
+       highest: 1,
+       default_read_timeout: 40,
+       writer_ready: false,
+       outgoing_block: nil,
+       close_after_write: false,
+       settings_ack: true,
+       rate_start: -576460745743,
+       rate: 1,
+       partial_timer: nil,
+       partial_token: nil
+     }
+     code: Connection.handle_data(
+     stacktrace:
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:1765: Gaoxy.HTTP.HTTP2.Connection.settle_retired/1
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:188: Gaoxy.HTTP.HTTP2.Connection.progress/1
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:232: Gaoxy.HTTP.HTTP2.Connection.data/3
+       test/http2_websocket_idle_test.exs:69: (test)
+
+
+
+  5) test ordinary local messages do not restart an unchanged owner idle interval (Gaoxy.HTTP.HTTP2WebSocketIdleTest)
+     apps/gaoxy_http/test/http2_websocket_idle_test.exs:78
+     ** (KeyError) key :retiring_streams not found in: %{
+       first: false,
+       output: {[], []},
+       starting: nil,
+       buffer: "",
+       closing: false,
+       h2: %{
+         max_streams: 32,
+         max_frame: 16384,
+         table_size: 4096,
+         max_header_block: 16384,
+         receive_window: 65535,
+         control_rate: 256,
+         control_turn: 32,
+         frame_timeout: 5000
+       },
+       phase: :http2,
+       draining: false,
+       limits: %{
+         extended_connect: true,
+         max_headers: 100,
+         max_header_bytes: 32768,
+         max_trailers: 32,
+         max_trailer_bytes: 8192,
+         max_read_chunk: 16384,
+         max_buffer_bytes: 65536,
+         request_timeout: 30000,
+         stream_timeout: :request,
+         header_timeout: 5000,
+         max_body_bytes: 8388608,
+         max_chunk_line: 1024,
+         max_request_line: 8192,
+         read_timeout: 5000,
+         write_timeout: 5000
+       },
+       streams: %{
+         1 => %{
+           eof: false,
+           id: 1,
+           monitor: nil,
+           request: %Gaoxy.HTTP.Request{
+             method: "CONNECT",
+             target: "/ws",
+             target_form: :origin,
+             version: :"HTTP/2",
+             protocol: "websocket",
+             path: "/ws",
+             query_string: "",
+             host: "localhost",
+             port: 80,
+             scheme: :http,
+             peer: nil,
+             local: nil,
+             head_bytes: 285,
+             headers: [{"sec-websocket-version", "13"}],
+             body: :tunnel,
+             keep_alive: true,
+             expect_continue: false
+           },
+           read: nil,
+           write: nil,
+           worker: #PID<0.1093.0>,
+           deadline: -576460744739,
+           write_failed: false,
+           token: #Reference<0.421557244.1774977026.257865>,
+           local_closed: false,
+           committed: false,
+           websocket: false,
+           poll: nil,
+           startup: nil,
+           renderer_blocks: 0,
+           renderer_projection_bytes: 0,
+           queued_wire: 0,
+           delivered_wire: 0
+         }
+       },
+       preface: true,
+       continuation: nil,
+       highest: 1,
+       default_read_timeout: 30,
+       writer_ready: false,
+       outgoing_block: nil,
+       close_after_write: false,
+       settings_ack: true,
+       rate_start: -576460745739,
+       rate: 0,
+       partial_timer: nil,
+       partial_token: nil
+     }
+     code: {:noreply, {socket, state}} = Connection.handle_info(:unrelated, {socket, state})
+     stacktrace:
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:1740: Gaoxy.HTTP.HTTP2.Connection.retirement_response/2
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:1475: Gaoxy.HTTP.HTTP2.Connection.startup_response/2
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:1245: Gaoxy.HTTP.HTTP2.Connection.info/3
+       test/http2_websocket_idle_test.exs:81: (test)
+
+
+
+  6) test opening still expires its own finite write while owner idle is suspended (Gaoxy.HTTP.HTTP2WebSocketIdleTest)
+     apps/gaoxy_http/test/http2_websocket_idle_test.exs:87
+     ** (KeyError) key :retiring_streams not found in: %{
+       first: false,
+       output: {[
+          {<<0, 0, 14, 1, 4, 0, 0, 0, 1, 32, 16, 7, 58, 115, 116, 97, 116, 117, 115,
+             3, 50, 48, 48>>,
+           {:headers, 1, {#PID<0.1100.0>, #Reference<0.421557244.1774977026.257940>}},
+           -576460745677}
+        ], []},
+       starting: nil,
+       buffer: "",
+       closing: false,
+       h2: %{
+         max_streams: 32,
+         max_frame: 16384,
+         table_size: 4096,
+         max_header_block: 16384,
+         receive_window: 65535,
+         control_rate: 256,
+         control_turn: 32,
+         frame_timeout: 5000
+       },
+       phase: :http2,
+       draining: false,
+       limits: %{
+         extended_connect: true,
+         max_headers: 100,
+         max_header_bytes: 32768,
+         max_trailers: 32,
+         max_trailer_bytes: 8192,
+         max_read_chunk: 16384,
+         max_buffer_bytes: 65536,
+         request_timeout: 30000,
+         stream_timeout: :request,
+         header_timeout: 5000,
+         max_body_bytes: 8388608,
+         max_chunk_line: 1024,
+         max_request_line: 8192,
+         read_timeout: 5000,
+         write_timeout: 5000
+       },
+       streams: %{
+         1 => %{
+           eof: false,
+           id: 1,
+           monitor: nil,
+           request: %Gaoxy.HTTP.Request{
+             method: "CONNECT",
+             target: "/ws",
+             target_form: :origin,
+             version: :"HTTP/2",
+             protocol: "websocket",
+             path: "/ws",
+             query_string: "",
+             host: "localhost",
+             port: 80,
+             scheme: :http,
+             peer: nil,
+             local: nil,
+             head_bytes: 285,
+             headers: [{"sec-websocket-version", "13"}],
+             body: :tunnel,
+             keep_alive: true,
+             expect_continue: false
+           },
+           read: nil,
+           write: %{
+             timer: #Reference<0.421557244.1774977026.257942>,
+             deadline: -576460745677,
+             kind: :headers,
+             token: #Reference<0.421557244.1774977026.257941>,
+             from: {#PID<0.1100.0>, #Reference<0.421557244.1774977026.257940>}
+           },
+           worker: #PID<0.1100.0>,
+           deadline: :infinity,
+           write_failed: false,
+           token: #Reference<0.421557244.1774977026.257937>,
+           local_closed: false,
+           committed: true,
+           websocket: true,
+           poll: nil,
+           startup: nil,
+           renderer_blocks: 1,
+           renderer_projection_bytes: 129,
+           queued_wire: 0,
+           delivered_wire: 0
+         }
+       },
+       preface: true,
+       continuation: nil,
+       highest: 1,
+       default_read_timeout: 40,
+       writer_ready: false,
+       outgoing_block: nil,
+       close_after_write: false,
+       settings_ack: true,
+       rate_start: -576460745707,
+       rate: 0,
+       partial_timer: nil,
+       partial_token: nil
+     }
+     code: {:noreply, {socket, state}} = open(socket, state, 1, 30)
+     stacktrace:
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:1765: Gaoxy.HTTP.HTTP2.Connection.settle_retired/1
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:188: Gaoxy.HTTP.HTTP2.Connection.progress/1
+       (gaoxy_http 0.13.1) lib/gaoxy/http/http2/connection.ex:766: Gaoxy.HTTP.HTTP2.Connection.call/4
+       test/http2_websocket_idle_test.exs:89: (test)
+
+..........................
+
+  7) test shutdown terminates an infinite active stream within the public deadline (Gaoxy.HTTP.StreamLifetimeTest)
+     apps/gaoxy_http/test/stream_lifetime_test.exs:210
+     match (=) failed
+     code:  assert {:error, :closed} = :gen_tcp.recv(socket, 0, 1000)
+     left:  {:error, :closed}
+     right: {:ok, "0\r\n\r\n"}
+     stacktrace:
+       test/stream_lifetime_test.exs:227: (test)
+
+..
+
+  8) test active upload survives supervised 5000ms drain and completes cleanup (Gaoxy.HTTP.SupervisedShutdownBudgetTest)
+     apps/gaoxy_http/test/supervised_shutdown_budget_test.exs:64
+     match (=) failed
+     code:  assert {:error, :closed} = :gen_tcp.recv(socket, 0, 1000)
+     left:  {:error, :closed}
+     right: {:ok,
+             "HTTP/1.1 500 Internal Server Error\r\nconnection: close\r\ncontent-length: 0\r\n\r\n"}
+     stacktrace:
+       test/supervised_shutdown_budget_test.exs:137: Gaoxy.HTTP.SupervisedShutdownBudgetTest.stop_and_assert/2
+       test/supervised_shutdown_budget_test.exs:83: (test)
+
+
+
+  9) test active upload survives supervised 5500ms drain and completes cleanup (Gaoxy.HTTP.SupervisedShutdownBudgetTest)
+     apps/gaoxy_http/test/supervised_shutdown_budget_test.exs:64
+     match (=) failed
+     code:  assert {:error, :closed} = :gen_tcp.recv(socket, 0, 1000)
+     left:  {:error, :closed}
+     right: {:ok,
+             "HTTP/1.1 500 Internal Server Error\r\nconnection: close\r\ncontent-length: 0\r\n\r\n"}
+     stacktrace:
+       test/supervised_shutdown_budget_test.exs:137: Gaoxy.HTTP.SupervisedShutdownBudgetTest.stop_and_assert/2
+       test/supervised_shutdown_budget_test.exs:83: (test)
+
+......................PASS h1 Plug response operations
+.PASS h1 Plug response notifications
+.PASS h2 Plug response operations
+.PASS h2 Plug response notifications
+..PASS H1 HEAD /declared metadata and body
+PASS H1 HEAD /declared-body metadata and body
+PASS H1 HEAD /inferred metadata and body
+PASS H1 HEAD /empty metadata and body
+PASS H1 HEAD /zero metadata and body
+PASS H1 HEAD /204 metadata and body
+PASS H1 HEAD /205 metadata and body
+PASS H1 HEAD /304 metadata and body
+PASS H1 GET /declared metadata and body
+PASS H1 GET /declared-body metadata and body
+PASS H1 GET /inferred metadata and body
+PASS H1 GET /empty metadata and body
+PASS H1 GET /zero metadata and body
+PASS H1 GET /204 metadata and body
+PASS H1 GET /205 metadata and body
+PASS H1 GET /304 metadata and body
+.PASS H2 HEAD /declared metadata and body
+PASS H2 HEAD /declared-body metadata and body
+PASS H2 HEAD /inferred metadata and body
+PASS H2 HEAD /empty metadata and body
+PASS H2 HEAD /zero metadata and body
+PASS H2 HEAD /204 metadata and body
+PASS H2 HEAD /205 metadata and body
+PASS H2 HEAD /304 metadata and body
+PASS H2 GET /declared metadata and body
+PASS H2 GET /declared-body metadata and body
+PASS H2 GET /inferred metadata and body
+PASS H2 GET /empty metadata and body
+PASS H2 GET /zero metadata and body
+PASS H2 GET /204 metadata and body
+PASS H2 GET /205 metadata and body
+PASS H2 GET /304 metadata and body
+.PASS peer-close sent_body=0 observed_body=0 peername={:error, :enotconn} normal-close cleanup sibling followup
+.PASS peer-close sent_body=3 observed_body=3 peername={:error, :enotconn} normal-close cleanup sibling followup
+.....................PASS H2 Plug parser application/json /parse
+PASS H2 Plug parser application/x-www-form-urlencoded /parse
+PASS H2 Plug parser application/json /parser-limit
+..
+
+ 10) test exact 65536-byte pipeline completes both responses with after_body input (Gaoxy.HTTP.PollBoundaryNetworkTest)
+     apps/gaoxy_http/test/poll_boundary_network_test.exs:52
+     Assertion with <= failed
+     code:  assert retained <= full_charge
+     left:  409720
+     right: 131192
+     stacktrace:
+       test/poll_boundary_network_test.exs:141: Gaoxy.HTTP.PollBoundaryNetworkTest.await_idle/3
+       test/poll_boundary_network_test.exs:56: (test)
+
+
+
+ 11) test actual excess rejects with bounded polling and after_body input (Gaoxy.HTTP.PollBoundaryNetworkTest)
+     apps/gaoxy_http/test/poll_boundary_network_test.exs:66
+     Assertion with <= failed
+     code:  assert Gaoxy.status(server, :http).retained_high_water <= full_charge + 4 * 256
+     left:  1916
+     right: 1656
+     stacktrace:
+       test/poll_boundary_network_test.exs:75: (test)
+
+
+
+ 12) test peer closure is observable at a full buffer with after_body input (Gaoxy.HTTP.PollBoundaryNetworkTest)
+     apps/gaoxy_http/test/poll_boundary_network_test.exs:78
+     Assertion with <= failed
+     code:  assert retained <= full_charge
+     left:  1912
+     right: 632
+     stacktrace:
+       test/poll_boundary_network_test.exs:141: Gaoxy.HTTP.PollBoundaryNetworkTest.await_idle/3
+       test/poll_boundary_network_test.exs:81: (test)
+
+
+
+ 13) test exact 65536-byte pipeline completes both responses with coalesced input (Gaoxy.HTTP.PollBoundaryNetworkTest)
+     apps/gaoxy_http/test/poll_boundary_network_test.exs:52
+     Assertion with <= failed
+     code:  assert retained <= full_charge
+     left:  409720
+     right: 131192
+     stacktrace:
+       test/poll_boundary_network_test.exs:141: Gaoxy.HTTP.PollBoundaryNetworkTest.await_idle/3
+       test/poll_boundary_network_test.exs:56: (test)
+
+
+
+ 14) test actual excess rejects with bounded polling and coalesced input (Gaoxy.HTTP.PollBoundaryNetworkTest)
+     apps/gaoxy_http/test/poll_boundary_network_test.exs:66
+     Assertion with <= failed
+     code:  assert Gaoxy.status(server, :http).retained_high_water <= full_charge + 4 * 256
+     left:  2304
+     right: 1656
+     stacktrace:
+       test/poll_boundary_network_test.exs:75: (test)
+
+
+
+ 15) test peer closure is observable at a full buffer with coalesced input (Gaoxy.HTTP.PollBoundaryNetworkTest)
+     apps/gaoxy_http/test/poll_boundary_network_test.exs:78
+     Assertion with <= failed
+     code:  assert retained <= full_charge
+     left:  1912
+     right: 632
+     stacktrace:
+       test/poll_boundary_network_test.exs:141: Gaoxy.HTTP.PollBoundaryNetworkTest.await_idle/3
+       test/poll_boundary_network_test.exs:81: (test)
+
+.....................................
+
+ 16) test repeated empty polls retain the complete copy floor for "" (Gaoxy.HTTP.NativeProxySeamsTest)
+     apps/gaoxy_http/test/native_proxy_seams_test.exs:242
+     Assertion with >= failed
+     code:  assert length(updates) >= 5
+     left:  0
+     right: 5
+     stacktrace:
+       test/native_proxy_seams_test.exs:262: (test)
+
+
+
+ 17) test repeated empty polls retain the complete copy floor for "GET /next" (Gaoxy.HTTP.NativeProxySeamsTest)
+     apps/gaoxy_http/test/native_proxy_seams_test.exs:242
+     Assertion with >= failed
+     code:  assert length(updates) >= 5
+     left:  0
+     right: 5
+     stacktrace:
+       test/native_proxy_seams_test.exs:262: (test)
+
+....
+
+ 18) test a retained poll floor still validates the gate and lease before every recv (Gaoxy.HTTP.NativeProxySeamsTest)
+     apps/gaoxy_http/test/native_proxy_seams_test.exs:353
+     Expected to catch exit, got nothing
+     code: assert {:noproc, _} = catch_exit(Exchange.poll_connection(observe_recv(next), 100))
+     stacktrace:
+       test/native_proxy_seams_test.exs:371: (test)
+
+
+
+ 19) test body consumption and response writes preserve the admitted poll floor (Gaoxy.HTTP.NativeProxySeamsTest)
+     apps/gaoxy_http/test/native_proxy_seams_test.exs:376
+     Assertion with in failed
+     code:  assert (floor + 2) in updates
+     left:  78
+     right: []
+     stacktrace:
+       test/native_proxy_seams_test.exs:396: (test)
+
+.....................
+Finished in 63.9 seconds (63.6s async, 0.2s sync)
+337 tests, 19 failures
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed
+[os_mon] memory supervisor port (memsup): Erlang has closed

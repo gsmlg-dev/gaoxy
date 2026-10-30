@@ -1,0 +1,60 @@
+==> gaoxy
+Compiling 2 files (.ex)
+Generated gaoxy app
+==> gaoxy
+
+02:43:52.668 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+
+02:43:52.705 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+Running ExUnit with seed: 838546, max_cases: 4
+
+
+
+  1) test tls exact explicit byte floor and max_active stay hard (Gaoxy.ResourceBudget.StreamNetworkTest)
+     apps/gaoxy/test/resource_budget_stream_network_test.exs:77
+     Assertion with in failed
+     code:  assert reason in [:closed, :econnreset]
+     left:  :timeout
+     right: [:closed, :econnreset]
+     stacktrace:
+       test/resource_budget_stream_network_test.exs:92: (test)
+
+
+
+  2) test admitted tcp callbacks complete after the listener drain barrier (Gaoxy.ResourceBudget.StreamNetworkTest)
+     apps/gaoxy/test/resource_budget_stream_network_test.exs:21
+     Assertion with == failed
+     code:  assert before.retained_bytes == :erlang.external_size(self())
+     left:  35
+     right: 29
+     stacktrace:
+       test/resource_budget_stream_network_test.exs:42: (test)
+
+
+
+  3) test admitted tls callbacks complete after the listener drain barrier (Gaoxy.ResourceBudget.StreamNetworkTest)
+     apps/gaoxy/test/resource_budget_stream_network_test.exs:21
+     Assertion with == failed
+     code:  assert before.retained_bytes == :erlang.external_size(self())
+     left:  35
+     right: 29
+     stacktrace:
+       test/resource_budget_stream_network_test.exs:42: (test)
+
+
+02:43:55.381 [error] GenServer #PID<0.516.0> terminating
+** (stop) :byte_limit
+Process Label: {:hell, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 44526}}}
+Last message: {:continue, :handle_connection}
+State: {%Hell.Socket{socket: #Port<0.52>, transport_module: Hell.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %Hell.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.1238699542.3460300802.205161>, start_time: -576460746262755229, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 44526, telemetry_span_context: #Reference<0.1238699542.3460300802.205161>, parent_telemetry_span_context: #Reference<0.1238699542.3460300802.205143>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.1238699542.3460300802.205161>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.1238699542.3460300802.205094>, service: "echo", generation: #Reference<0.1238699542.3460300802.205100>}, instance: #PID<0.503.0>, service: #PID<0.506.0>, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudget.StreamNetworkTest.Echo, tls: %{}, limits: %{max_state: 256, max_output: 64, drain_timeout: 5000, max_packet: 65507, idle_timeout: 30000, callback_timeout: 5000, max_memberships: 64, max_bytes: 447049, max_connections: 16384, max_active: 64, max_requests: 65536, max_streams: 65536}, transport: :tcp, handler_options: #PID<0.501.0>, budget_policy: %{max_bytes: 447049, max_connections: 16384, max_active: nil, provenance: %{max_bytes: :explicit, max_connections: :omitted, max_active: :omitted, normalized_limits: %{max_bytes: 447049, max_connections: 16384, max_active: 64, max_requests: 65536, max_streams: 65536}, max_requests: :omitted, max_streams: :omitted}, max_requests: 65536, max_streams: 65536}, quic: %{}, handler_mode: :stream, abyss_options: [], dispatcher: %{}, hell_options: [], capabilities: []}, gate: #PID<0.507.0>, startup_token: #Reference<0.1238699542.3460300802.205113>}}
+....
+02:43:56.438 [error] GenServer #PID<0.617.0> terminating
+** (stop) :byte_limit
+Process Label: {:hell, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 35330}}}
+Last message: {:continue, :handle_connection}
+State: {%Hell.Socket{socket: {:sslsocket, #Port<0.66>, #PID<0.616.0>, #PID<0.615.0>, :gen_tcp, :tls_gen_connection, #Reference<0.1238699542.3460431873.211015>, [option_tracker: #PID<0.604.0>, session_tickets_tracker: :disabled, session_id_tracker: :not_relevant]}, transport_module: Hell.Transports.SSL, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %Hell.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.1238699542.3460300801.211030>, start_time: -576460745215909686, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 35330, telemetry_span_context: #Reference<0.1238699542.3460300801.211030>, parent_telemetry_span_context: #Reference<0.1238699542.3460300802.206421>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.1238699542.3460300801.211030>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.1238699542.3460300802.206358>, service: "echo", generation: #Reference<0.1238699542.3460300802.206364>}, instance: #PID<0.597.0>, service: #PID<0.600.0>, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudget.StreamNetworkTest.Echo, tls: %{certfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/apps/gaoxy/tmp/Gaoxy.ResourceBudget.StreamNetworkTest/test-tls-explicit-byte-cap-below-completion-floor-refuses-admission-a7c07064/cert.pem", keyfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/apps/gaoxy/tmp/Gaoxy.ResourceBudget.StreamNetworkTest/test-tls-explicit-byte-cap-below-completion-floor-refuses-admission-a7c07064/key.pem", provider: :otp, alpn: ["gaoxy-echo-v1"]}, limits: %{max_state: 256, max_output: 64, drain_timeout: 5000, max_packet: 65507, idle_timeout: 30000, callback_timeout: 5000, max_memberships: 64, max_bytes: 447049, max_connections: 16384, max_active: 64, max_requests: 65536, max_streams: 65536}, transport: :tls, handler_options: #PID<0.595.0>, budget_policy: %{max_bytes: 447049, max_connections: 16384, max_active: nil, provenance: %{max_bytes: :explicit, max_connections: :omitted, max_active: :omitted, normalized_limits: %{max_bytes: 447049, max_connections: 16384, max_active: 64, max_requests: 65536, max_streams: 65536}, max_requests: :omitted, max_streams: :omitted}, max_requests: 65536, max_streams: 65536}, quic: %{}, handler_mode: :stream, abyss_options: [], dispatcher: %{}, hell_options: [], capabilities: []}, gate: #PID<0.601.0>, startup_token: #Reference<0.1238699542.3460300802.206377>}}
+...
+Finished in 4.1 seconds (0.00s async, 4.1s sync)
+10 tests, 3 failures
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

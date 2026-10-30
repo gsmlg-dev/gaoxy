@@ -1,9 +1,9 @@
 defmodule Gaoxy.HTTP.HTTP3.Connection do
   @moduledoc false
   @behaviour Gaoxy.QUICHandler
-  alias Gaoxy.{Lifecycle, QUIC}
+  alias Gaoxy.{Admission, Lifecycle, QUIC}
   alias Gaoxy.HTTP.Exchange
-  alias Gaoxy.HTTP.HTTP3.{Headers, Operations, Options, Protocol, Stream, Transport}
+  alias Gaoxy.HTTP.HTTP3.{Headers, Operations, Protocol, Stream, Transport}
   alias QuicHttp3.{Control, Frame, Qpack}
 
   @impl true
@@ -19,6 +19,10 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
     do: initialize(connection, metadata, options, nil)
 
   defp initialize(connection, metadata, options, fixture) do
+    # Canonical workers link this GenServer owner. A request-local kill must not
+    # terminate its siblings; GenServer still handles its parent shutdown exit.
+    Process.flag(:trap_exit, true)
+
     with {:ok, protocol} <- Protocol.new(options) do
       if fixture != nil and is_pid(fixture[:observer]),
         do: send(fixture.observer, {:http3_fixture_connection, fixture[:id], connection.gate})
@@ -74,6 +78,14 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
         token: nil,
         worker: nil,
         lease: nil,
+        startup: nil,
+        admission: :none,
+        spawn_cancel: nil,
+        resources_operation: make_ref(),
+        resources_identity: nil,
+        resources_terminal: false,
+        stream_terminal: false,
+        retiring: false,
         operation: nil,
         worker_finished: false,
         response_phase: :unset,
@@ -119,8 +131,40 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
 
   @impl true
   def terminate(_, state) do
+    settle_local_workers(state)
     _ = clear(state)
     :ok
+  end
+
+  # The host is already terminating. Revoke local operation capabilities first
+  # so a worker finishing a response can observe cancellation and exit normally
+  # before the parent's terminal pair forces remaining children. This is local
+  # cleanup only: no new writes, peer drain or request-deadline extension.
+  defp settle_local_workers(%{operations: nil}), do: :ok
+
+  defp settle_local_workers(state) do
+    deadline = now() + min(50, state.connection.limits.callback_timeout)
+
+    monitors =
+      for {key, %{worker: worker, token: token}} <- state.streams,
+          is_pid(worker),
+          token != nil,
+          Process.alive?(worker) do
+        monitor = Process.monitor(worker)
+        _ = Operations.cancel(state.operations, key, token, :closed)
+        _ = Operations.remove(state.operations, key, token)
+        {worker, monitor, min(deadline, terminal_deadline(state.streams[key]))}
+      end
+
+    Enum.each(monitors, fn {worker, monitor, deadline} ->
+      receive do
+        {:DOWN, ^monitor, :process, ^worker, _} -> :ok
+      after
+        Lifecycle.remaining(deadline) -> :ok
+      end
+
+      Process.demonitor(monitor, [:flush])
+    end)
   end
 
   defp progress(%{ready: false} = state), do: {:ok, state}
@@ -134,7 +178,10 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
          {:ok, state} <- control(state) do
       if state.control == nil or state.control_bytes != <<>>,
         do: {:ok, state},
-        else: turns(state, min(:queue.len(state.order), state.options.h3_limits.control_turn))
+        # A small set of streams can still have several ready quanta. Spend the
+        # existing round-robin turn budget instead of waiting another host poll
+        # after one pass. The same turn count and absolute callback bound apply.
+        else: turns(state, state.options.h3_limits.control_turn)
     end
   end
 
@@ -320,6 +367,11 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
     entry = state.streams[key]
 
     cond do
+      entry.retiring ->
+        if Lifecycle.remaining(terminal_deadline(entry)) == 0,
+          do: fail(state, 0x102, :stream_cleanup_timeout),
+          else: {:ok, drop(state, key)}
+
       entry.cancel != [] ->
         cleanup_stream(state, key)
 
@@ -339,7 +391,7 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
              {:ok, state} <- flush(state, key),
              {:ok, state} <- complete_output(state, key),
              {:ok, state} <- websocket_delivery(state, key),
-             do: {:ok, observe(retire(state, key))}
+             do: {:ok, observe(retire(resource_terminal(state, key), key))}
     end
   end
 
@@ -597,49 +649,103 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
 
   defp start_endpoint(state, key, request) do
     token = make_ref()
+    state = update_entry(state, key, &%{&1 | request: request, token: token})
     entry = state.streams[key]
-    owner = self()
-    reserve = Options.reservation(state.options).request
-    table = state.operations
     gate = state.connection.gate
-    deadline = entry.deadline
 
-    with :ok <- Operations.register(table, key, token, deadline, state.options.http_limits),
-         {:ok, worker} <-
-           start_worker(fn ->
-             Stream.run(owner, table, key, token, gate, reserve, deadline)
-           end) do
-      case Operations.bind(state.operations, key, token, worker) do
-        :ok ->
-          send(worker, {:h3_start, owner, key, token})
-          {:ok, update_entry(state, key, &%{&1 | request: request, token: token, worker: worker})}
+    with :ok <-
+           Operations.register(
+             state.operations,
+             key,
+             token,
+             entry.deadline,
+             state.options.http_limits
+           ),
+         parent when is_reference(parent) <- Map.get(state.connection, :lease) do
+      bytes = Exchange.retained_bytes(exchange(state, key, nil))
 
-        _ ->
-          Process.exit(worker, :kill)
-          _ = Operations.remove(state.operations, key, token)
-          {:ok, cancel(state, key, 0x107)}
-      end
+      startup =
+        Admission.spawn_request(
+          gate,
+          parent,
+          token,
+          bytes,
+          entry.deadline,
+          {Stream, :run_admitted, [self(), state.operations, token, gate, entry.deadline]},
+          [kind: :h3_stream, memberships: %{request: token, h3_stream: {parent, token}}],
+          :phase_receipt
+        )
+
+      state = update_entry(state, key, &%{&1 | startup: startup, admission: :pending})
+      # The normal local receipt is immediate; retain its exact alias when the
+      # canonical mutation takes longer than this bounded owner turn.
+      {:ok, startup_turn(state, key, min(50, Lifecycle.remaining(entry.deadline)))}
     else
       _ ->
         _ = Operations.remove(state.operations, key, token)
         {:ok, cancel(state, key, 0x107)}
     end
+  catch
+    :exit, _ -> {:ok, cancel(state, key, 0x107)}
   end
 
-  defp start_worker(fun) do
-    Task.Supervisor.start_child(Gaoxy.HTTP.Tasks, fun)
-  catch
-    :exit, _ -> {:error, :task_supervisor_unavailable}
+  defp startup_turn(state, key, wait \\ 0) do
+    case state.streams[key] do
+      %{startup: startup} = entry when startup != nil ->
+        case :gen_server.wait_response(startup, wait) do
+          {:reply, {:ok, worker, lease}} when is_pid(worker) and is_reference(lease) ->
+            state =
+              update_entry(
+                state,
+                key,
+                &%{&1 | startup: nil, admission: :admitted, worker: worker, lease: lease}
+              )
+
+            if entry.cancel != [] or entry.retiring or Lifecycle.remaining(entry.deadline) == 0 do
+              Process.exit(worker, :kill)
+              state
+            else
+              case Operations.bind(state.operations, key, entry.token, worker) do
+                :ok ->
+                  send(worker, {:h3_start, self(), entry.token})
+                  state
+
+                _ ->
+                  cancel(state, key, 0x107)
+              end
+            end
+
+          {:reply, {:error, {:not_reserved, token, :deadline_exceeded}}}
+          when token == entry.token ->
+            state = update_entry(state, key, &%{&1 | startup: nil, admission: :not_reserved})
+            if entry.cancel != [] or entry.retiring, do: state, else: cancel(state, key, 0x107)
+
+          :timeout ->
+            state
+
+          _ ->
+            state = update_entry(state, key, &%{&1 | startup: nil, admission: :rejected})
+            if entry.cancel != [] or entry.retiring, do: state, else: cancel(state, key, 0x107)
+        end
+
+      _ ->
+        state
+    end
   end
 
   defp endpoint_turn(%{operations: nil} = state, _), do: {:ok, state}
 
   defp endpoint_turn(state, key) do
+    state = startup_turn(state, key)
+
     case state.streams[key] do
       %{token: nil} ->
         {:ok, state}
 
       %{cancel: [_ | _]} ->
+        {:ok, state}
+
+      %{admission: :pending} ->
         {:ok, state}
 
       %{token: token, worker: worker} = entry ->
@@ -713,7 +819,11 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
       peer_cert: nil,
       service: Map.get(state.connection, :service),
       instance: Map.get(state.connection, :instance),
-      protocol_bytes: Options.reservation(state.options).request
+      protocol_bytes:
+        :erlang.external_size(
+          {state.metadata, limits, {self(), state.operations, key, entry.token}}
+        ) +
+          :erlang.external_size(%{request | headers: [], head_bytes: 0})
     }
   end
 
@@ -934,18 +1044,41 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
     end
   end
 
-  defp stop_endpoint(%{operations: nil}, _, _), do: :ok
+  defp stop_endpoint(%{operations: nil} = state, _, _), do: state
 
   defp stop_endpoint(state, key, reason) do
     case state.streams[key] do
-      %{token: token, worker: worker} when token != nil ->
+      %{token: token, worker: worker} = entry when token != nil ->
         _ = Operations.cancel(state.operations, key, token, reason)
         if is_pid(worker) and Process.alive?(worker), do: Process.exit(worker, :kill)
+        # Revoke the worker's command capability immediately. The connection
+        # entry separately retains native operations, admission aliases and
+        # canonical terminal proofs until their actual cleanup completes.
         _ = Operations.remove(state.operations, key, token)
-        :ok
+
+        if entry.spawn_cancel == nil and entry.admission != :none do
+          reference = Admission.cancel_spawn(state.connection.gate, state.connection.lease, token)
+          update_entry(state, key, &%{&1 | spawn_cancel: {:pending, reference}})
+        else
+          state
+        end
 
       _ ->
-        :ok
+        state
+    end
+  end
+
+  defp cancel_receipt(state, key) do
+    case state.streams[key].spawn_cancel do
+      {:pending, reference} ->
+        case :gen_server.wait_response(reference, 0) do
+          :timeout -> state
+          {:reply, result} -> update_entry(state, key, &%{&1 | spawn_cancel: {:done, result}})
+          _ -> state
+        end
+
+      _ ->
+        state
     end
   end
 
@@ -1090,7 +1223,7 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
   end
 
   defp cancel(state, key, code, commands \\ [:reset, :stop]) do
-    stop_endpoint(state, key, :cancelled)
+    state = stop_endpoint(state, key, :cancelled)
 
     state = %{
       state
@@ -1103,6 +1236,7 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
       &%{
         &1
         | out: <<>>,
+          operation: nil,
           send_fin: false,
           cancel: Enum.map(commands, fn kind -> {kind, code} end),
           cancel_deadline:
@@ -1183,18 +1317,20 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
         end
 
       nil ->
-        cond do
-          now() >= deadline ->
+        case operation_options(
+               state.connection.limits.callback_timeout,
+               state.turn_deadline,
+               deadline,
+               now()
+             ) do
+          :expired ->
             fail(state, 0x102, :operation_timeout)
 
-          now() >= state.turn_deadline ->
+          :yield ->
             {:wait, state}
 
-          true ->
-            case fun.(
-                   timeout: min(50, state.connection.limits.callback_timeout),
-                   deadline: max(1, min(deadline, state.turn_deadline) - now())
-                 ) do
+          {:ok, options} ->
+            case fun.(options) do
               {:unknown, reference} ->
                 {:wait, %{state | pending: Map.put(state.pending, key, {reference, deadline})}}
 
@@ -1205,6 +1341,19 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
                 {:ok, state, result}
             end
         end
+    end
+  end
+
+  @doc false
+  def operation_options(callback_timeout, turn_deadline, deadline, at) do
+    # Leave room for the call to return inside this turn, including configured
+    # callback windows shorter than 50ms. Neither absolute deadline is renewed.
+    allowance = min(50, max(1, div(callback_timeout, 2)))
+
+    cond do
+      at >= deadline -> :expired
+      turn_deadline - at < min(allowance, deadline - at) -> :yield
+      true -> {:ok, [timeout: allowance, deadline: min(deadline, turn_deadline) - at]}
     end
   end
 
@@ -1251,8 +1400,111 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
     end
   end
 
+  defp resource_terminal(%{operations: nil} = state, _key), do: state
+
+  defp resource_terminal(state, key) do
+    entry = state.streams[key]
+    parser = state.protocol.streams[key]
+    parser_empty = parser == nil or (parser.buffer == <<>> and parser.payload == <<>>)
+
+    pending =
+      Enum.any?(state.pending, fn {slot, _} -> is_tuple(slot) and elem(slot, 0) == key end)
+
+    if entry != nil and entry.token != nil and not entry.resources_terminal and
+         entry.admission != :pending and
+         entry.input == <<>> and entry.out == <<>> and parser_empty and not pending and
+         entry.operation == nil and (entry.retiring or (entry.send_done and entry.recv_fin)) do
+      deadline = terminal_deadline(entry)
+      identity = entry.resources_identity || entry.lease || {:spawn, entry.token}
+      state = update_entry(state, key, &%{&1 | resources_identity: identity})
+
+      result =
+        Admission.finish_stream_resources(
+          state.connection.gate,
+          state.connection.lease,
+          identity,
+          entry.resources_operation,
+          deadline
+        )
+
+      # Only the original OTP response alias and exact spawn token can prove
+      # pre-reservation expiry. A stale cancel reply cannot establish absence.
+      absent = entry.admission in [:none, :not_reserved]
+
+      if result == :ok or (result == {:error, :stale_generation} and absent),
+        do: update_entry(state, key, &%{&1 | resources_terminal: true}),
+        else: state
+    else
+      state
+    end
+  catch
+    :exit, _ -> state
+  end
+
+  defp terminal_deadline(entry) do
+    entry.cancel_deadline ||
+      if(entry.deadline == :infinity,
+        do: Lifecycle.deadline(Lifecycle.cleanup_headroom()),
+        else: cleanup_deadline(entry.deadline)
+      )
+  end
+
+  defp drop(%{streams: streams} = state, key) when not is_map_key(streams, key), do: state
+
+  defp drop(%{operations: nil} = state, key), do: delete_stream(state, key)
+
   defp drop(state, key) do
-    stop_endpoint(state, key, :closed)
+    state = stop_endpoint(state, key, :closed)
+
+    state =
+      update_entry(
+        state,
+        key,
+        &%{&1 | retiring: true, input: <<>>, out: <<>>, trailers: [], operation: nil, cancel: []}
+      )
+
+    state = %{
+      state
+      | protocol: %{state.protocol | streams: Map.delete(state.protocol.streams, key)}
+    }
+
+    state = state |> startup_turn(key) |> cancel_receipt(key) |> resource_terminal(key)
+    entry = state.streams[key]
+
+    if entry.admission != :pending and not entry.stream_terminal and entry.token != nil do
+      case Admission.end_stream(
+             state.connection.gate,
+             state.connection.lease,
+             :h3_stream,
+             entry.token,
+             terminal_deadline(entry)
+           ) do
+        :ok -> finish_drop(update_entry(state, key, &%{&1 | stream_terminal: true}), key)
+        _ -> state
+      end
+    else
+      finish_drop(state, key)
+    end
+  catch
+    :exit, _ -> state
+  end
+
+  defp finish_drop(state, key) do
+    entry = state.streams[key]
+
+    if entry.token == nil or (entry.resources_terminal and entry.stream_terminal) do
+      if entry.token != nil, do: Operations.remove(state.operations, key, entry.token)
+      delete_stream(state, key)
+    else
+      state
+    end
+  end
+
+  defp delete_stream(state, key) do
+    case state.streams[key] do
+      %{spawn_cancel: {:pending, reference}} -> :gen_server.receive_response(reference, 0)
+      _ -> :ok
+    end
 
     %{
       state
@@ -1278,7 +1530,8 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
   end
 
   defp clear(state) do
-    Enum.each(state.streams, fn {key, _} -> stop_endpoint(state, key, :closed) end)
+    state =
+      Enum.reduce(state.streams, state, fn {key, _}, acc -> stop_endpoint(acc, key, :closed) end)
 
     if state.operations != nil and :ets.info(state.operations) != :undefined,
       do: :ets.delete(state.operations)

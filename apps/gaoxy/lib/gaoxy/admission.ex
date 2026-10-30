@@ -18,8 +18,24 @@ defmodule Gaoxy.Admission do
         {:spawn_request, parent_lease, token, bytes, deadline, mfa, metadata}
       )
 
+  # The original response alias scopes this optional proof to this attempt.
+  # Only expiry before any reservation can return :not_reserved. Ordinary
+  # errors (including activation expiry) never prove absent resource ownership.
+  def spawn_request(gate, parent_lease, token, bytes, deadline, mfa, metadata, :phase_receipt),
+    do:
+      :gen_server.send_request(
+        gate,
+        {:spawn_request, parent_lease, token, bytes, deadline, mfa, metadata, :phase_receipt}
+      )
+
   def update_until(gate, lease, accounting, operation, deadline),
     do: GenServer.call(gate, {:update_until, lease, accounting, operation, deadline}, 50)
+
+  # Explicitly reuse an admitted completion envelope. Omitted fields retain
+  # their existing values; memberships/process credits cannot change here.
+  # Ordinary scalar updates keep their historical replacement semantics.
+  def repartition_until(gate, lease, accounting, operation, deadline),
+    do: GenServer.call(gate, {:repartition_until, lease, accounting, operation, deadline}, 50)
 
   def end_request(gate, lease, accounting, deadline),
     do: GenServer.call(gate, {:end_request, lease, accounting, deadline}, 50)
@@ -37,6 +53,13 @@ defmodule Gaoxy.Admission do
         50
       )
 
+  # The caller's single-use spawn token remains addressable when its asynchronous
+  # success alias was abandoned. The index lives only as long as the stream lease;
+  # terminal retries use the same bounded receipt cache as other local operations.
+  # Cancellation alone is never an output, native-resource or guardian receipt.
+  def finish_spawn_resources(gate, parent_lease, spawn_token, operation, deadline),
+    do: finish_stream_resources(gate, parent_lease, {:spawn, spawn_token}, operation, deadline)
+
   def budget_client(gate), do: GenServer.call(gate, :budget_client, 50)
 
   def cancel_spawn(gate, parent_lease, token),
@@ -47,6 +70,9 @@ defmodule Gaoxy.Admission do
 
   def begin_callback(gate, lease, bytes, deadline),
     do: GenServer.call(gate, {:begin_callback, lease, bytes, deadline})
+
+  def begin_native_cleanup(gate, lease, bytes, deadline),
+    do: GenServer.call(gate, {:begin_native_cleanup, lease, bytes, deadline}, 100)
 
   # Transfer the returned state/output into retained ownership before sending.
   # The callback watchdog cannot also own a progressing output batch.
@@ -116,6 +142,20 @@ defmodule Gaoxy.Admission do
 
   def complete_cleanup(gate, token), do: GenServer.call(gate, {:complete_cleanup, token}, 50)
 
+  def reserve_native(gate, owner, lease, token, native, overhead, deadline),
+    do:
+      GenServer.call(
+        gate,
+        {:reserve_native, owner, lease, token, native, overhead, deadline},
+        100
+      )
+
+  def split_native(gate, token, guardian, deadline),
+    do: GenServer.call(gate, {:split_native, token, guardian, deadline}, 100)
+
+  def update_native(gate, lease, native, deadline),
+    do: GenServer.call(gate, {:update_native, lease, native, deadline}, 100)
+
   @impl true
   def init({limits, scope}) do
     Process.flag(:trap_exit, true)
@@ -132,11 +172,14 @@ defmodule Gaoxy.Admission do
          leases: %{},
          cleanups: %{},
          spawns: %{},
+         stream_spawns: %{},
          update_receipts: %{},
          update_order: :queue.new(),
          update_pending: nil,
          bytes: 0,
          high_water: 0,
+         temporary_high_water: 0,
+         usage_high_water: 0,
          transport_high_water: 0,
          websocket_high_water: 0,
          rejected: 0
@@ -149,21 +192,45 @@ defmodule Gaoxy.Admission do
   @impl true
   def handle_call(
         {:spawn_request, parent_lease, token, bytes, deadline, mfa, metadata},
+        from,
+        state
+      ),
+      do:
+        handle_call(
+          {:spawn_request, parent_lease, token, bytes, deadline, mfa, metadata, :legacy},
+          from,
+          state
+        )
+
+  def handle_call(
+        {:spawn_request, parent_lease, token, bytes, deadline, mfa, metadata, reply_mode},
         {owner, _} = from,
         state
-      ) do
+      )
+      when reply_mode in [:legacy, :phase_receipt] do
     cond do
       not parent_owned?(state, parent_lease, owner) ->
         {:reply, {:error, :stale_generation}, state}
 
-      not is_reference(token) or Map.has_key?(state.spawns, token) or not scalar_mfa?(mfa) ->
+      not is_reference(token) or Map.has_key?(state.spawns, token) or
+        Map.has_key?(state.stream_spawns, token) or
+        Map.has_key?(state.update_receipts, {:cancel_spawn, token}) or not scalar_mfa?(mfa) ->
         reject(state, :invalid_spawn_request)
 
       state.mode != :ready ->
         reject(state, spawn_mode(state.mode))
 
+      reply_mode == :phase_receipt and
+          (state.update_pending != nil or
+             match?(%{pending: pending} when not is_nil(pending), state.budget)) ->
+        reject(state, :budget_pending)
+
       not is_integer(deadline) or deadline <= Lifecycle.now() ->
-        reject(state, :deadline_exceeded)
+        {:reply, error, state} = reject(state, :deadline_exceeded)
+
+        if reply_mode == :phase_receipt and is_integer(deadline),
+          do: {:reply, {:error, {:not_reserved, token, :deadline_exceeded}}, state},
+          else: {:reply, error, state}
 
       true ->
         ref = make_ref()
@@ -206,6 +273,7 @@ defmodule Gaoxy.Admission do
                   if lease.kind in [:h2_stream, :h3_stream],
                     do:
                       Map.merge(lease, %{
+                        spawn_token: token,
                         stream_parent: {parent_lease, owner},
                         stream_resources_terminal: false
                       }),
@@ -227,7 +295,12 @@ defmodule Gaoxy.Admission do
                 state = %{
                   state
                   | leases: Map.put(state.leases, ref, lease),
-                    spawns: Map.put(state.spawns, token, operation)
+                    spawns: Map.put(state.spawns, token, operation),
+                    stream_spawns:
+                      if(Map.has_key?(lease, :spawn_token),
+                        do: Map.put(state.stream_spawns, token, ref),
+                        else: state.stream_spawns
+                      )
                 }
 
                 case spawn_timer(ref, watchdog, deadline) do
@@ -271,14 +344,34 @@ defmodule Gaoxy.Admission do
   end
 
   def handle_call({:cancel_spawn, parent_lease, token}, {owner, _}, state) do
-    case state.spawns[token] do
-      %{owner: ^owner, parent_lease: ^parent_lease} ->
-        if parent_owned?(state, parent_lease, owner),
-          do: {:reply, :ok, cancel_operation(state, token, :cancelled)},
-          else: {:reply, {:error, :stale_generation}, state}
+    fingerprint = cancel_fingerprint(parent_lease, owner, token)
+    cached = state.update_receipts[{:cancel_spawn, token}]
 
-      _ ->
+    cond do
+      not parent_owned?(state, parent_lease, owner) ->
         {:reply, {:error, :stale_generation}, state}
+
+      cached && cached.fingerprint != fingerprint ->
+        {:reply, {:error, :stale_generation}, state}
+
+      cached ->
+        {:reply, cached.result, state}
+
+      true ->
+        case state.spawns[token] do
+          %{owner: ^owner, parent_lease: ^parent_lease} ->
+            state = cancel_operation(state, token, :cancelled)
+            {:reply, :ok, remember_cancel(state, parent_lease, owner, token)}
+
+          _ ->
+            case state.leases[state.stream_spawns[token]] do
+              %{stream_parent: {^parent_lease, ^owner}} ->
+                {:reply, :ok, remember_cancel(state, parent_lease, owner, token)}
+
+              _ ->
+                {:reply, {:error, :stale_generation}, state}
+            end
+        end
     end
   end
 
@@ -321,8 +414,9 @@ defmodule Gaoxy.Admission do
     end
   end
 
-  def handle_call({:update_until, ref, bytes, operation, deadline}, {pid, _}, state) do
-    fingerprint = :crypto.hash(:sha256, :erlang.term_to_binary({pid, ref, bytes}))
+  def handle_call({action, ref, bytes, operation, deadline}, {pid, _}, state)
+      when action in [:update_until, :repartition_until] do
+    fingerprint = :crypto.hash(:sha256, :erlang.term_to_binary({action, pid, ref, bytes}))
     cached = state.update_receipts[operation]
 
     cond do
@@ -347,7 +441,12 @@ defmodule Gaoxy.Admission do
       true ->
         case state.leases[ref] do
           %{pid: ^pid} = lease ->
-            case replace_accounting(state, lease, bytes) do
+            result =
+              if action == :repartition_until,
+                do: repartition_accounting(state, lease, bytes),
+                else: replace_accounting(state, lease, bytes)
+
+            case result do
               {:ok, replacement} ->
                 commit_lease(
                   state,
@@ -355,7 +454,8 @@ defmodule Gaoxy.Admission do
                   replacement,
                   deadline,
                   &Function.identity/1,
-                  {operation, fingerprint}
+                  {operation, fingerprint},
+                  if(action == :repartition_until, do: :repartition, else: :replace)
                 )
 
               {:error, reason} ->
@@ -426,6 +526,8 @@ defmodule Gaoxy.Admission do
         reject(state, :deadline_exceeded)
 
       true ->
+        ref = stream_lease(state, ref)
+
         case state.leases[ref] do
           %{stream_parent: {^parent, ^pid}} = lease ->
             state = put_in(state.leases[ref], %{lease | stream_resources_terminal: true})
@@ -440,7 +542,13 @@ defmodule Gaoxy.Admission do
   end
 
   def handle_call({action, ref, bytes, deadline}, {pid, _}, state)
-      when action in [:begin_request, :begin_callback, :upgrade, :begin_stream] do
+      when action in [
+             :begin_request,
+             :begin_callback,
+             :begin_native_cleanup,
+             :upgrade,
+             :begin_stream
+           ] do
     case state.leases[ref] do
       %{pid: ^pid} = lease ->
         deadline =
@@ -451,6 +559,14 @@ defmodule Gaoxy.Admission do
         replacement = replace_accounting(state, lease, bytes, action == :upgrade)
 
         cond do
+          action == :begin_native_cleanup and
+              (not Map.get(lease, :native_connection, false) or
+                 not is_integer(bytes) or bytes > lease.bytes) ->
+            reject(state, :invalid_native_cleanup)
+
+          action == :begin_native_cleanup and state.mode not in [:ready, :draining] ->
+            reject(state, state.mode)
+
           action in [:upgrade, :begin_stream] and
               (not lease.request_active or not lease.drain_notify) ->
             reject(state, :inactive_request)
@@ -508,6 +624,198 @@ defmodule Gaoxy.Admission do
 
       _ ->
         {:reply, {:error, :stale_generation}, state}
+    end
+  end
+
+  def handle_call(
+        {:reserve_native, owner, ref, token, native, overhead, deadline},
+        {service, _},
+        %{service: service} = state
+      )
+      when is_pid(service) do
+    with true <-
+           (is_pid(owner) and is_reference(ref) and is_reference(token) and
+              not Map.has_key?(state.cleanups, token)) || {:error, :invalid_native_reservation},
+         true <-
+           (is_integer(native) and native >= 0 and is_integer(overhead) and overhead > 0) ||
+             {:error, :byte_limit},
+         {:ok, accounting} <-
+           Gaoxy.ResourceBudget.normalize_accounting(%{
+             retained_bytes: native + overhead,
+             temporary_bytes: 0,
+             transport_bytes: native + overhead,
+             websocket_bytes: 0,
+             memberships: %{connection: token},
+             pending_processes: 1
+           }),
+         :ok <- local_reserve_check(state, accounting) do
+      commit = fn state, receipt, _late ->
+        cleanup = %{
+          pid: service,
+          monitor: nil,
+          bytes: native + overhead,
+          native_bytes: native,
+          overhead: overhead,
+          native_owner: owner,
+          native_phase: :pending,
+          lease: ref,
+          receipt: false,
+          accounting: accounting,
+          budget_owner: service,
+          down_seen: false,
+          down_reason: nil
+        }
+
+        cleanup = Budget.receipt(cleanup, receipt)
+        send(service, {:gaoxy_native_reserved, token, receipt})
+
+        sample(%{
+          state
+          | cleanups: Map.put(state.cleanups, token, cleanup),
+            bytes: state.bytes + cleanup.bytes
+        })
+      end
+
+      rejected = fn state, reason ->
+        send(service, {:gaoxy_native_rejected, token, reason})
+        state
+      end
+
+      reply_mutation(
+        Budget.run(state, :reserve_native, [service, accounting], deadline, commit, rejected)
+      )
+    else
+      {:error, reason} -> reject(state, reason)
+    end
+  end
+
+  def handle_call({:reserve_native, _, _, _, _, _, _}, _, state),
+    do: {:reply, {:error, :unauthorized_service}, state}
+
+  def handle_call(
+        {:split_native, token, guardian, deadline},
+        {service, _},
+        %{service: service} = state
+      )
+      when is_pid(service) do
+    case state.cleanups[token] do
+      %{native_phase: :pending} = cleanup when is_pid(guardian) ->
+        if guardian != cleanup.native_owner and Process.alive?(guardian) do
+          # Bind the terminal observer before the canonical split. If the split
+          # fails or its receipt is delayed, the Service-pinned reservation is
+          # still releasable only by this guardian's exact terminal handshake.
+          cleanup = %{
+            cleanup
+            | pid: guardian,
+              monitor: Process.monitor(guardian),
+              native_phase: :splitting
+          }
+
+          state = put_in(state.cleanups[token], cleanup)
+
+          args =
+            if state.budget,
+              do: [
+                cleanup.budget_receipt.token,
+                cleanup.budget_receipt.revision,
+                guardian,
+                cleanup.native_owner
+              ],
+              else: []
+
+          commit = fn state, receipts, _late ->
+            cleanup = state.cleanups[token]
+            owner = cleanup.native_owner
+            if state.budget, do: Process.link(owner)
+            {:ok, empty} = Gaoxy.ResourceBudget.normalize_accounting(0)
+
+            lease = %{
+              pid: owner,
+              monitor: Process.monitor(owner),
+              bytes: 0,
+              token: nil,
+              timer: nil,
+              send: nil,
+              drain_notify: false,
+              request_active: false,
+              cleanup: token,
+              deadline: nil,
+              accounting: empty,
+              kind: :transport,
+              native_connection: true,
+              budget_owner: owner,
+              down_seen: false,
+              exit_seen: false
+            }
+
+            lease = Budget.receipt(lease, receipts && receipts.callback)
+
+            cleanup = %{
+              cleanup
+              | native_phase: :active,
+                budget_owner: guardian,
+                accounting: %{cleanup.accounting | pending_processes: 0}
+            }
+
+            cleanup = Budget.receipt(cleanup, receipts && receipts.native)
+
+            send(
+              service,
+              {:gaoxy_native_activated, token, cleanup.lease, receipts && receipts.native}
+            )
+
+            sample(%{
+              state
+              | cleanups: Map.put(state.cleanups, token, cleanup),
+                leases: Map.put(state.leases, cleanup.lease, lease)
+            })
+          end
+
+          rejected = fn state, reason ->
+            send(service, {:gaoxy_native_split_failed, token, reason})
+            state
+          end
+
+          reply_mutation(Budget.run(state, :split_native, args, deadline, commit, rejected))
+        else
+          reject(state, :invalid_guardian)
+        end
+
+      _ ->
+        reject(state, :stale_cleanup)
+    end
+  end
+
+  def handle_call({:split_native, _, _, _}, _, state),
+    do: {:reply, {:error, :unauthorized_service}, state}
+
+  def handle_call({:update_native, ref, native, deadline}, {owner, _}, state) do
+    with %{pid: ^owner, cleanup: token} <- state.leases[ref],
+         %{native_phase: :active} = cleanup <- state.cleanups[token],
+         true <- (is_integer(native) and native >= 0) || {:error, :byte_limit},
+         {:ok, replacement} <- replace_accounting(state, cleanup, native + cleanup.overhead) do
+      args = if state.budget, do: Budget.arguments(cleanup, replacement.accounting), else: []
+
+      commit = fn state, receipt, _ ->
+        current = state.cleanups[token]
+
+        replacement =
+          current
+          |> Map.merge(Map.take(replacement, [:bytes, :accounting]))
+          |> Map.put(:native_bytes, native)
+          |> Budget.receipt(receipt)
+
+        sample(%{
+          state
+          | cleanups: Map.put(state.cleanups, token, replacement),
+            bytes: state.bytes - current.bytes + replacement.bytes
+        })
+      end
+
+      reply_mutation(Budget.run(state, :replace, args, deadline, commit))
+    else
+      {:error, reason} -> reject(state, reason)
+      _ -> reject(state, :stale_cleanup)
     end
   end
 
@@ -788,8 +1096,12 @@ defmodule Gaoxy.Admission do
      %{
        active: map_size(state.leases),
        cleanup_pending: map_size(state.cleanups),
-       retained_bytes: state.bytes,
+       retained_bytes: accounting.retained_bytes,
+       temporary_bytes: accounting.temporary_bytes,
+       usage: accounting.usage,
        retained_high_water: state.high_water,
+       temporary_high_water: state.temporary_high_water,
+       usage_high_water: state.usage_high_water,
        transport_bytes: accounting.transport_bytes,
        websocket_bytes: accounting.websocket_bytes,
        transport_high_water: state.transport_high_water,
@@ -960,6 +1272,12 @@ defmodule Gaoxy.Admission do
       _ -> false
     end
   end
+
+  defp stream_lease(state, {:spawn, token}) when is_reference(token),
+    do: state.stream_spawns[token]
+
+  defp stream_lease(_, ref) when is_reference(ref), do: ref
+  defp stream_lease(_, _), do: nil
 
   defp scalar_mfa?({module, function, args}) when is_atom(module) and is_atom(function),
     do: scalar_args?(args)
@@ -1178,7 +1496,8 @@ defmodule Gaoxy.Admission do
          replacement,
          deadline,
          after_commit \\ &Function.identity/1,
-         operation \\ nil
+         operation \\ nil,
+         mutation \\ :replace
        ) do
     lease = state.leases[ref]
     args = if state.budget, do: Budget.arguments(lease, replacement.accounting), else: []
@@ -1206,7 +1525,7 @@ defmodule Gaoxy.Admission do
       remember_update(state, operation, {:error, reason})
     end
 
-    case Budget.run(state, :replace, args, deadline, commit, remember_rejection) do
+    case Budget.run(state, mutation, args, deadline, commit, remember_rejection) do
       {:error, reason, state} when reason in [:budget_timeout, :budget_unavailable] ->
         state = if operation, do: %{state | update_pending: operation}, else: state
         reject(state, reason)
@@ -1238,6 +1557,17 @@ defmodule Gaoxy.Admission do
     %{state | update_receipts: receipts, update_order: order, update_pending: pending}
   end
 
+  defp cancel_fingerprint(parent, owner, token),
+    do: :crypto.hash(:sha256, :erlang.term_to_binary({owner, :cancel_spawn, parent, token}))
+
+  defp remember_cancel(state, parent, owner, token) do
+    operation = {:cancel_spawn, token}
+
+    if Map.has_key?(state.update_receipts, operation),
+      do: state,
+      else: remember_update(state, {operation, cancel_fingerprint(parent, owner, token)}, :ok)
+  end
+
   defp commit_mode(state, mode, after_commit \\ &Function.identity/1) do
     commit = fn state, _, _ -> after_commit.(%{state | mode: mode}) end
     reply_mutation(Budget.run(state, :set_mode, [mode], nil, commit))
@@ -1258,6 +1588,17 @@ defmodule Gaoxy.Admission do
   defp remove_lease(state, ref) do
     lease = state.leases[ref]
     if lease.monitor, do: Process.demonitor(lease.monitor, [:flush])
+
+    state =
+      case lease do
+        %{spawn_token: token, stream_parent: {parent, owner}} ->
+          state = %{state | stream_spawns: Map.delete(state.stream_spawns, token)}
+          remember_cancel(state, parent, owner, token)
+
+        _ ->
+          state
+      end
+
     sample(%{state | leases: Map.delete(state.leases, ref), bytes: state.bytes - lease.bytes})
   end
 
@@ -1388,17 +1729,25 @@ defmodule Gaoxy.Admission do
       {:error, :byte_limit}
     else
       with {:ok, replacement} <- Accounting.replace(lease, bytes),
-           :ok <-
-             Accounting.validate(
-               state.leases,
-               state.cleanups,
-               lease,
-               replacement,
-               if(state.budget, do: 9_223_372_036_854_775_807, else: state.limits.max_bytes)
-             ) do
-        {:ok, replacement}
-      end
+           do: validate_accounting(state, lease, replacement)
     end
+  end
+
+  defp repartition_accounting(state, lease, bytes) do
+    with {:ok, replacement} <- Accounting.repartition(lease, bytes),
+         do: validate_accounting(state, lease, replacement)
+  end
+
+  defp validate_accounting(state, lease, replacement) do
+    with :ok <-
+           Accounting.validate(
+             state.leases,
+             state.cleanups,
+             lease,
+             replacement,
+             if(state.budget, do: 9_223_372_036_854_775_807, else: state.limits.max_bytes)
+           ),
+         do: {:ok, replacement}
   end
 
   defp transport_bytes(state),
@@ -1407,17 +1756,28 @@ defmodule Gaoxy.Admission do
   defp sample(state) do
     accounting = Accounting.totals(state.leases, state.cleanups)
 
-    Telemetry.emit(
-      :work,
-      Map.merge(accounting, %{active: map_size(state.leases), retained_bytes: state.bytes}),
-      state.scope
-    )
-
-    %{
+    state = %{
       state
-      | high_water: max(state.high_water, state.bytes),
+      | high_water: max(state.high_water, accounting.retained_bytes),
+        temporary_high_water: max(state.temporary_high_water, accounting.temporary_bytes),
+        usage_high_water: max(state.usage_high_water, accounting.usage),
         transport_high_water: max(state.transport_high_water, accounting.transport_bytes),
         websocket_high_water: max(state.websocket_high_water, accounting.websocket_bytes)
     }
+
+    Telemetry.emit(
+      :work,
+      Map.merge(accounting, %{
+        active: map_size(state.leases),
+        retained_high_water: state.high_water,
+        temporary_high_water: state.temporary_high_water,
+        usage_high_water: state.usage_high_water,
+        transport_high_water: state.transport_high_water,
+        websocket_high_water: state.websocket_high_water
+      }),
+      state.scope
+    )
+
+    state
   end
 end

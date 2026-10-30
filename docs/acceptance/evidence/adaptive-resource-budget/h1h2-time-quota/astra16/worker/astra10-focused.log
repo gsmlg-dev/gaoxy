@@ -1,0 +1,67 @@
+==> gaoxy_http
+Compiling 2 files (.ex)
+Generated gaoxy_http app
+==> gaoxy_http3
+Compiling 1 file (.ex)
+Generated gaoxy_http3 app
+==> gaoxy_proxy
+Compiling 2 files (.ex)
+Generated gaoxy_proxy app
+==> gaoxy_server
+Compiling 2 files (.ex)
+Generated gaoxy_server app
+==> gaoxy_http
+
+23:54:12.038 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+23:54:12.060 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+..........
+
+  1) test a progressing output outlives callback and individual send deadlines (Gaoxy.HTTP.WebSocket.StreamTest)
+     apps/gaoxy_http/test/websocket_stream_test.exs:217
+     match (=) failed
+     code:  assert %{timer: nil, token: nil, send: nil} = :sys.get_state(gate).leases[lease]
+     left:  %{timer: nil, token: nil, send: nil}
+     right: %{
+              monitor: #Reference<0.180772083.749469697.71311>,
+              pid: #PID<0.559.0>,
+              send: nil,
+              timer: #Reference<0.180772083.749469697.71535>,
+              bytes: 212,
+              deadline: :infinity,
+              cleanup: nil,
+              token: #Reference<0.180772083.749469697.71534>,
+              accounting: %{
+                memberships: %{},
+                retained_bytes: 212,
+                temporary_bytes: 0,
+                transport_bytes: 179,
+                websocket_bytes: 33,
+                pending_processes: 0
+              },
+              drain_notify: true,
+              transport_bytes: 179,
+              websocket_bytes: 33,
+              request_active: true
+            }
+     stacktrace:
+       test/websocket_stream_test.exs:248: (test)
+
+............................
+Finished in 3.6 seconds (2.9s async, 0.6s sync)
+39 tests, 1 failure
+==> gaoxy_test
+Running ExUnit with seed: 0, max_cases: 1
+
+....
+23:54:18.335 [error] GenServer #PID<0.963.0> terminating
+** (stop) :draining
+Last message: :poll
+State: [data: [{~c"State", %{owner: #PID<0.954.0>, connection: %Quic.Runtime.ConnectionHandle{id: #PID<0.962.0>, generation: #Reference<0.180772083.749469697.77953>}, initialized: true}}]]
+............
+Finished in 4.0 seconds (0.00s async, 4.0s sync)
+16 tests, 0 failures
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

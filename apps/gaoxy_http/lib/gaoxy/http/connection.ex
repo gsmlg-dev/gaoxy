@@ -76,7 +76,7 @@ defmodule Gaoxy.HTTP.Connection do
   defp socket_information({:ok, value}), do: value
   defp socket_information(_), do: nil
 
-  defp start_detecting(socket, %{spec: spec, gate: gate} = context) do
+  defp start_detecting(socket, %{spec: spec} = context) do
     with :ok <-
            Hell.Socket.setopts(socket,
              recbuf: Gaoxy.HTTP.HTTP2.Limits.receive_buffer(),
@@ -84,11 +84,12 @@ defmodule Gaoxy.HTTP.Connection do
              send_timeout: spec.handler_options.http_limits.write_timeout,
              send_timeout_close: true
            ),
-         {:ok, lease} <- Admission.acquire(gate, 0, drain_notify: true) do
+         {:ok, lease, connection_member} <- acquire_connection(context) do
       {:continue,
        Map.merge(context, %{
          phase: :detecting,
          lease: lease,
+         connection_member: connection_member,
          buffer: "",
          first_input: nil,
          detector_deadline: nil,
@@ -101,8 +102,30 @@ defmodule Gaoxy.HTTP.Connection do
     end
   end
 
-  defp owner_lease(%{lease: lease}), do: {:ok, lease}
-  defp owner_lease(%{gate: gate}), do: Admission.acquire(gate, 0, drain_notify: true)
+  defp owner_lease(%{lease: lease} = context),
+    do: {:ok, lease, Map.get(context, :connection_member, lease)}
+
+  defp owner_lease(context), do: acquire_connection(context)
+
+  defp acquire_connection(context) do
+    member = make_ref()
+
+    case Admission.acquire(context.gate, 0,
+           kind: :connection,
+           memberships: %{connection: member},
+           drain_notify: true
+         ) do
+      {:ok, lease} -> {:ok, lease, member}
+      error -> error
+    end
+  end
+
+  defp update(state, bytes, deadline) do
+    deadline = if is_integer(deadline), do: deadline, else: Lifecycle.deadline(50)
+    Admission.update_until(state.gate, state.lease, bytes, make_ref(), deadline)
+  catch
+    :exit, _ -> {:error, :closed}
+  end
 
   defp start_http1(socket, %{spec: spec} = context) do
     limits = spec.handler_options.http_limits
@@ -114,10 +137,11 @@ defmodule Gaoxy.HTTP.Connection do
              send_timeout: limits.write_timeout,
              send_timeout_close: true
            ),
-         {:ok, lease} <- owner_lease(context) do
+         {:ok, lease, connection_member} <- owner_lease(context) do
       {:continue,
        Map.merge(context, %{
          lease: lease,
+         connection_member: connection_member,
          first_input: Map.get(context, :first_input),
          buffer: "",
          phase: :idle,
@@ -144,7 +168,7 @@ defmodule Gaoxy.HTTP.Connection do
     else
       case ProtocolDetector.classify(state.buffer, bytes) do
         {:more, carry} ->
-          case Admission.update(state.gate, state.lease, byte_size(carry)) do
+          case update(state, byte_size(carry), state.detector_deadline) do
             :ok -> {:continue, %{state | buffer: carry}}
             {:error, _} -> {:close, cancel_detection(state)}
           end
@@ -249,13 +273,13 @@ defmodule Gaoxy.HTTP.Connection do
           })
 
         {:error, _} ->
-          {:close, state}
+          overload(socket, %{state | deadline: deadline})
       end
     end
   end
 
   defp process(socket, state) do
-    case Admission.update(state.gate, state.lease, byte_size(state.buffer)) do
+    case update(state, byte_size(state.buffer), state.deadline) do
       :ok -> parse(socket, state)
       {:error, _} -> {:close, state}
     end
@@ -314,11 +338,39 @@ defmodule Gaoxy.HTTP.Connection do
                   instance: Map.get(state, :instance)
               }
 
+              exchange =
+                if is_pid(Map.get(state, :instance)),
+                  do: %{
+                    exchange
+                    | protocol_bytes:
+                        4 * state.limits.max_buffer_bytes +
+                          exchange.limits.max_write_chunk
+                  },
+                  else: exchange
+
+              exchange =
+                if exchange.protocol_bytes > 0 do
+                  Exchange.fund(
+                    exchange,
+                    Exchange.retained_bytes(exchange),
+                    exchange.protocol_bytes,
+                    %{connection: state.connection_member, request: state.lease}
+                  )
+                else
+                  exchange
+                end
+
+              accounting = request_accounting(state, exchange)
+
               state = %{state | buffer: ""}
 
-              case Admission.update(state.gate, state.lease, Exchange.retained_bytes(exchange)) do
-                :ok -> respond(socket, state, exchange)
-                _ -> {:close, state}
+              case update(state, accounting, state.deadline) do
+                :ok ->
+                  respond(socket, state, exchange)
+
+                _ ->
+                  _ = write_error(socket, state, 503)
+                  {:close, state}
               end
 
             {:error, reason} when reason in [:closed, :einval, :enotconn] ->
@@ -355,7 +407,10 @@ defmodule Gaoxy.HTTP.Connection do
 
     cond do
       match?({:websocket, _, _, _, _}, exchange.response) ->
-        websocket_result(WebSocket.start(exchange, state.spec.limits), state)
+        case release_request_credit(state, exchange) do
+          {:ok, exchange} -> websocket_result(WebSocket.start(exchange, state.spec.limits), state)
+          {:error, _} -> {:close, state}
+        end
 
       exchange.response == :unset ->
         _ = write_error(socket, state, 500)
@@ -365,18 +420,27 @@ defmodule Gaoxy.HTTP.Connection do
         {:close, state}
 
       true ->
-        :ok = Admission.retain(state.gate, state.lease, byte_size(exchange.buffer))
+        case Admission.end_request(
+               state.gate,
+               state.lease,
+               idle_accounting(state, byte_size(exchange.buffer)),
+               Lifecycle.deadline(50)
+             ) do
+          :ok ->
+            next = %{
+              state
+              | buffer: exchange.buffer,
+                phase: :idle,
+                deadline: nil,
+                header_timer: nil,
+                header_token: nil
+            }
 
-        next = %{
-          state
-          | buffer: exchange.buffer,
-            phase: :idle,
-            deadline: nil,
-            header_timer: nil,
-            header_token: nil
-        }
+            if next.buffer == "", do: {:continue, next}, else: process(socket, next)
 
-        if next.buffer == "", do: {:continue, next}, else: process(socket, next)
+          {:error, _} ->
+            {:close, state}
+        end
     end
   end
 
@@ -384,6 +448,52 @@ defmodule Gaoxy.HTTP.Connection do
     module.call(exchange, options)
   catch
     kind, reason -> {:error, {kind, reason}, exchange}
+  end
+
+  defp request_accounting(_state, exchange) do
+    bytes = Exchange.retained_bytes(exchange)
+
+    if exchange.protocol_bytes > 0 do
+      Exchange.accounting(exchange, bytes)
+    else
+      bytes
+    end
+  end
+
+  defp idle_accounting(state, bytes) do
+    if is_pid(Map.get(state, :instance)),
+      do: %{
+        retained_bytes: bytes,
+        temporary_bytes: 0,
+        transport_bytes: bytes,
+        websocket_bytes: 0,
+        memberships: %{connection: state.connection_member},
+        pending_processes: 0
+      },
+      else: bytes
+  end
+
+  defp release_request_credit(_state, %{protocol_bytes: 0} = exchange), do: {:ok, exchange}
+
+  defp release_request_credit(state, exchange) do
+    exchange = %{exchange | protocol_bytes: 0, funding: nil}
+    accounting = idle_accounting(state, Exchange.retained_bytes(exchange))
+
+    accounting = %{
+      accounting
+      | memberships: %{
+          connection: state.connection_member,
+          request: state.lease
+        }
+    }
+
+    case update(state, accounting, state.deadline) do
+      :ok ->
+        {:ok, Exchange.fund(exchange, accounting.retained_bytes, 0, accounting.memberships)}
+
+      error ->
+        error
+    end
   end
 
   defp flush_sent do
@@ -413,9 +523,25 @@ defmodule Gaoxy.HTTP.Connection do
     bytes = "HTTP/1.1 #{code} #{reason}\r\ncontent-length: 0\r\nconnection: close\r\n\r\n"
 
     Exchange.send_bytes(
-      %Exchange{socket: socket, gate: state.gate, lease: state.lease, buffer: state.buffer},
+      %Exchange{
+        socket: socket,
+        gate: state.gate,
+        lease: state.lease,
+        buffer: state.buffer,
+        limits: state.limits,
+        deadline: state.deadline || Lifecycle.deadline(50)
+      },
       bytes
     )
+  end
+
+  defp overload(socket, state) do
+    # A complete first request head permits a bounded HTTP overload response.
+    # Partial or ambiguous input closes without adding another framing promise.
+    if match?({:ok, _, _}, Parser.parse_head(state.buffer, state.limits)),
+      do: write_error(socket, state, 503)
+
+    {:close, state}
   end
 
   @impl true

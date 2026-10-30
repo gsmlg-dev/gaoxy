@@ -1,5 +1,40 @@
 # Gaoxy agent instructions
 
+## Current adaptive-budget extension — 2026-10-30
+
+The user extends the existing time quota by **24 hours**, moving the fixed
+deadline from 2026-10-30 10:09:44 to **2026-10-31 10:09:44 Asia/Shanghai**
+(UTC **2026-10-31 02:09:44**). The original start remains 2026-10-29 22:09:44
+Asia/Shanghai, for a total allowance of 36 hours. Resume the unfinished adaptive
+resource-budget goal and its already-authorized implementation, verification,
+independent review, commit, push and coordinated release within this window.
+Failure counts remain historical and impose no numerical stop during it.
+Preserve the earlier expiry/model-capacity evidence and cumulative repair
+counters. Already-escalated recovery stays on Astra, with at most one active
+Astra worker and serialized shared builds. All existing scope, ownership,
+assertion, dependency-blocker and publication guards remain effective. Stop
+new work at the extended deadline or once the full objective is verified and
+delivered. No branch/worktree or deployment permission is added.
+
+## Initial adaptive-budget time quota — 2026-10-29
+
+The user replaces failure-count limits for the active adaptive resource-budget
+goal with a twelve-hour execution window, from **2026-10-29 22:09:44** through
+**2026-10-30 10:09:44 Asia/Shanghai** (UTC 2026-10-29 14:09:44 through
+2026-10-30 02:09:44). Continue implementation, diagnosis, repair, verification,
+independent review and the already-authorized delivery within that window.
+Repeated failures do not exhaust this allowance. Existing Sol/Astra counts and
+failed evidence remain historical records; do not reset or erase them.
+
+This explicit additional repair authorization supersedes the numerical repair
+ceilings and pending-approval stops below for this goal during the window.
+Already-escalated CORE, H1/H2 and H3 recovery stays on Astra, with at most one
+active Astra worker and serialized shared builds. Preserve scope, assertions,
+ownership, independent review, dependency-blocker rules and publication guards.
+Stop new work when the window expires or the full objective is verified and
+delivered; report actual completion and remaining blockers. No branch/worktree,
+production deployment or operational-data permission is added.
+
 ## Current automated testing boundaries — 2026-10-22
 
 These boundaries supersede historical browser-verification requirements below.

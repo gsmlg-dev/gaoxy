@@ -111,6 +111,169 @@ defmodule Gaoxy.ResourceBudget.OwnerTest do
       pending_processes: 0
     }
 
+  test "typed native split preserves totals and exact receipts while fencing stale and foreign mutations" do
+    {_, server} = setup_budget()
+    {instance, client} = scope(server, %{}, %{max_connections: 1, max_active: 1})
+
+    guardian =
+      spawn(fn ->
+        receive do
+          :stop -> :ok
+        end
+      end)
+
+    on_exit(fn -> if Process.alive?(guardian), do: Process.exit(guardian, :kill) end)
+    input = %{accounting(100, %{connection: make_ref()}) | pending_processes: 1}
+
+    assert {:error, :invalid_membership} =
+             Budget.reserve(client, self(), :guardian, input, 1, deadline())
+
+    assert {:ok, pending} = Budget.reserve_native(client, self(), input, 2, deadline())
+    assert {:ok, ^pending} = Budget.reserve_native(client, self(), input, 2, 0)
+
+    assert %{
+             usage: 100,
+             active_connections: 1,
+             active_requests: 0,
+             pending_processes: 1,
+             leases: 1
+           } = snapshot(server, instance)
+
+    expired = System.monotonic_time(:millisecond) - 1
+
+    assert {:error, :deadline_exceeded} =
+             Budget.split_native(
+               client,
+               pending.token,
+               pending.revision,
+               guardian,
+               self(),
+               3,
+               expired
+             )
+
+    assert {:ok, split} =
+             Budget.split_native(
+               client,
+               pending.token,
+               pending.revision,
+               guardian,
+               self(),
+               4,
+               deadline()
+             )
+
+    assert {:ok, ^split} =
+             Budget.split_native(
+               client,
+               pending.token,
+               pending.revision,
+               guardian,
+               self(),
+               4,
+               expired
+             )
+
+    assert split.native.token == pending.token
+    assert split.callback.token != pending.token
+
+    assert %{
+             usage: 100,
+             active_connections: 1,
+             active_requests: 0,
+             pending_processes: 0,
+             leases: 2
+           } = snapshot(server, instance)
+
+    assert {:error, :stale_revision} =
+             Budget.split_native(
+               client,
+               pending.token,
+               pending.revision,
+               guardian,
+               self(),
+               5,
+               deadline()
+             )
+
+    assert {:error, :invalid_operation} =
+             Budget.split_native(
+               client,
+               split.native.token,
+               split.native.revision,
+               guardian,
+               self(),
+               6,
+               deadline()
+             )
+
+    assert {:error, :unauthorized_owner} =
+             Task.async(fn ->
+               Budget.reserve_native(client, self(), input, 7, deadline())
+             end)
+             |> Task.await()
+
+    assert {:error, :active_limit} = reserve(client, 0, 8)
+    assert %{usage: 100, leases: 2, active_connections: 1} = snapshot(server, instance)
+  end
+
+  test "Service death during native initialization retains the pinned cleanup ownership" do
+    {_, server} = setup_budget()
+
+    service_owner =
+      spawn(fn ->
+        receive do
+          :stop -> :ok
+        end
+      end)
+
+    guardian =
+      spawn(fn ->
+        receive do
+          :stop -> :ok
+        end
+      end)
+
+    on_exit(fn ->
+      for pid <- [service_owner, guardian], Process.alive?(pid), do: Process.exit(pid, :kill)
+    end)
+
+    assert {:ok, instance} = Budget.register_instance(server, self(), %{}, deadline())
+
+    assert {:ok, service} =
+             Budget.register_service(
+               server,
+               instance,
+               %{id: :native_init, owner: service_owner, generation: make_ref()},
+               %{},
+               deadline()
+             )
+
+    assert {:ok, client} = Budget.register_gate(server, service, self(), deadline())
+    input = %{accounting(100, %{connection: make_ref()}) | pending_processes: 1}
+    assert {:ok, receipt} = Budget.reserve_native(client, service_owner, input, 1, deadline())
+    monitor = Process.monitor(service_owner)
+    Process.exit(service_owner, :kill)
+    assert_receive {:DOWN, ^monitor, :process, ^service_owner, :killed}, 1_000
+
+    assert {:error, :orphaned} =
+             Budget.split_native(
+               client,
+               receipt.token,
+               receipt.revision,
+               guardian,
+               self(),
+               2,
+               deadline()
+             )
+
+    assert %{usage: 100, active_connections: 1, pending_processes: 1, leases: 1} =
+             snapshot(server, instance)
+
+    assert {:ok, %{allocations: [%{kind: :guardian, owner: ^service_owner}]}} =
+             Budget.allocations(client)
+  end
+
   test "exact boundaries admit warning and reject projected hard overflow without changing state" do
     {_, server} = setup_budget()
     {instance, client} = scope(server, %{soft_limit: 100, hard_limit: 200})
@@ -420,6 +583,257 @@ defmodule Gaoxy.ResourceBudget.OwnerTest do
     assert {:ok, _} = reserve(c, peak, 1)
     assert :ok = api(:refresh, [server])
     assert {:error, :system_memory_pressure} = reserve(c, 11 * @mib, 2)
+  end
+
+  test "repartition and replenishment preserve safety debit across sampled retained baselines" do
+    {:ok, available} = Agent.start_link(fn -> 1000 * @mib end)
+    on_exit(fn -> if Process.alive?(available), do: Agent.stop(available) end)
+
+    probe = fn _ ->
+      {:ok,
+       %{
+         available_bytes: Agent.get(available, & &1),
+         cgroup_headroom_bytes: nil,
+         sampled_at: System.monotonic_time(:millisecond),
+         high_pressure?: false
+       }}
+    end
+
+    {_, server} = setup_budget(safety_probe: probe)
+    {instance, client} = scope(server)
+
+    split = fn retained ->
+      %{
+        retained_bytes: retained * @mib,
+        temporary_bytes: (150 - retained) * @mib,
+        transport_bytes: 150 * @mib
+      }
+    end
+
+    assert {:ok, original} = reserve(client, split.(100), 1)
+    Agent.update(available, fn _ -> 100 * @mib end)
+    assert :ok = api(:refresh, [server])
+    assert {:error, :system_memory_pressure} = reserve(client, 1, 2)
+
+    assert {:ok, full} =
+             api(:repartition, [
+               client,
+               original.token,
+               original.revision,
+               split.(150),
+               3,
+               deadline()
+             ])
+
+    assert {:error, :system_memory_pressure} = reserve(client, 1, 4)
+
+    assert {:ok, rearmed} =
+             api(:repartition, [client, full.token, full.revision, split.(100), 5, deadline()])
+
+    assert {:error, :system_memory_pressure} = reserve(client, 1, 6)
+
+    assert {:ok, full} =
+             api(:repartition, [
+               client,
+               rearmed.token,
+               rearmed.revision,
+               split.(150),
+               7,
+               deadline()
+             ])
+
+    assert :ok = api(:refresh, [server])
+    assert {:ok, other} = reserve(client, 50 * @mib, 8)
+    assert {:error, :system_memory_pressure} = reserve(client, 1, 9)
+
+    assert {:ok, rearmed} =
+             api(:repartition, [client, full.token, full.revision, split.(0), 10, deadline()])
+
+    assert %{retained_bytes: retained, temporary_bytes: temporary} = snapshot(server, instance)
+    assert {retained, temporary} == {50 * @mib, 150 * @mib}
+    assert {:error, :system_memory_pressure} = reserve(client, 1, 11)
+
+    assert {:ok, full} =
+             api(:repartition, [
+               client,
+               rearmed.token,
+               rearmed.revision,
+               split.(150),
+               12,
+               deadline()
+             ])
+
+    assert {:error, :system_memory_pressure} = reserve(client, 1, 13)
+    assert {:ok, _} = release(client, other, 14)
+    assert {:ok, _} = release(client, full, 15)
+    assert %{usage: 0} = snapshot(server, instance)
+  end
+
+  test "prepaid repartition survives pressured refresh hard-limit shrink and drain" do
+    {:ok, control} = Agent.start_link(fn -> false end)
+    on_exit(fn -> if Process.alive?(control), do: Agent.stop(control) end)
+
+    {_, server} =
+      setup_budget(
+        capacity_probe: fn ->
+          %{
+            capacity: if(Agent.get(control, & &1), do: 50 * @mib, else: 1000 * @mib),
+            fallback?: false,
+            source: :controlled
+          }
+        end,
+        safety_probe: fn _ ->
+          if Agent.get(control, & &1),
+            do: {:error, :safety_sample_unavailable},
+            else:
+              {:ok,
+               %{
+                 available_bytes: 1000 * @mib,
+                 cgroup_headroom_bytes: nil,
+                 sampled_at: System.monotonic_time(:millisecond),
+                 high_pressure?: false
+               }}
+        end
+      )
+
+    {instance, client} = scope(server)
+
+    split = fn retained ->
+      %{
+        retained_bytes: retained * @mib,
+        temporary_bytes: (100 - retained) * @mib,
+        transport_bytes: 100 * @mib
+      }
+    end
+
+    assert {:ok, original} = reserve(client, split.(0), 1)
+    Agent.update(control, fn _ -> true end)
+    assert :ok = api(:refresh, [server])
+    assert %{state: :over_limit} = snapshot(server, instance)
+
+    assert {:ok, materialized} =
+             api(:repartition, [
+               client,
+               original.token,
+               original.revision,
+               split.(100),
+               2,
+               deadline()
+             ])
+
+    assert {:error, :memory_hard_limit} = reserve(client, 0, 3)
+    assert {:ok, _} = api(:set_mode, [client, :draining, 4, deadline()])
+
+    assert {:ok, rearmed} =
+             api(:repartition, [
+               client,
+               materialized.token,
+               materialized.revision,
+               split.(0),
+               5,
+               deadline()
+             ])
+
+    assert {:error, :draining} = reserve(client, 0, 6)
+    assert {:ok, _} = release(client, rearmed, 7)
+    assert %{usage: 0} = snapshot(server, instance)
+  end
+
+  test "canonical repartition retains revision deadline and quota fences" do
+    {_, server} = setup_budget()
+    {instance, client} = scope(server)
+    original = %{retained_bytes: 20, temporary_bytes: 80, transport_bytes: 100}
+    converted = %{original | retained_bytes: 80, temporary_bytes: 20}
+    assert {:ok, first} = reserve(client, original, 1)
+
+    assert {:error, :deadline_exceeded} =
+             api(:repartition, [
+               client,
+               first.token,
+               first.revision,
+               converted,
+               2,
+               deadline() - 10_000
+             ])
+
+    assert {:error, :credit_exceeded} =
+             api(:repartition, [
+               client,
+               first.token,
+               first.revision,
+               %{converted | retained_bytes: 81, transport_bytes: 101},
+               3,
+               deadline()
+             ])
+
+    assert {:error, :invalid_repartition} =
+             api(:repartition, [
+               client,
+               first.token,
+               first.revision,
+               Map.put(converted, :pending_processes, 1),
+               4,
+               deadline()
+             ])
+
+    assert {:error, :invalid_repartition} =
+             api(:repartition, [
+               client,
+               first.token,
+               first.revision,
+               Map.put(converted, :memberships, %{request: make_ref()}),
+               5,
+               deadline()
+             ])
+
+    assert {:ok, second} =
+             api(:repartition, [client, first.token, first.revision, converted, 6, deadline()])
+
+    assert {:ok, ^second} =
+             api(:repartition, [
+               client,
+               first.token,
+               first.revision,
+               converted,
+               6,
+               deadline() - 10_000
+             ])
+
+    assert {:error, :operation_conflict} =
+             api(:replace, [client, first.token, first.revision, converted, 6, deadline()])
+
+    assert {:error, :stale_revision} =
+             api(:repartition, [client, first.token, first.revision, original, 7, deadline()])
+
+    assert %{usage: 100, retained_bytes: 80, temporary_bytes: 20} = snapshot(server, instance)
+  end
+
+  test "repartition never lends an orphaned owner's existing credit" do
+    {_, server} = setup_budget()
+    {instance, client} = scope(server)
+
+    worker = spawn(fn -> receive do: (:stop -> :ok) end)
+    on_exit(fn -> if Process.alive?(worker), do: Process.exit(worker, :kill) end)
+    monitor = Process.monitor(worker)
+    accounting = %{retained_bytes: 20, temporary_bytes: 80, transport_bytes: 100}
+
+    assert {:ok, first} =
+             api(:reserve, [client, worker, :writer, accounting, 1, deadline()])
+
+    Process.exit(worker, :kill)
+    assert_receive {:DOWN, ^monitor, :process, ^worker, :killed}
+
+    assert {:error, :orphaned} =
+             api(:repartition, [
+               client,
+               first.token,
+               first.revision,
+               %{accounting | retained_bytes: 80, temporary_bytes: 20},
+               2,
+               deadline()
+             ])
+
+    assert %{usage: 100, retained_bytes: 20, temporary_bytes: 80} = snapshot(server, instance)
   end
 
   test "capacity shrink preserves admitted work and release permits automatic recovery" do

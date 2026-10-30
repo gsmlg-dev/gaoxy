@@ -1,0 +1,52 @@
+==> gaoxy
+
+02:38:18.625 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+02:38:18.664 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 750192, max_cases: 4
+
+
+02:38:19.714 [error] GenServer #PID<0.370.0> terminating
+** (stop) :draining
+Process Label: {:hell, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 33944}}}
+Last message: {:ssl, {:sslsocket, #Port<0.21>, #PID<0.366.0>, #PID<0.365.0>, :gen_tcp, :tls_gen_connection, #Reference<0.3819371990.238157826.144179>, [option_tracker: #PID<0.357.0>, session_tickets_tracker: :disabled, session_id_tracker: :not_relevant]}, "admitted-after-drain"}
+State: {%Hell.Socket{socket: {:sslsocket, #Port<0.21>, #PID<0.366.0>, #PID<0.365.0>, :gen_tcp, :tls_gen_connection, #Reference<0.3819371990.238157826.144179>, [option_tracker: #PID<0.357.0>, session_tickets_tracker: :disabled, session_id_tracker: :not_relevant]}, transport_module: Hell.Transports.SSL, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %Hell.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3819371990.238026754.144302>, start_time: -576460749809066681, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 33944, telemetry_span_context: #Reference<0.3819371990.238026754.144302>, parent_telemetry_span_context: #Reference<0.3819371990.238026754.144121>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3819371990.238026754.144302>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.3819371990.238026754.143942>, service: "echo", generation: #Reference<0.3819371990.238026754.143952>}, instance: #PID<0.349.0>, service: #PID<0.352.0>, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudget.StreamNetworkTest.Echo, tls: %{certfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/apps/gaoxy/tmp/Gaoxy.ResourceBudget.StreamNetworkTest/test-admitted-tls-callbacks-complete-after-the-listener-drain-barrier-61635667/cert.pem", keyfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/apps/gaoxy/tmp/Gaoxy.ResourceBudget.StreamNetworkTest/test-admitted-tls-callbacks-complete-after-the-listener-drain-barrier-61635667/key.pem", provider: :otp}, transport: :tls, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 1048576, max_connections: 16384, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, idle_timeout: 30000, max_output: 65507, max_requests: 65536, max_state: 65536, max_streams: 65536}, budget_policy: %{max_bytes: nil, max_connections: 16384, max_active: nil, provenance: %{max_bytes: :omitted, max_connections: :omitted, max_active: :omitted, normalized_limits: %{max_bytes: 1048576, max_connections: 16384, max_active: 64, max_requests: 65536, max_streams: 65536}, max_requests: :omitted, max_streams: :omitted}, max_requests: 65536, max_streams: 65536}, handler_mode: :stream, quic: %{}, handler_options: #PID<0.347.0>, hell_options: [], abyss_options: []}, app: #PID<0.347.0>, gate: #PID<0.353.0>, lease: #Reference<0.3819371990.238026754.144372>, startup_token: #Reference<0.3819371990.238026754.143973>}}
+
+
+  1) test admitted tls callbacks complete after the listener drain barrier (Gaoxy.ResourceBudget.StreamNetworkTest)
+     apps/gaoxy/test/resource_budget_stream_network_test.exs:21
+     match (=) failed
+     The following variables were pinned:
+       bytes = "admitted-after-drain"
+     code:  assert {:ok, ^bytes} = recv(transport, socket, byte_size(bytes))
+     left:  {:ok, ^bytes}
+     right: {:error, :closed}
+     stacktrace:
+       test/resource_budget_stream_network_test.exs:65: Gaoxy.ResourceBudget.StreamNetworkTest.exchange/4
+       test/resource_budget_stream_network_test.exs:50: (test)
+
+
+02:38:19.765 [error] GenServer #PID<0.395.0> terminating
+** (stop) :draining
+Process Label: {:hell, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 44224}}}
+Last message: {:tcp, #Port<0.25>, "admitted-after-drain"}
+State: {%Hell.Socket{socket: #Port<0.25>, transport_module: Hell.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %Hell.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3819371990.238026754.144964>, start_time: -576460749644077687, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 44224, telemetry_span_context: #Reference<0.3819371990.238026754.144964>, parent_telemetry_span_context: #Reference<0.3819371990.238026754.144945>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3819371990.238026754.144964>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.3819371990.238026754.144892>, service: "echo", generation: #Reference<0.3819371990.238026754.144898>}, instance: #PID<0.382.0>, service: #PID<0.385.0>, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudget.StreamNetworkTest.Echo, tls: %{}, transport: :tcp, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 1048576, max_connections: 16384, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, idle_timeout: 30000, max_output: 65507, max_requests: 65536, max_state: 65536, max_streams: 65536}, budget_policy: %{max_bytes: nil, max_connections: 16384, max_active: nil, provenance: %{max_bytes: :omitted, max_connections: :omitted, max_active: :omitted, normalized_limits: %{max_bytes: 1048576, max_connections: 16384, max_active: 64, max_requests: 65536, max_streams: 65536}, max_requests: :omitted, max_streams: :omitted}, max_requests: 65536, max_streams: 65536}, handler_mode: :stream, quic: %{}, handler_options: #PID<0.380.0>, hell_options: [], abyss_options: []}, app: #PID<0.380.0>, gate: #PID<0.386.0>, lease: #Reference<0.3819371990.238026754.144967>, startup_token: #Reference<0.3819371990.238026754.144911>}}
+
+
+  2) test admitted tcp callbacks complete after the listener drain barrier (Gaoxy.ResourceBudget.StreamNetworkTest)
+     apps/gaoxy/test/resource_budget_stream_network_test.exs:21
+     match (=) failed
+     The following variables were pinned:
+       bytes = "admitted-after-drain"
+     code:  assert {:ok, ^bytes} = recv(transport, socket, byte_size(bytes))
+     left:  {:ok, ^bytes}
+     right: {:error, :closed}
+     stacktrace:
+       test/resource_budget_stream_network_test.exs:65: Gaoxy.ResourceBudget.StreamNetworkTest.exchange/4
+       test/resource_budget_stream_network_test.exs:50: (test)
+
+
+Finished in 0.9 seconds (0.00s async, 0.9s sync)
+2 tests, 2 failures
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed
+[os_mon] memory supervisor port (memsup): Erlang has closed

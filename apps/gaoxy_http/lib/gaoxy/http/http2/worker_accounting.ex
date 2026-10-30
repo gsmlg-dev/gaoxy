@@ -5,7 +5,9 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccounting do
   @tag :native_http2_worker_v1
   @error {:error, :worker_capacity}
   @reasons ~w(byte_limit active_limit deadline_exceeded stale_generation invalid_spawn_request
-    worker_capacity cancelled paused draining failed stopped closed timeout noproc normal shutdown killed)a
+    worker_capacity cancelled paused draining failed stopped closed timeout noproc normal shutdown killed
+    connection_limit request_limit stream_limit lease_capacity memory_hard_limit system_memory_pressure
+    safety_sample_unavailable process_capacity budget_timeout budget_unavailable budget_pending)a
 
   # Numeric-only preflight. No request/MFA/Exchange/lease/report is constructed.
   # D is the original signed absolute deadline, never a positive-duration proxy.
@@ -146,10 +148,52 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccounting do
     mfa = t([e(Stream), e(:run), args])
     spawn_args = l([g, o, ref, d, mfa])
     spawn_mfa = t([e(WorkerBootstrap), e(:run), spawn_args])
-    payload = t([e(:spawn_request), parent, token, e(w), d, mfa])
+
+    accounting =
+      m(
+        retained_bytes: e(max(0, w - p)),
+        temporary_bytes: e(p),
+        transport_bytes: e(w),
+        websocket_bytes: e(0),
+        memberships: m([]),
+        pending_processes: e(0)
+      )
+
+    memberships = m(h2_stream: t([parent, id]), request: token)
+    metadata = l([t([e(:kind), e(:h2_stream)]), t([e(:memberships), memberships])])
+
+    lease_accounting =
+      m(
+        retained_bytes: e(max(0, w - p)),
+        temporary_bytes: e(p),
+        transport_bytes: e(w),
+        websocket_bytes: e(0),
+        memberships: memberships,
+        pending_processes: e(1)
+      )
+
+    # Future canonical bookkeeping uses the supported signed-64 ETF width. This
+    # is a runtime constructor envelope, not an arbitrary-precision lifetime proof.
+    receipt =
+      m(
+        token: ref,
+        revision: e(9_223_372_036_854_775_807),
+        operation: e(9_223_372_036_854_775_807),
+        status: e(:committed)
+      )
+
+    payload =
+      t([e(:spawn_request), parent, token, accounting, d, mfa, metadata, e(:phase_receipt)])
+
     from = t([o, alias_tag(ref)])
     success = t([e(:ok), pid, ref])
-    finite = t([e(:error), reason_cap()])
+
+    finite =
+      max(
+        t([e(:error), reason_cap()]),
+        t([e(:error), t([e(:not_reserved), token, e(:deadline_exceeded)])])
+      )
+
     reply = max(success, finite)
 
     public_result =
@@ -175,7 +219,16 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccounting do
         drain_notify: e(true),
         request_active: e(true),
         cleanup: e(nil),
-        deadline: d
+        deadline: d,
+        accounting: lease_accounting,
+        kind: e(:h2_stream),
+        budget_owner: max(g, pid),
+        down_seen: e(false),
+        exit_seen: e(false),
+        spawn_token: token,
+        stream_parent: t([parent, o]),
+        stream_resources_terminal: e(false),
+        budget_receipt: receipt
       )
 
     correlation =
@@ -223,6 +276,7 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccounting do
         route_bytes: e(0),
         resource_pins: e([]),
         protocol_bytes: e(n),
+        funding: m(total: e(w), credit: e(p), memberships: memberships),
         adapter_body_bytes: e(0),
         poll_buffer_bytes: e(0),
         transport: e(Transport),
@@ -352,7 +406,12 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccounting do
       finite,
       down_child,
       d,
-      timeout
+      timeout,
+      accounting,
+      metadata,
+      memberships,
+      lease_accounting,
+      receipt
     }
 
     # Both complete numeric tuples plus the raw cap summary's own integer width
@@ -474,6 +533,11 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccounting do
     {:child_monitor_down, :startup, 2, :connection_and_gate, :worker_down_and_exit},
     {:terminal_deadline, :startup, 3, :connection_and_child, :worker_down_and_exit},
     {:terminal_timeout, :startup, 3, :connection_and_child, :worker_down_and_exit},
+    {:spawn_accounting, :startup, 1, :connection_and_gate, :activation_or_worker_down_and_exit},
+    {:spawn_metadata, :startup, 1, :connection_and_gate, :activation_or_worker_down_and_exit},
+    {:stream_memberships, :startup, 1, :connection_and_gate, :worker_down_and_exit},
+    {:lease_accounting, :startup, 1, :gate, :worker_down_and_exit},
+    {:canonical_receipt, :startup, 1, :gate, :worker_down_and_exit},
     {:numeric_cap_summary, :startup, 2, :connection, :calculation_return}
   ]
 

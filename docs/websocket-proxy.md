@@ -61,10 +61,13 @@ Before connecting, a session reserves 4 MiB plus eight maximum message windows a
 twice its opening field footprint against the service byte limit. The conservative
 fixed allowance covers the pinned 0.19.1 client's bounded raw receive queue, opening
 headers and copies; update this audit when changing the client. Native retained
-bytes are charged separately. A service using the core default 1 MiB budget rejects
-these sessions: choose an explicit budget for the desired concurrency. Reservations
-are capacities, not measurements of actual memory; the ledger excludes kernel/OTP
-socket buffers, process metadata and arbitrary trusted application allocations.
+bytes are charged separately. Omitted service caps use adaptive shared memory
+admission. An explicit `max_bytes` remains a hard transport/cleanup cap and must
+cover the desired concurrency; explicit `max_active` still caps ordinary leases.
+See the [resource budget guide](resource-budget.md) for shared policy and quotas.
+Reservations are capacities, not measurements of actual memory; the ledger
+excludes kernel/OTP socket buffers, process metadata and arbitrary trusted
+application allocations.
 
 A temporary guardian under the proxy application's session supervisor monitors the
 connection, admission gate, service and instance. Admission attaches it to the

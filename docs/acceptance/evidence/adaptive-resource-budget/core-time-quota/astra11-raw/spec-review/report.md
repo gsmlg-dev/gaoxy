@@ -1,0 +1,51 @@
+# ARB-CORE-RELEASE-SPEC
+
+DONE for independent read-only contract review. **The protected standalone raw TCP/TLS post-barrier replies are required existing behavior.** They are not a new test demand or permission to bypass adaptive admission guards. This report approves no candidate repair and supplies no new runtime diagnosis.
+
+Direct Sol review, Sol0/Astra0, no escalation. Repo `/home/gao/Workspace/gsmlg-opt/gaoxy`, `main` at `bc8a5ef5199293ada3b432c2e2741070d3b2d115` plus preserved0.14.0 integration. Original baseline `a6a35438c0a153cd53c87c6a55c19a70a11fb75a`. Existing CORE remains Sol2/Astra6 with Astra7 active. `/root/budget_core_release_recovery` retains all CORE source/test/manifest and shared build ownership. Only this report and sibling receipt were written; no tests, Mix/build/runtime/listeners/network, Git mutation, source/test/docs/requirements edits or dependency work ran. All reviewer commands are terminal. Deadline remains2026-10-30T02:09:44Z.
+
+## Contract and baseline evidence
+
+`git show` established byte equality between the original baseline and current `scripts/release-smoke.py`, `docs/adr/004-lifecycle.md` and `apps/gaoxy/lib/gaoxy/stream_handler.ex`. Their SHA256 identities are in receipt.json.
+
+- **ADR004:5-17** makes remove, stop, embedding-supervisor shutdown and standalone prep_stop use the same drain; TCP/TLS new admission stops while already-admitted connections retain I/O. Stream lease lifetime ends with its connection, not its last response. Callback loops keep running; stale messages cannot reopen admission.
+- **ADR004:19-23,47-67** retains one absolute total shutdown allowance, bounded cleanup/outer supervision and truthful failure reporting. Cooperative continuation is finite; it is not immortal connection service.
+- **StreamHandler:2-9 and core README:28-35,59-63** define an isolated ordered-byte-stream handler with continue/send/close/error callbacks and an ordinary echo example. Raw streams have no HTTP request boundary at which an earlier response implicitly retires the admitted connection.
+- **Protected smoke:80-101** obtains exact initial TCP and verified-TLS echoes, proving those handlers were admitted. It then sends SIGTERM, observes actual refusal at both listener addresses, and demands exact post-barrier TCP and TLS echoes on those same connections. The VM must remain alive until the clients close. Lines102-111 then require exit0, UDP endpoint reuse and no listener leak.
+- **Historical hardening acceptance:56,75-85,113** explicitly records this admitted TCP/verified-TLS behavior after both listener-refusal barriers. Those historical dispositions are preserved, not rerun or strengthened here.
+- **Current adaptive design:9-36,227-258 and public resource-budget guide:18-27,50-89** preserve already-paid completion/read/write obligations, atomic projected admission, explicit undoubled hard caps, finite independent safety bounds and real resource terminal proofs.
+
+The normative result is a retained finite connection-I/O contract. A bounded repair must arrange truthful funding for permitted in-flight raw-stream delivery/callback/output work, rather than make the smoke stop sending after SIGTERM or let an existing connection create unlimited unpaid work.
+
+## Actual failed evidence versus hypotheses
+
+`qualification/versioned014-release-core.json` is terminal **FAIL, exit1**,681 stable source inputs, no source mutation; its raw log hash matches. It fails at smoke line99: TCP recv returns EOF before the exact `b'admitted-tcp-during-shutdown'` echo. The TLS post-barrier echo, live-VM assertion and later shutdown/rebind assertions are **NOT REACHED** in that run; their success or failure must not be invented.
+
+The log also contains a `:draining` Hell connection process whose last event is `{:continue, :handle_connection}`. The admission-barrier helper creates fresh TCP probe connections until refusal. Therefore that log entry can describe a new probe rejected during drain. It does not identify the previously admitted socket or prove why it closed. Mapping its cause to the admitted connection requires the owner's runtime evidence, which this review does not reproduce or infer.
+
+The protocol-pinned `pinned014-all` receipt remains PASS868/0, zero exclusions/skips, with hpack4.2 peer provenance retained by the parent. Earlier `versioned014-all`868/0 with hpack4.1 remains supplemental. Both receipt/log hashes were independently checked; neither app-suite result satisfies the separate failing release smoke. This review changes none of those files or dispositions.
+
+## Repair acceptance invariants
+
+| Invariant | Required retained behavior |
+| --- | --- |
+| Admission barrier | SIGTERM/stop closes new connections and new canonical allocations, including zero-byte acquisition. Never reopen the gate or turn global `:draining` into an under-hard-limit admission mode. |
+| Paid completion versus growth | Adaptive continuation may materialize/repartition already-committed finite credit with unchanged funded total and valid category ceilings. Additional total, a new independent obligation or decoder peak requires normal checks and remains fenced during drain. A scalar reduction cannot invent free temporary credit or hide outstanding receive/copy obligations. |
+| Honest delivery envelope | Account full backing/retained input and simultaneous callback/output obligations; respect actual supported transport delivery/copy behavior. `max_packet` chunks an ordered stream callback, not a license to truncate an oversized OS delivery or assume delivery is at most one packet. Output remains finite before send. |
+| Exact administrator/safety bounds | Explicit `max_bytes`/`max_active`, connection quotas, `max_state`, `max_output`, callback/watchdog bounds and finite supported transport staging stay effective, undoubled and accurately classified. Do not fund from the remaining explicit cap as though that cap were prepaid memory. Preserve independent OOM/process guards for genuinely new growth. |
+| Deadline preservation | Connection/callback/send/request deadlines and one original service/instance drain deadline remain authoritative. No per-chunk, callback retry, credit refresh or teardown stage restarts its lifetime; forced expiry must still terminate and confirm owned resources. |
+| Ownership and terminal proof | The connection stays charged/countable through true close; response completion can release only resources actually ended. No early refund based on a queued close, callback return, local send alone, unknown mutation, or missing terminal proof. Gate/Service/guardian lifetimes and exactly-once reconciliation remain intact. |
+| Canonical identity | Existing generation/revision/operation/deadline/authentication/idempotent-retry fencing applies to any new internal operation. A late or uncertain result cannot authorize unconfirmed allocation or a fresh retry mutation. |
+| Legacy versus adaptive | Preserve local budget-less scalar-gate compatibility separately from canonical adaptive funding. Existing `native_stream_test:227-257` allows an already-admitted legacy callback10->20 within its100-byte cap during drain, yet preserves its original100ms request watchdog despite a later2s callback request. That legacy behavior is not authority for canonical adaptive unpaid growth. |
+| Isolation | Preserve UDP behavior, native-handler contracts and reviewed H1/H2/H3 ownership/protocol semantics. No dependency/private-API workaround, global exemption, assertion weakening or broader specialist test expansion is justified. |
+| Protected final smoke | Rebuild the repaired source and rerun the byte-identical smoke; require both original post-barrier TCP/TLS replies, live VM until close, exit0, rebind and no leaked listeners. A focused regression is complementary evidence, not a replacement. |
+
+## Suitable deterministic regression placement
+
+Use a narrowly scoped new ordinary raw-stream resource-budget test file, for example `apps/gaoxy/test/resource_budget_stream_network_test.exs`, for real TCP and verified TLS. Keep the existing broad unscheduled `native_stream_test`, `shutdown_hardening_test` and `lifecycle_acceptance_test` dispositions unless a specifically reviewed file is deliberately promoted; do not pull their unrelated historical/specialist slices into this repair.
+
+Network regression sequence: create one ordinary adaptive StreamHandler connection; exact initial echo plus an explicit handler/live-ownership synchronization proves admission; trigger stop/remove asynchronously; observe the authenticated drain and actual listener-refusal barrier while preserving the original deadline; require exact repeated bounded post-barrier echoes on the existing socket; assert no new connection/lease slips through, existing connection accounting remains positive/owned and no admission rejection is incurred by valid paid completion; close and require actual terminal zero usage/connections/cleanup and confirmed service/runtime teardown. Keep TCP/TLS distinct and verified TLS/ALPN assertions; no arbitrary sleeps as proof of admission/drain. A finite forced-deadline control must preserve forced close/cleanup when the connection is held beyond the original allowance.
+
+Classify that new real-wire file **protocol**, with exact positive counts in `scripts/check-repairs.py` and no simultaneous retained-inventory entry. A deterministic controlled Admission/ledger test for paid repartition versus added total, explicit-cap preservation, foreign/stale identity and drain refusal belongs in the existing **component** resource-budget Admission/OWNER files. Pure arithmetic helper cases alone can be unit; no unit may open sockets/listeners or start the complete runtime. If transport calls are controlled doubles and no complete runtime is started, review actual dependencies before classifying a smaller component test. Parent/Astra owns final test selection and manifest edits.
+
+The original current smoke failure is the agreed red acceptance evidence. No new test/source/repair was produced here. Candidate diagnosis, repair, exact positive regression counts, final independent code review and fresh combined/source-built qualification remain parent/Astra-owned. No new permission or product decision is required by this fixed-contract review. Reviewer writes stop at handoff.

@@ -188,6 +188,11 @@ defmodule Gaoxy.HTTP.WebSocket.StreamTest do
           }
         }
 
+        exchange =
+          if Keyword.get(session, :funded, false),
+            do: Exchange.fund(%{exchange | protocol_bytes: 1_024}, 4_096, 1_024, %{}),
+            else: exchange
+
         handler = Keyword.get(session, :handler, Handler)
         {:ok, exchange} = WebSocket.prepare(exchange, {handler, owner, options})
         send(owner, {:result, self(), apply(Stream, :run, [exchange, limits])})
@@ -195,6 +200,21 @@ defmodule Gaoxy.HTTP.WebSocket.StreamTest do
 
     on_exit(fn -> if Process.alive?(worker), do: Process.exit(worker, :kill) end)
     {worker, token, gate}
+  end
+
+  test "funded close reuses completion bytes during drain without new admission" do
+    {worker, token, gate} = start_session([], Transport, :h2, funded: true)
+    assert_receive {:opened, ^worker, [], _, exchange}
+    assert_receive {:initialized, ^worker}
+    assert_receive {:demand, ^worker, 64, ref, _}
+    before = Admission.status(gate)
+    assert :ok = Admission.drain(gate, Lifecycle.deadline(2_000))
+    assert_receive {:written, ^worker, <<0x88, 2, 1001::16>>, _}
+    send(worker, {:gaoxy_websocket_data, token, ref, masked(8, <<1001::16>>), false})
+    assert_receive {:terminated, :shutdown}
+    assert_receive {:result, ^worker, {:ok, _}}
+    assert Admission.status(gate).rejected == before.rejected
+    refute is_nil(exchange.funding)
   end
 
   test "default upgraded ownership has no inactivity or lifetime watchdog" do

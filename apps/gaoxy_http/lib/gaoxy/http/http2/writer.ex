@@ -8,7 +8,7 @@ defmodule Gaoxy.HTTP.HTTP2.Writer do
     # Monitor it so the actual send result reaches admission before we stop.
     monitor = Process.monitor(owner)
 
-    with {:ok, lease} <- Admission.acquire(gate, bytes, drain_notify: true) do
+    with {:ok, lease} <- Admission.acquire(gate, bytes, kind: :writer, drain_notify: true) do
       send(owner, {:h2_writer_ready, self()})
       loop(owner, monitor, socket, gate, lease, timeout)
     else
@@ -24,7 +24,15 @@ defmodule Gaoxy.HTTP.HTTP2.Writer do
         result =
           with true <- Process.alive?(owner) || {:error, :closed},
                true <- remaining > 0 || :expired,
-               {:ok, operation} <- Admission.start_send(gate, lease, IO.iodata_length(bytes)) do
+               operation = make_ref(),
+               :ok <-
+                 Admission.start_send_until(
+                   gate,
+                   lease,
+                   IO.iodata_length(bytes),
+                   operation,
+                   deadline
+                 ) do
             result =
               with :ok <-
                      Socket.setopts(socket,
@@ -45,7 +53,7 @@ defmodule Gaoxy.HTTP.HTTP2.Writer do
               end
 
             outcome = if result == :expired, do: {:error, :timeout}, else: result
-            :ok = Admission.finish_send(gate, lease, operation, outcome)
+            _ = Admission.finish_send_async(gate, lease, operation, outcome)
             result
           end
 

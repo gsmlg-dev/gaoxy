@@ -1,0 +1,485 @@
+{
+  "task": "ARB-CORE-RELEASE-CODE",
+  "status": "BLOCKED_ENV",
+  "assignment": "direct Sol independent read-only review",
+  "reviewer_sol_repairs": 0,
+  "reviewer_astra_repairs": 0,
+  "implementation_sol_repairs": 2,
+  "implementation_astra_repairs": 11,
+  "implementation_counter_note": "Cumulative Sol2/Astra11; next repair12 pending. round12-red-slices is diagnostic RED only, not a completed repair-and-validation round.",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "branch": "main",
+  "baseline": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+  "original_goal_baseline": "a6a35438c0a153cd53c87c6a55c19a70a11fb75a",
+  "reviewed_at": "2026-10-29T19:12:40.398807+00:00",
+  "fixed_deadline": "2026-10-30T02:09:44Z",
+  "acceptance": "WITHHELD",
+  "blocker": "Coordinator selected-model capacity error reported by implementation owner prevents pending bounded backing repair decision; reviewer cannot take over coordination or switch models.",
+  "current_task_hashes": {
+    "apps/gaoxy/lib/gaoxy/stream_bridge.ex": "75e6649abed48005fc29dcd808493e676b5539f23b1a6dee5782c3cb730fbd9a",
+    "apps/gaoxy/lib/gaoxy/service.ex": "f099d52d8a7c2410d41a57ea8ec8b0415b9283ed03653eae6ea3671daf4d8c9a",
+    "apps/gaoxy/test/resource_budget_stream_network_test.exs": "e5ccf6886e512932310dfd414d5ab6ad1c77aa9bffcd9af6439d5525e068781c",
+    "scripts/check-repairs.py": "8e4a3ed903c779f1d5f085f6dff5e37a338f6d966f2c6830cf5a044c2569ab60",
+    "scripts/test-inventory.json": "44f2e2c43458d94dc8dd3cc7e030128e4ab7edd1926035bac87f6587745e85fe"
+  },
+  "findings": [
+    {
+      "id": "R1",
+      "severity": "P2",
+      "status": "RESOLVED in Astra11 source and 14-case checkpoint",
+      "file": "apps/gaoxy/lib/gaoxy/stream_bridge.ex",
+      "line": 147,
+      "description": "Removed unnecessary effective-buffer16384 ceiling; BackendOptions finite positive socket range retained, scalable funding and actual TCP/TLS32768 exact-floor/drain/below-floor controls pass."
+    },
+    {
+      "id": "R2",
+      "severity": "P1",
+      "status": "OPEN, actual RED16/2",
+      "file": "apps/gaoxy/lib/gaoxy/stream_bridge.ex",
+      "line": 122,
+      "description": "external_size-only retained app accounting omits shared binary backing across callback boundaries. Actual TCP/TLS first-observation retained slice backing8192 versus logical65 is preserved in round12-red-slices; no codec/detachment adopted."
+    },
+    {
+      "id": "R3",
+      "severity": null,
+      "status": "SOURCE CONCERN, diagnostic NOT RUN",
+      "file": "apps/gaoxy/lib/gaoxy/stream_bridge.ex",
+      "line": 86,
+      "description": "Output iodata_length measures logical wire bytes; independently allocated borrowed backing needs owner assessment. Input-alias output is already covered by charged current delivery. No measured output exposure claimed."
+    }
+  ],
+  "verified_existing_evidence": [
+    {
+      "label": "round9-stream",
+      "command": [
+        "mix",
+        "test",
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs"
+      ],
+      "status": "PASS",
+      "exit": 0,
+      "source": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+      "started_at": "2026-10-29T18:44:50.468729+00:00",
+      "environment": {
+        "MIX_ENV": "test",
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_H2_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_CONSUMER_DEPS": "/home/gao/Workspace/gsmlg-opt/gaoxy/deps"
+      },
+      "source_changes": [],
+      "commands_terminal": true,
+      "evidence_lines": [
+        "10 tests, 0 failures"
+      ],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/release-drain7/round9-stream.log",
+      "log_sha256": "c6284b8880bc51fb232be802c6d678d52356f094827e0065557763e8e63b9693",
+      "independently_verified_log_hash": true,
+      "task_source_matches_current": {
+        "apps/gaoxy/lib/gaoxy/stream_bridge.ex": false,
+        "apps/gaoxy/lib/gaoxy/service.ex": true,
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs": false,
+        "scripts/check-repairs.py": false,
+        "scripts/test-inventory.json": true
+      }
+    },
+    {
+      "label": "round9-release",
+      "command": [
+        "bash",
+        "-c",
+        "mix compile --warnings-as-errors && mix release gaoxy --overwrite && python3 scripts/release-smoke.py"
+      ],
+      "status": "PASS",
+      "exit": 0,
+      "source": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+      "started_at": "2026-10-29T18:45:25.852646+00:00",
+      "environment": {
+        "MIX_ENV": "prod",
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_H2_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_CONSUMER_DEPS": "/home/gao/Workspace/gsmlg-opt/gaoxy/deps"
+      },
+      "source_changes": [],
+      "commands_terminal": true,
+      "evidence_lines": [
+        "PASS portable release TCP/TLS/UDP startup, traffic, admitted TCP/TLS replies after SIGTERM admission barrier, VM exit, UDP endpoint reuse; 3 transports"
+      ],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/release-drain7/round9-release.log",
+      "log_sha256": "be50b0707e3aefce153085da2dd267beb9b9daa6b5b7acce9084a11d7cf1aa36",
+      "independently_verified_log_hash": true,
+      "task_source_matches_current": {
+        "apps/gaoxy/lib/gaoxy/stream_bridge.ex": false,
+        "apps/gaoxy/lib/gaoxy/service.ex": true,
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs": false,
+        "scripts/check-repairs.py": false,
+        "scripts/test-inventory.json": true
+      }
+    },
+    {
+      "label": "scoped-compat",
+      "command": [
+        "mix",
+        "test",
+        "apps/gaoxy/test/native_stream_test.exs",
+        "apps/gaoxy/test/stream_isolation_test.exs",
+        "apps/gaoxy/test/resource_budget_admission_test.exs"
+      ],
+      "status": "PASS",
+      "exit": 0,
+      "source": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+      "started_at": "2026-10-29T18:47:00.244471+00:00",
+      "environment": {
+        "MIX_ENV": "test",
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_H2_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_CONSUMER_DEPS": "/home/gao/Workspace/gsmlg-opt/gaoxy/deps"
+      },
+      "source_changes": [],
+      "commands_terminal": true,
+      "evidence_lines": [
+        "72 tests, 0 failures"
+      ],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/release-drain7/scoped-compat.log",
+      "log_sha256": "dc3e9a909529503d49d65dde5540b339d43262aa36cf1039f402873661addd05",
+      "independently_verified_log_hash": true,
+      "task_source_matches_current": {
+        "apps/gaoxy/lib/gaoxy/stream_bridge.ex": false,
+        "apps/gaoxy/lib/gaoxy/service.ex": true,
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs": false,
+        "scripts/check-repairs.py": false,
+        "scripts/test-inventory.json": true
+      }
+    },
+    {
+      "label": "final-scoped",
+      "command": [
+        "bash",
+        "-c",
+        "mix format --check-formatted apps/gaoxy/lib/gaoxy/stream_bridge.ex apps/gaoxy/lib/gaoxy/service.ex apps/gaoxy/test/resource_budget_stream_network_test.exs && mix compile --warnings-as-errors && python3 scripts/check-test-inventory.py && python3 scripts/check-tests.py apps/gaoxy/test/resource_budget_stream_network_test.exs --seed 0 --max-cases 1"
+      ],
+      "status": "PASS",
+      "exit": 0,
+      "source": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+      "started_at": "2026-10-29T18:47:18.321934+00:00",
+      "environment": {
+        "MIX_ENV": "test",
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_H2_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_CONSUMER_DEPS": "/home/gao/Workspace/gsmlg-opt/gaoxy/deps"
+      },
+      "source_changes": [],
+      "commands_terminal": true,
+      "evidence_lines": [
+        "INVENTORY_PASS unit=390, component=321, protocol=167 active_files=121 retained_files=143",
+        "10 tests, 0 failures"
+      ],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/release-drain7/final-scoped.log",
+      "log_sha256": "b6483be10c41aeeb0b34d9ecd5694b3afdc1b5e33fe8782e31e5c6c37c1f0fa5",
+      "independently_verified_log_hash": true,
+      "task_source_matches_current": {
+        "apps/gaoxy/lib/gaoxy/stream_bridge.ex": false,
+        "apps/gaoxy/lib/gaoxy/service.ex": true,
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs": false,
+        "scripts/check-repairs.py": false,
+        "scripts/test-inventory.json": true
+      }
+    },
+    {
+      "label": "round10-red",
+      "command": [
+        "mix",
+        "test",
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs"
+      ],
+      "status": "FAIL",
+      "exit": 2,
+      "source": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+      "started_at": "2026-10-29T18:51:13.557159+00:00",
+      "environment": {
+        "MIX_ENV": "test",
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_H2_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_CONSUMER_DEPS": "/home/gao/Workspace/gsmlg-opt/gaoxy/deps"
+      },
+      "source_changes": [],
+      "commands_terminal": true,
+      "evidence_lines": [
+        "14 tests, 4 failures"
+      ],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/release-drain7/round10-red.log",
+      "log_sha256": "1e6910ccca1b644b3fe3396e2407fb5b40f6f8dbbd4161e7162f9c369ba7e695",
+      "independently_verified_log_hash": true,
+      "task_source_matches_current": {
+        "apps/gaoxy/lib/gaoxy/stream_bridge.ex": false,
+        "apps/gaoxy/lib/gaoxy/service.ex": true,
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs": false,
+        "scripts/check-repairs.py": false,
+        "scripts/test-inventory.json": true
+      }
+    },
+    {
+      "label": "round10-targeted",
+      "command": [
+        "bash",
+        "-c",
+        "mix format --check-formatted apps/gaoxy/lib/gaoxy/stream_bridge.ex apps/gaoxy/lib/gaoxy/service.ex apps/gaoxy/test/resource_budget_stream_network_test.exs && mix compile --warnings-as-errors && python3 scripts/check-test-inventory.py && python3 scripts/check-tests.py apps/gaoxy/test/resource_budget_stream_network_test.exs --seed 0 --max-cases 1 && mix test apps/gaoxy/test/native_stream_test.exs apps/gaoxy/test/stream_isolation_test.exs apps/gaoxy/test/resource_budget_admission_test.exs"
+      ],
+      "status": "FAIL",
+      "exit": 1,
+      "source": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+      "started_at": "2026-10-29T18:51:48.991003+00:00",
+      "environment": {
+        "MIX_ENV": "test",
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_H2_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_CONSUMER_DEPS": "/home/gao/Workspace/gsmlg-opt/gaoxy/deps"
+      },
+      "source_changes": [],
+      "commands_terminal": true,
+      "evidence_lines": [
+        "INVENTORY_PASS unit=390, component=321, protocol=171 active_files=121 retained_files=143",
+        "14 tests, 0 failures"
+      ],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/release-drain7/round10-targeted.log",
+      "log_sha256": "5c683da18db304c285014f998bd0f6dc03e6906c691ac93afcb63765007fbb35",
+      "independently_verified_log_hash": true,
+      "task_source_matches_current": {
+        "apps/gaoxy/lib/gaoxy/stream_bridge.ex": true,
+        "apps/gaoxy/lib/gaoxy/service.ex": true,
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs": false,
+        "scripts/check-repairs.py": false,
+        "scripts/test-inventory.json": true
+      }
+    },
+    {
+      "label": "round11-targeted",
+      "command": [
+        "bash",
+        "-c",
+        "mix format --check-formatted apps/gaoxy/lib/gaoxy/stream_bridge.ex apps/gaoxy/lib/gaoxy/service.ex apps/gaoxy/test/resource_budget_stream_network_test.exs && mix compile --warnings-as-errors && python3 scripts/check-test-inventory.py && python3 scripts/check-tests.py apps/gaoxy/test/resource_budget_stream_network_test.exs --seed 0 --max-cases 1 && mix test apps/gaoxy/test/native_stream_test.exs apps/gaoxy/test/stream_isolation_test.exs apps/gaoxy/test/resource_budget_admission_test.exs"
+      ],
+      "status": "FAIL",
+      "exit": 1,
+      "source": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+      "started_at": "2026-10-29T18:53:03.949244+00:00",
+      "environment": {
+        "MIX_ENV": "test",
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_H2_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_CONSUMER_DEPS": "/home/gao/Workspace/gsmlg-opt/gaoxy/deps"
+      },
+      "source_changes": [],
+      "commands_terminal": true,
+      "evidence_lines": [
+        "INVENTORY_PASS unit=390, component=321, protocol=171 active_files=121 retained_files=143",
+        "14 tests, 0 failures"
+      ],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/release-drain7/round11-targeted.log",
+      "log_sha256": "527443e7e0a404f65e7f35d41d5bf97eb83241ce3da00128bad324e031a51f61",
+      "independently_verified_log_hash": true,
+      "task_source_matches_current": {
+        "apps/gaoxy/lib/gaoxy/stream_bridge.ex": true,
+        "apps/gaoxy/lib/gaoxy/service.ex": true,
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs": false,
+        "scripts/check-repairs.py": false,
+        "scripts/test-inventory.json": true
+      }
+    },
+    {
+      "label": "round11-fixed",
+      "command": [
+        "bash",
+        "-c",
+        "mix format --check-formatted apps/gaoxy/lib/gaoxy/stream_bridge.ex apps/gaoxy/lib/gaoxy/service.ex apps/gaoxy/test/resource_budget_stream_network_test.exs && mix compile --warnings-as-errors && python3 scripts/check-test-inventory.py && python3 scripts/check-tests.py apps/gaoxy/test/resource_budget_stream_network_test.exs --seed 0 --max-cases 1 && mix test apps/gaoxy/test/native_stream_test.exs apps/gaoxy/test/stream_isolation_test.exs apps/gaoxy/test/resource_budget_admission_test.exs"
+      ],
+      "status": "PASS",
+      "exit": 0,
+      "source": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+      "started_at": "2026-10-29T18:53:55.069617+00:00",
+      "environment": {
+        "MIX_ENV": "test",
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_H2_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_CONSUMER_DEPS": "/home/gao/Workspace/gsmlg-opt/gaoxy/deps"
+      },
+      "source_changes": [],
+      "commands_terminal": true,
+      "evidence_lines": [
+        "INVENTORY_PASS unit=390, component=321, protocol=171 active_files=121 retained_files=143",
+        "14 tests, 0 failures",
+        "72 tests, 0 failures"
+      ],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/release-drain7/round11-fixed.log",
+      "log_sha256": "c8ba2c083b10ab0e4cbe41d0537b0bcbee5ed6dc4e78cf7055fda01345123f7b",
+      "independently_verified_log_hash": true,
+      "task_source_matches_current": {
+        "apps/gaoxy/lib/gaoxy/stream_bridge.ex": true,
+        "apps/gaoxy/lib/gaoxy/service.ex": true,
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs": false,
+        "scripts/check-repairs.py": false,
+        "scripts/test-inventory.json": true
+      }
+    },
+    {
+      "label": "round12-red-slices",
+      "command": [
+        "mix",
+        "test",
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs"
+      ],
+      "status": "FAIL",
+      "exit": 2,
+      "source": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+      "started_at": "2026-10-29T19:01:45.953493+00:00",
+      "environment": {
+        "MIX_ENV": "test",
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_H2_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_CONSUMER_DEPS": "/home/gao/Workspace/gsmlg-opt/gaoxy/deps"
+      },
+      "source_changes": [],
+      "commands_terminal": true,
+      "evidence_lines": [
+        "16 tests, 2 failures"
+      ],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/release-drain7/round12-red-slices.log",
+      "log_sha256": "9df19b226a5913b2217f86b1f7bbd6e6f30e2b2c0108d9114df0735b2d71a3a0",
+      "independently_verified_log_hash": true,
+      "task_source_matches_current": {
+        "apps/gaoxy/lib/gaoxy/stream_bridge.ex": true,
+        "apps/gaoxy/lib/gaoxy/service.ex": true,
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs": true,
+        "scripts/check-repairs.py": false,
+        "scripts/test-inventory.json": true
+      }
+    },
+    {
+      "label": "resource-proof",
+      "command": [
+        "elixir",
+        ".audit/adaptive-resource-budget/core/time-quota/release-drain7/resource-proof.exs"
+      ],
+      "status": "PASS",
+      "exit": 0,
+      "source": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+      "started_at": "2026-10-29T18:57:52.001140+00:00",
+      "environment": {
+        "MIX_ENV": "test",
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_H2_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_CONSUMER_DEPS": "/home/gao/Workspace/gsmlg-opt/gaoxy/deps"
+      },
+      "source_changes": [],
+      "commands_terminal": true,
+      "evidence_lines": [
+        "RESOURCE_PROOF_PASS: %{"
+      ],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/release-drain7/resource-proof.log",
+      "log_sha256": "85a3833321c066819c79beb8d61e112775d7f6bbfdbabf566748ae27543899e0",
+      "independently_verified_log_hash": true,
+      "task_source_matches_current": {
+        "apps/gaoxy/lib/gaoxy/stream_bridge.ex": true,
+        "apps/gaoxy/lib/gaoxy/service.ex": true,
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs": false,
+        "scripts/check-repairs.py": false,
+        "scripts/test-inventory.json": true
+      }
+    },
+    {
+      "label": "resource-local-proof",
+      "command": [
+        "elixir",
+        ".audit/adaptive-resource-budget/core/time-quota/release-drain7/resource-local-proof.exs"
+      ],
+      "status": "FAIL",
+      "exit": 1,
+      "source": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+      "started_at": "2026-10-29T19:00:37.996427+00:00",
+      "environment": {
+        "MIX_ENV": "test",
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_H2_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_CONSUMER_DEPS": "/home/gao/Workspace/gsmlg-opt/gaoxy/deps"
+      },
+      "source_changes": [],
+      "commands_terminal": true,
+      "evidence_lines": [],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/release-drain7/resource-local-proof.log",
+      "log_sha256": "b703cf55253baac941e648b919dd1de1e4a830c1be64014c9fb8eac0eb8caa4f",
+      "independently_verified_log_hash": true,
+      "task_source_matches_current": {
+        "apps/gaoxy/lib/gaoxy/stream_bridge.ex": true,
+        "apps/gaoxy/lib/gaoxy/service.ex": true,
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs": false,
+        "scripts/check-repairs.py": false,
+        "scripts/test-inventory.json": true
+      }
+    },
+    {
+      "label": "local-leaves",
+      "command": [
+        "elixir",
+        ".audit/adaptive-resource-budget/core/time-quota/release-drain7/local-leaves.exs"
+      ],
+      "status": "PASS",
+      "exit": 0,
+      "source": "bc8a5ef5199293ada3b432c2e2741070d3b2d115",
+      "started_at": "2026-10-29T19:03:05.331667+00:00",
+      "environment": {
+        "MIX_ENV": "test",
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_H2_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "GAOXY_CONSUMER_DEPS": "/home/gao/Workspace/gsmlg-opt/gaoxy/deps"
+      },
+      "source_changes": [],
+      "commands_terminal": true,
+      "evidence_lines": [],
+      "log": ".audit/adaptive-resource-budget/core/time-quota/release-drain7/local-leaves.log",
+      "log_sha256": "9bd6b1f4e9b2b72a6b54e0166b8436f210e8d2ad10e9c69aafc3ab819ffc020e",
+      "independently_verified_log_hash": true,
+      "task_source_matches_current": {
+        "apps/gaoxy/lib/gaoxy/stream_bridge.ex": true,
+        "apps/gaoxy/lib/gaoxy/service.ex": true,
+        "apps/gaoxy/test/resource_budget_stream_network_test.exs": true,
+        "scripts/check-repairs.py": false,
+        "scripts/test-inventory.json": true
+      }
+    }
+  ],
+  "reviewer_tests_run": false,
+  "reviewer_builds_run": false,
+  "reviewer_network_commands_run": false,
+  "reviewer_command_shutdown": "All commands terminal. Own long read-only rg search/session2161 terminated cleanly; no VM, build or listener processes created.",
+  "allowed_writes_only": ".audit/adaptive-resource-budget/core/time-quota/release-drain7/code-review/",
+  "remaining_work": [
+    "Coordinator recovery and explicit bounded backing repair choice",
+    "Implement and qualify state/output ownership without breaking opaque handler values or resource usability",
+    "Fresh frozen source review and required exact-source whole-goal/release qualification owned by parent"
+  ],
+  "risks": [
+    "Qualified OTP SSL default internal_active_n100 underlies delivery envelope; independently altered internal batching profiles are unqualified",
+    "Prior release smoke pass belongs earlier checkpoint and is not fresh acceptance of current dirty source/test state"
+  ],
+  "next_implementation_astra_repair": 12,
+  "owner_frozen_handoff": {
+    "path": ".audit/adaptive-resource-budget/core/time-quota/release-drain7/round11-blocked-handoff.json",
+    "status": "BLOCKED_ENV",
+    "task_patch_sha256": "f7e13083eb35894551eba8ebef8645f35afdcc445b603976ab9fb6cde29997a4",
+    "input_hash_count": 682,
+    "all_input_hashes_independently_match": true,
+    "commands_terminal": true,
+    "writes_stopped": true
+  }
+}

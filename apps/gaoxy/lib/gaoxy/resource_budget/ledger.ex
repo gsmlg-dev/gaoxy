@@ -589,6 +589,83 @@ defmodule Gaoxy.ResourceBudget.Ledger do
     end
   end
 
+  defp execute(state, client, gate, {:reserve_native, service, input}, actor, sequence) do
+    with true <-
+           (actor == gate.owner and service == state.services[gate.service].owner and
+              Process.alive?(service)) || {:error, :unauthorized_owner},
+         {:ok, accounting} <- Gaoxy.ResourceBudget.normalize_accounting(input),
+         true <-
+           (Map.keys(accounting.memberships) == [:connection] and
+              accounting.pending_processes == 1) || {:error, :invalid_membership} do
+      row = %{
+        token: {state.epoch, client.generation, sequence},
+        revision: 1,
+        gate: client.generation,
+        service: gate.service,
+        instance: state.services[gate.service].instance,
+        owner: service,
+        kind: :guardian,
+        accounting: accounting,
+        native_pending: true
+      }
+
+      commit(state, client, gate, nil, row, true, sequence)
+    end
+  end
+
+  defp execute(
+         state,
+         client,
+         gate,
+         {:split_native, token, revision, guardian, callback},
+         actor,
+         sequence
+       ) do
+    with true <- actor == gate.owner || {:error, :unauthorized_owner},
+         {:ok, row} <- fetch(state.allocations, token, :closed_allocation),
+         true <- row.gate == client.generation || {:error, :unknown_generation},
+         true <- row.revision == revision || {:error, :stale_revision},
+         true <- Map.get(row, :native_pending, false) || {:error, :invalid_operation},
+         true <-
+           (is_pid(guardian) and is_pid(callback) and guardian != callback and
+              Process.alive?(guardian)) || {:error, :invalid_owner} do
+      native = %{
+        row
+        | owner: guardian,
+          revision: revision + 1,
+          native_pending: false,
+          accounting: %{row.accounting | pending_processes: 0}
+      }
+
+      {:ok, empty} = Gaoxy.ResourceBudget.normalize_accounting(0)
+
+      app = %{
+        token: {state.epoch, client.generation, sequence},
+        revision: 1,
+        gate: row.gate,
+        service: row.service,
+        instance: row.instance,
+        owner: callback,
+        kind: :transport,
+        accounting: empty
+      }
+
+      changed = state |> change_row(row, native) |> change_row(nil, app)
+
+      # A new ordinary lease must obey max_active even though bytes and the
+      # actual connection membership are only transferred, never duplicated.
+      with :ok <- growth_checks(state, changed, gate) do
+        changed = transitions(state, changed, [row.instance], row.service)
+
+        receipt = fn row ->
+          %{token: row.token, revision: row.revision, operation: sequence, status: :committed}
+        end
+
+        {{:ok, %{native: receipt.(native), callback: receipt.(app)}}, changed}
+      end
+    end
+  end
+
   defp execute(state, client, gate, {:reserve, pid, kind, input}, actor, sequence) do
     with true <-
            (is_pid(pid) and Process.alive?(pid) and kind in @kinds) || {:error, :invalid_owner},
@@ -614,7 +691,14 @@ defmodule Gaoxy.ResourceBudget.Ledger do
   end
 
   defp execute(state, client, gate, action, actor, sequence)
-       when elem(action, 0) in [:replace, :transfer, :release, :activate, :retain_stream] do
+       when elem(action, 0) in [
+              :replace,
+              :repartition,
+              :transfer,
+              :release,
+              :activate,
+              :retain_stream
+            ] do
     token = elem(action, 1)
     revision = elem(action, 2)
 
@@ -625,6 +709,26 @@ defmodule Gaoxy.ResourceBudget.Ledger do
            (actor == row.owner or authorized?(state, gate, actor)) ||
              {:error, :unauthorized_owner} do
       case action do
+        {:repartition, _, _, input} ->
+          service = state.services[gate.service]
+          instance = state.instances[service.instance]
+
+          with {:ok, accounting} <- Gaoxy.ResourceBudget.normalize_accounting(input),
+               :ok <- Gaoxy.ResourceBudget.validate_repartition(row.accounting, accounting),
+               true <-
+                 Enum.all?(
+                   [row.owner, gate.owner, service.owner, instance.owner],
+                   &Process.alive?/1
+                 ) ||
+                   {:error, :orphaned} do
+            # No new envelope is promised. Replenishment follows confirmed
+            # relinquishment of retained bytes belonging to this allocation.
+            # Keep the resulting split in canonical totals: subsequent growth
+            # still pays the complete Safety debit against the latest sample.
+            updated = %{row | accounting: accounting, revision: revision + 1}
+            commit(state, client, gate, row, updated, false, sequence)
+          end
+
         {:replace, _, _, input} ->
           with {:ok, accounting} <- Gaoxy.ResourceBudget.normalize_accounting(input) do
             updated = %{row | accounting: accounting, revision: revision + 1}

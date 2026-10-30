@@ -5,14 +5,20 @@ custom TCP, TLS and UDP services. It provides native HTTP/1.1 and HTTP/2, with
 HTTP/3 available through an optional package. Run it inside your application's
 supervision tree or use the standalone release with JSON configuration.
 
-This source targets version **0.13.1**:
-[GitHub release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.13.1) ·
-[release notes](docs/releases/0.13.1.md) ·
+This source targets version **0.14.0**:
+[GitHub release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.14.0) ·
+[release notes](docs/releases/0.14.0.md) ·
 [backend-options verification](docs/acceptance/backend-options.md).
 
 TCP/TLS acceptor and socket tuning uses validated `hell_options`; UDP/QUIC uses
 `abyss_options`. See the [support matrix](docs/backend-options.md) and
 [Bandit configuration migration](docs/phoenix.md#backend-tuning-migration).
+
+Memory admission uses an adaptive pool shared across instances in the same BEAM
+VM. Soft is 50% of effective physical/cgroup capacity; usage above soft through
+twice soft remains admissible with rate-limited warnings. Distinct connection,
+request and stream quotas preserve explicit legacy caps. See the
+[resource budget guide](docs/resource-budget.md) for policy, monitoring and migration.
 
 Version 0.12.0 preserves supplied HEAD representation lengths and handles
 Phoenix disconnect broadcasts with WebSocket close 1000. Native H1/H2
@@ -45,8 +51,8 @@ For an existing Phoenix application, the essential changes are:
 1. Replace the explicit Bandit dependency in `mix.exs` with:
 
    ```elixir
-   {:gaoxy_http, "~> 0.13.1"},
-   {:websock_adapter, "~> 0.13.1", hex: :gaoxy_websock_adapter, override: true}
+   {:gaoxy_http, "~> 0.14.0"},
+   {:websock_adapter, "~> 0.14.0", hex: :gaoxy_websock_adapter, override: true}
    ```
 
    Keep the dependency name `:websock_adapter`: that is the OTP application
@@ -88,7 +94,7 @@ WebSocket additionally requires `extended_connect: true` and an explicit
 
 ## Serve a Plug
 
-Add `{:gaoxy_http, "~> 0.13.1"}` to your dependencies. Given a Plug module such
+Add `{:gaoxy_http, "~> 0.14.0"}` to your dependencies. Given a Plug module such
 as `MyApp.Router`, add a listener to your application's supervision tree:
 
 ```elixir
