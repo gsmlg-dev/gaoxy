@@ -242,7 +242,7 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
     test "repeated empty polls retain the complete copy floor for #{inspect(buffer)}" do
       {exchange, _client} = exchange(:none, @poll_buffer)
       base = Exchange.retained_bytes(exchange) - byte_size(exchange.buffer)
-      expected = base + 2 * byte_size(exchange.buffer) + 2
+      expected = base + 2 * (byte_size(exchange.buffer) + 8_192)
 
       :ok =
         Gaoxy.Admission.update(exchange.gate, exchange.lease, Exchange.retained_bytes(exchange))
@@ -266,7 +266,26 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
     end
   end
 
-  test "poll copy peak is admitted before recv and returned charge fits the exact cap" do
+  test "batch poll copy peak is admitted before recv and retains only the configured batch" do
+    buffer = :binary.copy("p", 64)
+    {exchange, client} = exchange(:none, buffer)
+    exchange = %{exchange | limits: %{exchange.limits | max_read_chunk: 8}}
+    base = Exchange.retained_bytes(exchange) - byte_size(buffer)
+    expected = base + 2 * (byte_size(buffer) + 8)
+    observed = observe_recv(exchange)
+    :ok = :gen_tcp.send(client, "abcdefghij")
+
+    assert {:more, next} = Exchange.poll_connection(observed, 100)
+    assert_receive {:poll_recv_charge, ^expected}
+    assert next.buffer == buffer <> "abcdefgh"
+    assert next.body == exchange.body
+    assert next.deadline == exchange.deadline
+    assert Exchange.retained_bytes(next) == expected
+    assert Gaoxy.Admission.status(next.gate).retained_bytes == expected
+    assert {:ok, "ij"} = Hell.Socket.recv(exchange.socket, 2, 100)
+  end
+
+  test "poll falls back to the exact admitted one-byte copy peak before recv" do
     buffer = :binary.copy("p", 64)
     {exchange, client} = exchange(:none, buffer, byte_credit: 66)
     base = Exchange.retained_bytes(exchange) - byte_size(buffer)
@@ -334,9 +353,9 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
     assert expired.deadline == exchange.deadline
     assert expired.buffer == exchange.buffer
     assert expired.body == exchange.body
-    assert Exchange.retained_bytes(expired) == base + 2
+    assert Exchange.retained_bytes(expired) == base + 2 * 8_192
     assert {:error, :timeout, ^expired} = Exchange.poll_connection(expired, 0)
-    assert Gaoxy.Admission.status(expired.gate).retained_bytes == base + 2
+    assert Gaoxy.Admission.status(expired.gate).retained_bytes == base + 2 * 8_192
 
     {exchange, client} = exchange(:none, "GET /")
     base = Exchange.retained_bytes(exchange) - byte_size(exchange.buffer)
@@ -346,7 +365,7 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
     assert closed.buffer == exchange.buffer
     assert closed.body == exchange.body
     assert closed.deadline == exchange.deadline
-    assert Exchange.retained_bytes(closed) == base + 2 * byte_size(exchange.buffer) + 2
+    assert Exchange.retained_bytes(closed) == base + 2 * (byte_size(exchange.buffer) + 8_192)
     assert Gaoxy.Admission.status(closed.gate).retained_bytes == Exchange.retained_bytes(closed)
   end
 
@@ -377,7 +396,7 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
   test "body consumption and response writes preserve the admitted poll floor" do
     {exchange, client} = exchange({:length, 2}, "ab")
     base = Exchange.retained_bytes(exchange) - 2
-    floor = base + 6
+    floor = base + 2 * (2 + 8_192)
     assert {:pending, next} = Exchange.poll_connection(exchange, 0)
     trace_updates(next.gate)
 
@@ -432,8 +451,8 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
     send(reader, :poll_and_respond)
     assert_receive {:reuse_polled, ^reader, first_polled, first_status}, 1000
     assert first_polled.buffer == ""
-    assert Exchange.retained_bytes(first_polled) == first_base + 2
-    assert first_status.retained_bytes == first_base + 2
+    assert Exchange.retained_bytes(first_polled) == first_base + 2 * 8_192
+    assert first_status.retained_bytes == first_base + 2 * 8_192
     response = receive_reuse_response(client)
     assert response =~ "HTTP/1.1 200 OK\r\n"
     assert String.ends_with?(response, "\r\n\r\nok")
@@ -447,8 +466,8 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
     assert Exchange.retained_bytes(second) == first_base
     send(reader, :poll_and_respond)
     assert_receive {:reuse_polled, ^reader, second_polled, second_status}, 1000
-    assert Exchange.retained_bytes(second_polled) == first_base + 2
-    assert second_status.retained_bytes == first_base + 2
+    assert Exchange.retained_bytes(second_polled) == first_base + 2 * 8_192
+    assert second_status.retained_bytes == first_base + 2 * 8_192
     response = receive_reuse_response(client)
     assert response =~ "HTTP/1.1 200 OK\r\n"
     assert String.ends_with?(response, "\r\n\r\nok")

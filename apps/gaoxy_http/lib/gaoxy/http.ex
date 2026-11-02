@@ -40,8 +40,10 @@ defmodule Gaoxy.HTTP do
   @doc """
   Checks peer closure with a finite wait, retaining input and the updated connection.
 
-  Always use the returned connection on the next operation. HTTP/1 observes at
-  most one byte: `:more` retains it for a body read or the next keep-alive request;
+  Always use the returned connection on the next operation. HTTP/1 observes a
+  batch bounded by 8 KiB, `http_limits.max_read_chunk` and available buffer space;
+  admission can reduce the batch to fit the listener's byte budget.
+  `:more` retains the input for a body read or the next keep-alive request;
   `:pending` means no byte or closure was observed within `wait` milliseconds.
   The inclusive `http_limits.max_buffer_bytes` ceiling remains usable: an exact
   full buffer can return `:pending` or a peer-close error. Only an actual excess

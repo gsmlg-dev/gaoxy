@@ -15,6 +15,7 @@ defmodule Gaoxy.HTTP.PollBoundaryNetworkTest do
 
         receive do
           :observe -> poll(conn, owner, 0)
+          {:observe, wait} -> poll(conn, owner, 0, wait)
         after
           10_000 -> raise "poll command timeout"
         end
@@ -23,16 +24,17 @@ defmodule Gaoxy.HTTP.PollBoundaryNetworkTest do
       end
     end
 
-    defp poll(conn, owner, count) do
-      case Gaoxy.HTTP.poll_connection(conn, 0) do
+    defp poll(conn, owner, count, wait \\ 0) do
+      case Gaoxy.HTTP.poll_connection(conn, wait) do
         {:more, next} ->
-          poll(next, owner, count + 1)
+          poll(next, owner, count + 1, wait)
 
         {:pending, next} ->
           send(owner, {:idle, self(), count})
 
           receive do
-            :observe -> poll(next, owner, count)
+            :observe -> poll(next, owner, count, wait)
+            {:observe, wait} -> poll(next, owner, count, wait)
             :finish -> Plug.Conn.send_resp(next, 200, "ready")
           after
             10_000 -> raise "poll resume timeout"
@@ -40,6 +42,14 @@ defmodule Gaoxy.HTTP.PollBoundaryNetworkTest do
 
         {:error, reason, next} ->
           send(owner, {:poll_error, self(), count, reason})
+          {Gaoxy.PlugAdapter, exchange} = next.adapter
+
+          send(
+            owner,
+            {:poll_input, self(), byte_size(exchange.buffer),
+             :crypto.hash(:sha256, exchange.buffer)}
+          )
+
           {:ok, next} = Gaoxy.HTTP.abort(next)
           next
       end
@@ -54,7 +64,7 @@ defmodule Gaoxy.HTTP.PollBoundaryNetworkTest do
       assert byte_size(pipeline) == @limit
       send(reader, :observe)
       count = await_idle(reader, observation, Gaoxy.Lifecycle.deadline(@timeout))
-      assert count <= @limit
+      assert count <= 64
       send(reader, :finish)
 
       wire = receive_responses(socket, "", Gaoxy.Lifecycle.deadline(2_000))
@@ -83,6 +93,63 @@ defmodule Gaoxy.HTTP.PollBoundaryNetworkTest do
       send(reader, :observe)
       assert {^count, :closed} = await_error(reader, Gaoxy.Lifecycle.deadline(2_000))
     end
+  end
+
+  @tag :tmp_dir
+  test "TLS retains a short final batch and observes the following peer EOF in bounded polls", %{
+    tmp_dir: dir
+  } do
+    root = Path.expand("../../..", __DIR__)
+
+    assert {_, 0} =
+             System.cmd("bash", [Path.join(root, "scripts/generate-fixtures.sh"), dir],
+               stderr_to_stdout: true
+             )
+
+    {:ok, server} =
+      Gaoxy.HTTP.start_link(
+        plug: {WaitingPlug, self()},
+        protocols: [:http1],
+        transport: :tls,
+        tls: %{certfile: Path.join(dir, "cert.pem"), keyfile: Path.join(dir, "key.pem")}
+      )
+
+    on_exit(fn -> if Process.alive?(server), do: Gaoxy.stop(server) end)
+    {:ok, {_, port}} = Gaoxy.info(server, :http).local
+
+    {:ok, socket} =
+      :ssl.connect(
+        ~c"localhost",
+        port,
+        [
+          mode: :binary,
+          active: false,
+          verify: :verify_peer,
+          cacertfile: String.to_charlist(Path.join(dir, "ca.pem")),
+          server_name_indication: ~c"localhost"
+        ],
+        2_000
+      )
+
+    on_exit(fn -> :ssl.close(socket) end)
+    first = "POST /wait HTTP/1.1\r\nhost: localhost\r\ncontent-length: 3\r\n\r\nabc"
+    :ok = :ssl.send(socket, first)
+    assert_receive {:ready, reader, "abc"}, 2_000
+    input_size = @limit - 3
+    size = pipeline_body_size(input_size)
+
+    pipeline =
+      "POST /health HTTP/1.1\r\nhost: localhost\r\ncontent-length: #{size}\r\n\r\n" <>
+        :binary.copy("x", size)
+
+    assert byte_size(pipeline) == input_size
+    digest = :crypto.hash(:sha256, pipeline)
+    :ok = :ssl.send(socket, pipeline)
+    :ok = :ssl.shutdown(socket, :write)
+    send(reader, {:observe, 100})
+    {count, :closed} = await_error(reader, Gaoxy.Lifecycle.deadline(2_000))
+    assert count <= 64
+    assert_receive {:poll_input, ^reader, ^input_size, ^digest}, 1_000
   end
 
   defp start_wait(arrival, limit, excess \\ "") do
@@ -141,7 +208,7 @@ defmodule Gaoxy.HTTP.PollBoundaryNetworkTest do
         assert retained <= full_charge
 
         if retained == full_charge do
-          assert count == expected
+          assert count <= expected
           count
         else
           assert Gaoxy.Lifecycle.remaining(deadline) > 0

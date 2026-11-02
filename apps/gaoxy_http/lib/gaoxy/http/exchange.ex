@@ -215,7 +215,7 @@ defmodule Gaoxy.HTTP.Exchange do
     end
   end
 
-  @doc "Polls one socket byte for peer closure, retaining input for the next request or body read."
+  @doc "Polls bounded socket input for peer closure, retaining it for the next request or body read."
   def poll_connection(%{transport: module} = exchange, wait_ms) when not is_nil(module),
     do: module.poll_connection(exchange, wait_ms)
 
@@ -231,27 +231,37 @@ defmodule Gaoxy.HTTP.Exchange do
         {:error, :buffer_limit, exchange}
 
       true ->
-        # The old buffer, received byte and concatenation can coexist. Keep the
-        # complete peak charged across idle polls until the request is released.
-        next = %{
-          exchange
-          | poll_buffer_bytes: max(exchange.poll_buffer_bytes, 2 * byte_size(exchange.buffer) + 2)
-        }
+        capacity = exchange.limits.max_buffer_bytes - byte_size(exchange.buffer)
 
-        case update_body_retention(next, retained_bytes(next)) do
-          :ok -> recv_connection(next, wait_ms)
+        size =
+          if capacity == 0, do: 1, else: min(capacity, min(8_192, exchange.limits.max_read_chunk))
+
+        case reserve_poll(exchange, size) do
+          {:ok, next, size} -> recv_connection(next, size, wait_ms)
           {:error, reason} -> {:error, reason, exchange}
         end
     end
   end
 
-  defp recv_connection(exchange, wait_ms) do
-    remaining = Gaoxy.Lifecycle.remaining(exchange.deadline)
+  defp reserve_poll(exchange, size) do
+    # The old buffer, received batch and concatenation can coexist. Keep the
+    # complete peak charged across idle polls until the request is released.
+    next = %{
+      exchange
+      | poll_buffer_bytes:
+          max(exchange.poll_buffer_bytes, 2 * (byte_size(exchange.buffer) + size))
+    }
 
-    result =
-      if remaining <= 0,
-        do: {:error, :timeout},
-        else: Socket.recv(exchange.socket, 1, min(wait_ms, remaining))
+    case update_body_retention(next, retained_bytes(next)) do
+      :ok -> {:ok, next, size}
+      {:error, :byte_limit} when size > 1 -> reserve_poll(exchange, div(size, 2))
+      error -> error
+    end
+  end
+
+  defp recv_connection(exchange, size, wait_ms) do
+    read_deadline = min(exchange.deadline, Gaoxy.Lifecycle.deadline(wait_ms))
+    result = recv_poll_chunk(exchange.socket, size, read_deadline, exchange.deadline)
 
     case result do
       {:ok, _byte} when byte_size(exchange.buffer) == exchange.limits.max_buffer_bytes ->
@@ -259,17 +269,73 @@ defmodule Gaoxy.HTTP.Exchange do
         # concatenate that byte or retain more than the configured input limit.
         {:error, :buffer_limit, exchange}
 
-      {:ok, byte} ->
-        exchange = %{exchange | buffer: exchange.buffer <> byte}
+      {:ok, bytes} ->
+        exchange = %{exchange | buffer: exchange.buffer <> bytes}
 
         case update_body_retention(exchange, retained_bytes(exchange)) do
           :ok -> {:more, exchange}
           {:error, reason} -> {:error, reason, exchange}
         end
 
+      {:error, reason, bytes} ->
+        exchange = %{exchange | buffer: exchange.buffer <> bytes}
+        _ = update_body_retention(exchange, retained_bytes(exchange))
+        {:error, reason, exchange}
+
       {:error, reason} ->
         _ = update_body_retention(exchange, retained_bytes(exchange))
         if reason == :timeout, do: wait_expired(exchange), else: {:error, reason, exchange}
+    end
+  end
+
+  defp recv_poll_chunk(socket, size, read_deadline, request_deadline) do
+    cond do
+      Gaoxy.Lifecycle.remaining(request_deadline) <= 0 ->
+        {:error, :timeout}
+
+      size == 1 ->
+        Socket.recv(socket, 1, Gaoxy.Lifecycle.remaining(read_deadline))
+
+      true ->
+        # A positive length is exact. After a short probe, another oversized
+        # exact read can discard buffered input on EOF, even with zero wait.
+        case Socket.recv(socket, size, 0) do
+          {:error, :timeout} ->
+            recv_poll_prefix(socket, size, read_deadline, request_deadline, "")
+
+          result ->
+            result
+        end
+    end
+  end
+
+  defp recv_poll_prefix(_socket, size, _read_deadline, _request_deadline, bytes)
+       when byte_size(bytes) == size,
+       do: {:ok, bytes}
+
+  defp recv_poll_prefix(socket, size, read_deadline, request_deadline, bytes) do
+    result =
+      if Gaoxy.Lifecycle.remaining(request_deadline) <= 0,
+        do: {:error, :timeout},
+        else:
+          Socket.recv(
+            socket,
+            1,
+            if(bytes == "", do: Gaoxy.Lifecycle.remaining(read_deadline), else: 0)
+          )
+
+    case result do
+      {:ok, byte} ->
+        recv_poll_prefix(socket, size, read_deadline, request_deadline, bytes <> byte)
+
+      {:error, :timeout} when bytes != "" ->
+        {:ok, bytes}
+
+      {:error, reason} when bytes != "" ->
+        {:error, reason, bytes}
+
+      error ->
+        error
     end
   end
 

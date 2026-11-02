@@ -9,17 +9,59 @@ defmodule Gaoxy.HTTP.ConnectionPollTest do
     def call(exchange, _options), do: {:ok, exchange}
   end
 
-  test "poll retains exactly one wire byte without consuming the following pipeline" do
+  for size <- [65_536, 65_533] do
+    @input_size size
+    test "#{size} input bytes and peer closure are observed within 64 public polls" do
+      {exchange, client} = exchange()
+      input = :binary.copy("p", @input_size)
+      :ok = :gen_tcp.send(client, input)
+      :ok = :gen_tcp.shutdown(client, :write)
+
+      result =
+        Enum.reduce_while(1..64, Exchange.plug_conn(exchange), fn count, conn ->
+          case Gaoxy.HTTP.poll_connection(conn, 100) do
+            {:error, :closed, next} -> {:halt, {count, next}}
+            {kind, next} when kind in [:more, :pending] -> {:cont, next}
+            other -> flunk("unexpected poll result: #{inspect(other)}")
+          end
+        end)
+
+      assert {count, %{adapter: {Gaoxy.PlugAdapter, next}}} = result
+      assert count <= 64
+      assert byte_size(next.buffer) == @input_size
+      assert next.buffer == input
+      assert next.body == exchange.body
+      assert next.deadline == exchange.deadline
+      assert Gaoxy.Admission.status(next.gate).retained_bytes == Exchange.retained_bytes(next)
+    end
+  end
+
+  test "poll retains a bounded batch without consuming the following pipeline" do
     {exchange, client} = exchange(buffer: "P")
+    exchange = %{exchange | limits: %{exchange.limits | max_read_chunk: 2}}
     :ok = :gen_tcp.send(client, "GET")
 
     assert {:more, next} = Exchange.poll_connection(exchange, 100)
-    assert next.buffer == "PG"
+    assert next.buffer == "PGE"
     assert next.body == exchange.body
     assert next.deadline == exchange.deadline
-    assert next.poll_buffer_bytes == 4
-    assert Exchange.retained_bytes(next) == Exchange.retained_bytes(exchange) - 1 + 4
-    assert {:ok, "ET"} = Hell.Socket.recv(next.socket, 2, 100)
+    assert next.poll_buffer_bytes == 6
+    assert Exchange.retained_bytes(next) == Exchange.retained_bytes(exchange) - 1 + 6
+    assert {:ok, "T"} = Hell.Socket.recv(next.socket, 1, 100)
+    assert Gaoxy.Admission.status(next.gate).retained_bytes == Exchange.retained_bytes(next)
+  end
+
+  test "a short available prefix does not wait for a complete batch" do
+    {exchange, client} = exchange()
+    :ok = :gen_tcp.send(client, "abc")
+    started = System.monotonic_time(:millisecond)
+
+    assert {:more, next} = Exchange.poll_connection(exchange, 500)
+    assert System.monotonic_time(:millisecond) - started < 250
+    assert next.buffer == "abc"
+    assert {:error, :timeout} = Hell.Socket.recv(next.socket, 1, 0)
+    assert next.deadline == exchange.deadline
+    assert next.poll_buffer_bytes == 2 * 8_192
     assert Gaoxy.Admission.status(next.gate).retained_bytes == Exchange.retained_bytes(next)
   end
 
@@ -28,12 +70,12 @@ defmodule Gaoxy.HTTP.ConnectionPollTest do
     :ok = :gen_tcp.send(client, "x")
     assert {:more, next} = poll_ready(exchange, Gaoxy.Lifecycle.deadline(500))
     assert next.buffer == "x"
-    assert next.poll_buffer_bytes == 2
+    assert next.poll_buffer_bytes == 2 * 8_192
     assert {:pending, pending} = Exchange.poll_connection(next, 0)
     assert pending.buffer == next.buffer
     assert pending.body == exchange.body
     assert pending.deadline == exchange.deadline
-    assert pending.poll_buffer_bytes == 4
+    assert pending.poll_buffer_bytes == 2 * (1 + 8_192)
     assert {:pending, ^pending} = Exchange.poll_connection(pending, 0)
     assert Gaoxy.Admission.status(pending.gate).retained_bytes == Exchange.retained_bytes(pending)
   end
@@ -44,7 +86,7 @@ defmodule Gaoxy.HTTP.ConnectionPollTest do
     assert next.buffer == exchange.buffer
     assert next.body == exchange.body
     assert next.deadline == exchange.deadline
-    assert next.poll_buffer_bytes == 2 * byte_size(exchange.buffer) + 2
+    assert next.poll_buffer_bytes == 2 * (byte_size(exchange.buffer) + 8_192)
 
     assert Exchange.retained_bytes(next) ==
              Exchange.retained_bytes(exchange) - byte_size(exchange.buffer) +
@@ -64,8 +106,8 @@ defmodule Gaoxy.HTTP.ConnectionPollTest do
     assert next.buffer == exchange.buffer
     assert next.body == exchange.body
     assert next.deadline == exchange.deadline
-    assert next.poll_buffer_bytes == 2
-    assert Exchange.retained_bytes(next) == Exchange.retained_bytes(exchange) + 2
+    assert next.poll_buffer_bytes == 2 * 8_192
+    assert Exchange.retained_bytes(next) == Exchange.retained_bytes(exchange) + 2 * 8_192
     assert {:error, :timeout, ^next} = Exchange.poll_connection(next, 0)
 
     assert Gaoxy.Admission.status(next.gate).retained_bytes == Exchange.retained_bytes(next)
@@ -142,7 +184,7 @@ defmodule Gaoxy.HTTP.ConnectionPollTest do
     assert next.buffer == exchange.buffer
     assert next.body == exchange.body
     assert next.deadline == exchange.deadline
-    assert next.poll_buffer_bytes == 2 * byte_size(exchange.buffer) + 2
+    assert next.poll_buffer_bytes == 2 * (byte_size(exchange.buffer) + 8_192)
 
     assert Exchange.retained_bytes(next) ==
              Exchange.retained_bytes(exchange) - byte_size(exchange.buffer) +

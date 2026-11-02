@@ -118,7 +118,11 @@ def stream(conn) do
 end
 ```
 
-`:more` retains received input and is subject to the input-buffer limit. A
+`:more` retains received input and is subject to the input-buffer limit. HTTP/1
+polls receive batches bounded by 8 KiB, `max_read_chunk`, available buffer space
+and resource admission; a short prefix does not wait for a complete batch. An
+exactly full buffer remains valid: a one-byte observation distinguishes idle or
+closed input from actual excess, without growing the retained pipeline. A
 response-only SSE loop may end on unexpected input. A native endpoint uses
 `Gaoxy.HTTP.Exchange.put_stream_timeout/2`, `poll_connection/2`, and the
 protocol-neutral `Gaoxy.HTTP.Response` operations directly.
