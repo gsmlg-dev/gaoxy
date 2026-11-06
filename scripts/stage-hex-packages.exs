@@ -21,12 +21,6 @@ defmodule StageHexPackages do
     gaoxy_test: "Real HTTP test fixtures with expectations and reliable ExUnit verification",
     websock_adapter: "Gaoxy distribution of WebSockAdapter with native HTTP/2 and HTTP/3 support"
   }
-  @git_dependencies %{
-    hell:
-      {"https://github.com/gsmlg-dev/hell.git", "4fb5d53a1b2acfb5afc9b1ceba65fdc52d61ef83",
-       "0.1.3"}
-  }
-
   def run(source, output) do
     source = Path.expand(source)
     output = Path.expand(output)
@@ -141,12 +135,6 @@ defmodule StageHexPackages do
 
   defp dependency({app, requirement, options} = original, version, package_app) do
     cond do
-      Map.has_key?(@git_dependencies, app) and options[:git] ->
-        {url, ref, published} = Map.fetch!(@git_dependencies, app)
-
-        if Map.new(options) != %{git: url, ref: ref}, do: unsupported!(original)
-        {app, "== #{published}"}
-
       package_app == :gaoxy_test and app == :gaoxy_http3 and options == [in_umbrella: true] ->
         {app, "== #{version}", optional: true}
 

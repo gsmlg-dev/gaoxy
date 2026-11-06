@@ -634,7 +634,7 @@ defmodule Gaoxy.Proxy.UpstreamTransportsTest do
 
     assert client.fetch_options == [
              http_version: :http1,
-             tls_backend: :ssl,
+             tls_backend: :ex_ssl,
              http1_reuse: true,
              redirect: :manual,
              request_mode: :proxy,

@@ -709,7 +709,7 @@ defmodule Gaoxy.Proxy.ManagedH2GroupProbeBoundaryTest do
       transport_scope: struct(HTTP.ManagedTransport),
       fetch_options: [
         http_version: protocol,
-        tls_backend: :ssl,
+        tls_backend: :ex_ssl,
         http2_profile: :native_v1,
         http2_reuse: true,
         redirect: :manual,

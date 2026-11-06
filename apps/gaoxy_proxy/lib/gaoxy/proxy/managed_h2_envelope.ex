@@ -154,12 +154,13 @@ defmodule Gaoxy.Proxy.ManagedH2Envelope do
           type: type,
           stream: stream,
           http_version: :http2,
+          response_stream_idle_timeout: nil,
           informational: informational,
           trailers: trailers
         } = response,
         submitted_url
       )
-      when map_size(response) == 14 and is_integer(status) and status in 200..599 and
+      when map_size(response) == 15 and is_integer(status) and status in 200..599 and
              is_boolean(ok) and is_boolean(used) and is_boolean(redirected) and
              type in [:basic, :cors, :error, :opaque] do
     with :ok <- bounded_binary(text, 64, true),
@@ -351,7 +352,7 @@ defmodule Gaoxy.Proxy.ManagedH2Envelope do
   defp fetch_options(protocol),
     do: [
       http_version: protocol,
-      tls_backend: :ssl,
+      tls_backend: :ex_ssl,
       http2_profile: :native_v1,
       http2_reuse: true,
       redirect: :manual,

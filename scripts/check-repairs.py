@@ -33,6 +33,7 @@ SUITES = {
         ('apps/gaoxy_http/test/http1_parser_test.exs', 9),
         ('apps/gaoxy_http/test/http1_body_test.exs', 6),
         ('apps/gaoxy_proxy/test/http_headers_test.exs', 19),
+        ('apps/gaoxy_proxy/test/http_fetch_client_test.exs', 3),
         ('apps/gaoxy_http/test/managed_proxy_renderer_test.exs', 10),
         ('apps/gaoxy_http/test/http2_worker_accounting_test.exs', 8),
         ('apps/gaoxy_http/test/http2_facade_test.exs', 2),

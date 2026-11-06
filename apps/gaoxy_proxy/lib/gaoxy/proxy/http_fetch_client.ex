@@ -4,13 +4,12 @@ defmodule Gaoxy.Proxy.HTTPFetchClient do
   alias HTTP.{Promise, RequestCompletion, Response, Stream}
   alias Gaoxy.Proxy.UpstreamTransports.Options
 
-  # Pinned 0.19.0/default :inet receive bound: OTP SSL can combine at most
-  # internal_active_n (<=100) receive buffers with one maximum TLS 1.2 record.
-  # HTTP framing carry is independently bounded to 65,536 bytes. Eight windows
-  # cover retained deliveries and copies; this excludes OTP/kernel socket
-  # buffers and process metadata and is not a total BEAM memory measurement.
+  # ExSSL 1.0 RC bounds buffered plaintext delivery to 1 MiB. HTTP framing
+  # carry is independently bounded to 65,536 bytes. Eight windows cover
+  # retained deliveries and copies; this excludes TLS/kernel socket buffers
+  # and process metadata and is not a total BEAM memory measurement.
   @receive_buffer 8_192
-  @max_delivery 100 * @receive_buffer + 18_437
+  @max_delivery 1_048_576
   @framing_carry 65_536
 
   @impl true
@@ -111,7 +110,7 @@ defmodule Gaoxy.Proxy.HTTPFetchClient do
        request_mode: :proxy,
        decode_body: false,
        stream_response: true,
-       tls_backend: :ssl,
+       tls_backend: :ex_ssl,
        ssl: ssl,
        connect_address: Map.get(options, :connect_address),
        timeout: options.timeout,

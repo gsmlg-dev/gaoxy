@@ -146,7 +146,7 @@ proxy configuration, TLS and local route reload.
 ## Requirements and development
 
 The packages require Elixir **1.18+** with Erlang/OTP crypto and public-key
-support. Core uses Hex `abyss == 0.9.0`, which excludes the former bundled DHCP
+support. Core uses Hex `abyss == 1.0.0-rc.4`, which excludes the former bundled DHCP
 Rust NIF and Rustler build. Gaoxy does not depend on `abyss_raw`. HTTP/3 and the
 proxy dependency graph add QUIC/TLS libraries; see their package guides for
 requirements. Core-only consumers remain independent of Plug, Phoenix and the

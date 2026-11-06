@@ -75,7 +75,7 @@ defmodule Gaoxy.Proxy.WebSocketTLSTest do
       context.trusted,
       "127.0.0.2",
       Path.join(context.trusted, "ca.pem"),
-      :bad_certificate
+      :certificate_unknown
     )
   end
 

@@ -36,26 +36,26 @@ REQUIREMENTS = {
         "plug_cowboy": ("plug_cowboy", "~> 2.6", True),
     },
     "gaoxy": {
-        "hell": ("hell", "== 0.1.3", False),
-        "abyss": ("abyss", "== 0.10.0", False),
+        "hell": ("hell", "== 1.0.0-rc.4", False),
+        "abyss": ("abyss", "== 1.0.0-rc.4", False),
         "telemetry": ("telemetry", "~> 1.3", False),
     },
     "gaoxy_http": {
         "gaoxy": ("gaoxy", f"== {VERSION}", False),
         "plug": ("plug", "== 1.20.3", False),
-        "http_core": ("http_core", "~> 0.21 and >= 0.21.17", False),
+        "http_core": ("http_core", "~> 1.0.0-rc.4", False),
         "websock": ("websock", "== 0.5.3", False),
         "gaoxy_websock_adapter": ("websock_adapter", f"== {VERSION}", False),
     },
     "gaoxy_http3": {
         "gaoxy_http": ("gaoxy_http", f"== {VERSION}", False),
-        "elixir_quic_http3": ("elixir_quic_http3", "~> 0.21", False),
+        "elixir_quic_http3": ("elixir_quic_http3", "~> 1.0.0-rc.4", False),
     },
     "gaoxy_proxy": {
         "gaoxy": ("gaoxy", f"== {VERSION}", False),
         "gaoxy_http": ("gaoxy_http", f"== {VERSION}", False),
-        "http_fetch": ("http_fetch", "~> 0.21", False),
-        "http_web_socket": ("http_web_socket", "~> 0.21", False),
+        "http_fetch": ("http_fetch", "~> 1.0.0-rc.4", False),
+        "http_web_socket": ("http_web_socket", "~> 1.0.0-rc.4", False),
     },
     "gaoxy_test": {
         "gaoxy_http": ("gaoxy_http", f"== {VERSION}", False),
@@ -189,17 +189,22 @@ IO.puts(JSON.encode!(convert.(terms, convert)))
                 for forbidden in ["in_umbrella:", "override:", "path:", "git:", "config_path:", "build_path:", "deps_path:", "lockfile:"]:
                     self.assertNotIn(forbidden, manifest)
                 if name == "gaoxy":
-                    self.assertIn('hell: "== 0.1.3"', manifest)
-                    self.assertIn('abyss: "== 0.10.0"', manifest)
+                    self.assertIn('hell: "== 1.0.0-rc.4"', manifest)
+                    self.assertIn('abyss: "== 1.0.0-rc.4"', manifest)
                     self.assertTrue({"abyss_raw", "rustler"}.isdisjoint(
                         entry["name"] for entry in metadata["requirements"]))
                 if name == "gaoxy_http":
                     self.assertIn('hex: :gaoxy_websock_adapter', manifest)
                     self.assertIn(f'"== {VERSION}"', manifest)
 
-    def test_rejects_changed_git_pin_without_staging_packages(self):
+    def test_rejects_hell_git_dependency_without_staging_packages(self):
         manifest = self.source / "apps/gaoxy/mix.exs"
-        manifest.write_text(manifest.read_text().replace("4fb5d53a1b2acfb5afc9b1ceba65fdc52d61ef83", "unreviewed-revision"))
+        original = '''{:hell,
+         git: "https://github.com/gsmlg-dev/hell.git",
+         ref: "4fb5d53a1b2acfb5afc9b1ceba65fdc52d61ef83"}'''
+        content, count = re.subn(r"\{:hell,.*?\}", original, manifest.read_text(), flags=re.DOTALL)
+        self.assertEqual(count, 1)
+        manifest.write_text(content)
         result = self.stage()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("unsupported dependency", result.stdout)

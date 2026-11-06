@@ -59,6 +59,45 @@ defmodule Gaoxy.Proxy.HTTPTLSTest do
     assert :ok = Gaoxy.stop(server, @timeout)
   end
 
+  test "a large HTTPS response preserves binary bytes through the dedicated H1 adapter",
+       context do
+    baseline = supervisor_counts()
+    bytes = :binary.copy(<<0, 255>>, 524_288)
+
+    {url, peer} =
+      tls_peer(context.trusted, "localhost", fn socket ->
+        assert head(:ssl, socket) =~ "GET /secure HTTP/1.1\r\n"
+
+        :ok =
+          :ssl.send(socket, [
+            "HTTP/1.1 200 OK\r\nContent-Length: ",
+            to_string(byte_size(bytes)),
+            "\r\n\r\n",
+            bytes
+          ])
+
+        assert {:error, :closed} = :ssl.recv(socket, 0, @timeout)
+      end)
+
+    server = server(url, Path.join(context.trusted, "ca.pem"))
+    socket = connect(server)
+
+    :ok =
+      :gen_tcp.send(
+        socket,
+        "GET /secure HTTP/1.1\r\nHost: downstream.test\r\nConnection: close\r\n\r\n"
+      )
+
+    assert_receive {:tls_attempt, ^peer}, @timeout
+    assert head(:gen_tcp, socket) =~ "200 OK"
+    assert {:ok, ^bytes} = :gen_tcp.recv(socket, byte_size(bytes), @timeout)
+    assert {:error, :closed} = :gen_tcp.recv(socket, 0, @timeout)
+    assert_receive {:tls_finished, ^peer, :ok}, @timeout
+    assert_cleanup(server, baseline)
+    assert_no_replay(peer)
+    assert :ok = Gaoxy.stop(server, @timeout)
+  end
+
   test "a wrong CA rejects HTTPS without plaintext fallback or a second upstream connection",
        context do
     assert_rejected(
@@ -114,7 +153,7 @@ defmodule Gaoxy.Proxy.HTTPTLSTest do
       context.trusted,
       "127.0.0.2",
       Path.join(context.trusted, "ca.pem"),
-      :bad_certificate
+      :certificate_unknown
     )
   end
 

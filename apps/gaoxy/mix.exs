@@ -11,10 +11,8 @@ defmodule Gaoxy.MixProject do
       lockfile: "../../mix.lock",
       elixir: "~> 1.18",
       deps: [
-        {:hell,
-         git: "https://github.com/gsmlg-dev/hell.git",
-         ref: "4fb5d53a1b2acfb5afc9b1ceba65fdc52d61ef83"},
-        {:abyss, "== 0.10.0"},
+        {:hell, "== 1.0.0-rc.4"},
+        {:abyss, "== 1.0.0-rc.4"},
         {:telemetry, "~> 1.3"}
       ]
     ]

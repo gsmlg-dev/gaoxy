@@ -349,12 +349,18 @@ defmodule Gaoxy.Proxy.ManagedH2EnvelopeTest do
 
   test "checked client uses only exact public options and matching prepared H2 policy" do
     for protocol <- [:http2, :h2c] do
+      assert checked_client(protocol).fetch_options[:tls_backend] == :ex_ssl
       assert :ok == call(:validate_checked_client, [checked_client(protocol), protocol])
       other = if protocol == :http2, do: :h2c, else: :http2
       reject(:validate_checked_client, [checked_client(protocol), other])
     end
 
     client = checked_client()
+
+    reject(:validate_checked_client, [
+      %{client | fetch_options: Keyword.put(client.fetch_options, :tls_backend, :ssl)},
+      :http2
+    ])
 
     for bad <- [
           nil,
@@ -435,6 +441,8 @@ defmodule Gaoxy.Proxy.ManagedH2EnvelopeTest do
   end
 
   test "Response extraction preserves ordered duplicate initial fields and only bounded head" do
+    assert response().response_stream_idle_timeout == nil
+
     for status <- [200, 599],
         type <- [:basic, :cors, :error, :opaque],
         {body, stream} <- [{nil, nil}, {"", nil}, {nil, self()}, {"", self()}, {self(), self()}] do
@@ -446,6 +454,44 @@ defmodule Gaoxy.Proxy.ManagedH2EnvelopeTest do
       assert map_size(result) == 3
       assert fields == response.headers.headers
       assert compact_tree?(fields)
+    end
+  end
+
+  test "managed H2 Response requires the nil HTTP1-only stream idle timeout field" do
+    response = response()
+    assert {:ok, _} = call(:validate_response, [response, source().url])
+
+    for bad <- [
+          Map.delete(response, :response_stream_idle_timeout),
+          Map.put(response, :extra_timeout, nil),
+          response
+          |> Map.delete(:response_stream_idle_timeout)
+          |> Map.put(:extra_timeout, nil)
+        ] do
+      reject(:validate_response, [bad, source().url])
+    end
+
+    for timeout <- [
+          1,
+          4_294_967_295,
+          :infinity,
+          0,
+          -1,
+          1.0,
+          "1",
+          false,
+          self(),
+          make_ref(),
+          [],
+          %{},
+          :binary.copy("x", 65_537),
+          List.duplicate("x", 65_537),
+          %{payload: :binary.copy("x", 65_537)}
+        ] do
+      reject(:validate_response, [
+        %{response | response_stream_idle_timeout: timeout},
+        source().url
+      ])
     end
   end
 
@@ -747,7 +793,7 @@ defmodule Gaoxy.Proxy.ManagedH2EnvelopeTest do
       transport_scope: struct(HTTP.ManagedTransport),
       fetch_options: [
         http_version: protocol,
-        tls_backend: :ssl,
+        tls_backend: :ex_ssl,
         http2_profile: :native_v1,
         http2_reuse: true,
         redirect: :manual,

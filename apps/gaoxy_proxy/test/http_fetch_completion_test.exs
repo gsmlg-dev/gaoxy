@@ -144,7 +144,7 @@ defmodule Gaoxy.Proxy.HTTPFetchCompletionTest do
         [
           http_version: :http1,
           http1_reuse: false,
-          tls_backend: :ssl,
+          tls_backend: :ex_ssl,
           redirect: :manual,
           decode_body: false,
           request_mode: :proxy,

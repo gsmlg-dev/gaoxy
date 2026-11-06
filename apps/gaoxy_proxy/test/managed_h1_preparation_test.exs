@@ -22,7 +22,7 @@ defmodule Gaoxy.Proxy.ManagedH1PreparationTest do
              origin: "http://example.test",
              connect_address: {127, 0, 0, 1},
              http_version: :http1,
-             tls_backend: :ssl,
+             tls_backend: :ex_ssl,
              http2_profile: :native_v1,
              max_requests: 32,
              max_connections: 2,

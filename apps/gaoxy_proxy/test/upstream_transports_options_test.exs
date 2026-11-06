@@ -186,7 +186,8 @@ defmodule Gaoxy.Proxy.UpstreamTransports.OptionsTest do
 
       assert expected.protocol == source.protocol
       assert expected.open_options[:http_version] == source.protocol
-      assert expected.open_options[:tls_backend] == :ssl
+      assert expected.open_options[:tls_backend] == :ex_ssl
+      assert {:ok, :ex_ssl} = HTTP.TLSBackend.resolve(expected.open_options[:tls_backend])
       assert expected.open_options[:http2_profile] == :native_v1
       assert expected.open_options[:max_connections] == 2
       assert expected.open_options[:max_requests] == 32
