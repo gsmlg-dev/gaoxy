@@ -18,7 +18,7 @@ SUITES = {
         ('apps/gaoxy_http/test/resource_budget_config_test.exs', 3),
         ('apps/gaoxy_http3/test/resource_budget_config_test.exs', 3),
         ('apps/gaoxy_proxy/test/resource_budget_config_test.exs', 10),
-        ('apps/gaoxy/test/system_memory_test.exs', 35),
+        ('apps/gaoxy/test/system_memory_test.exs', 47),
         ('apps/gaoxy/test/resource_budget_policy_test.exs', 9),
         ('apps/gaoxy_http/test/plug_response_headers_test.exs', 11),
         ('apps/gaoxy_http/test/http2_codec_test.exs', 5),

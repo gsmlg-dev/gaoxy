@@ -125,57 +125,179 @@ defmodule Gaoxy.ResourceBudget.SystemMemory do
   end
 
   defp mounts(bytes) do
-    Enum.reduce_while(lines(bytes), {:ok, []}, fn line, {:ok, acc} ->
-      case String.split(line, " - ") do
-        [before, after_separator] ->
-          case {String.split(before), String.split(after_separator)} do
-            {[_id, _parent, _device, root, mount, _options | _], [type, _source, options | _]} ->
-              version =
-                cond do
-                  type == "cgroup2" -> :v2
-                  type == "cgroup" and "memory" in String.split(options, ",") -> :v1
-                  true -> nil
-                end
+    parsed =
+      Enum.reduce_while(lines(bytes), {:ok, %{}}, fn line, {:ok, acc} ->
+        with {:ok, mount} <- parse_mount(line),
+             false <- Map.has_key?(acc, mount.id) do
+          {:cont, {:ok, Map.put(acc, mount.id, mount)}}
+        else
+          _ -> {:halt, {:error, :invalid_cgroup_mount}}
+        end
+      end)
 
-              if version do
-                root = unescape(root)
-                mount = unescape(mount)
+    with {:ok, mounts} <- parsed,
+         :ok <- validate_mounts(mounts) do
+      rows = Map.values(mounts)
 
-                if valid_path?(root) and valid_path?(mount),
-                  do: {:cont, {:ok, [{version, root, mount} | acc]}},
-                  else: {:halt, {:error, :invalid_cgroup_mount}}
-              else
-                {:cont, {:ok, acc}}
-              end
+      {:ok,
+       %{
+         rows: rows,
+         roots: Enum.reject(rows, &Map.has_key?(mounts, &1.parent)),
+         children: Enum.group_by(rows, & &1.parent)
+       }}
+    end
+  end
 
-            _ ->
-              {:halt, {:error, :invalid_cgroup_mount}}
-          end
+  defp parse_mount(line) do
+    with [before, after_separator] <- String.split(line, " - "),
+         [id, parent, _device, root, mount, _options | _] <- String.split(before),
+         [type, _source, options | _] <- String.split(after_separator),
+         {:ok, id} when id > 0 <- decimal(id, @maximum),
+         {:ok, parent} <- decimal(parent, @maximum),
+         mount = unescape(mount),
+         true <- valid_path?(mount) do
+      version =
+        cond do
+          type == "cgroup2" -> :v2
+          type == "cgroup" and "memory" in String.split(options, ",") -> :v1
+          true -> nil
+        end
 
-        _ ->
-          {:halt, {:error, :invalid_cgroup_mount}}
+      {:ok, %{id: id, parent: parent, root: unescape(root), mount: mount, version: version}}
+    else
+      _ -> {:error, :invalid_cgroup_mount}
+    end
+  end
+
+  defp validate_mounts(mounts) do
+    attachments = Enum.frequencies_by(Map.values(mounts), &{&1.parent, segments(&1.mount)})
+
+    geometry? =
+      Enum.all?(mounts, fn {_id, mount} ->
+        case Map.fetch(mounts, mount.parent) do
+          {:ok, parent} -> beneath?(mount.mount, parent.mount)
+          :error -> true
+        end
+      end)
+
+    if geometry? and Enum.all?(attachments, fn {_attachment, count} -> count == 1 end) do
+      Enum.reduce_while(mounts, {:ok, MapSet.new()}, fn {id, _}, {:ok, visited} ->
+        case mount_chain(id, mounts, visited, MapSet.new()) do
+          {:ok, _} = result -> {:cont, result}
+          {:error, _} = error -> {:halt, error}
+        end
+      end)
+      |> case do
+        {:ok, _} -> :ok
+        error -> error
+      end
+    else
+      {:error, :invalid_cgroup_mount}
+    end
+  end
+
+  defp mount_chain(id, mounts, visited, active) do
+    cond do
+      MapSet.member?(visited, id) or not Map.has_key?(mounts, id) ->
+        {:ok, visited}
+
+      MapSet.member?(active, id) ->
+        {:error, :invalid_cgroup_mount}
+
+      true ->
+        with {:ok, visited} <-
+               mount_chain(mounts[id].parent, mounts, visited, MapSet.put(active, id)) do
+          {:ok, MapSet.put(visited, id)}
+        end
+    end
+  end
+
+  # Follow attachments, including same-point overmounts. A covering child also
+  # hides deeper mounts attached to the old parent; IDs and row order do not
+  # establish visibility. Missing parents are valid at namespace/chroot roots.
+  defp visible_mount(path, mounts) do
+    case Enum.filter(mounts.roots, &beneath?(path, &1.mount)) do
+      [root] -> visible_mount(path, root, mounts.children)
+      _ -> nil
+    end
+  end
+
+  defp visible_mount(path, mount, children) do
+    next =
+      children
+      |> Map.get(mount.id, [])
+      |> Enum.filter(&beneath?(path, &1.mount))
+      |> Enum.min_by(&length(segments(&1.mount)), fn -> nil end)
+
+    if next, do: visible_mount(path, next, children), else: mount.id
+  end
+
+  defp controller_mounts(mounts) do
+    Enum.reduce_while(mounts.rows, {:ok, []}, fn mount, {:ok, acc} ->
+      if mount.version do
+        case visible_mount(mount.mount, mounts) do
+          id when id == mount.id ->
+            if valid_path?(mount.root),
+              do: {:cont, {:ok, [mount | acc]}},
+              else: {:halt, {:error, :invalid_cgroup_mount}}
+
+          nil ->
+            {:halt, {:error, :invalid_cgroup_mount}}
+
+          _hidden ->
+            {:cont, {:ok, acc}}
+        end
+      else
+        {:cont, {:ok, acc}}
       end
     end)
   end
 
   defp locations(memberships, mounts) do
-    Enum.reduce_while(memberships, {:ok, []}, fn {version, path}, {:ok, acc} ->
-      matching =
-        for {^version, root, mount} <- mounts,
-            path == "/" or beneath?(path, root) do
-          # A cgroup namespace reports its own root as `/`, while mountinfo
-          # can retain the host-side controller root. Only this unambiguous
-          # root case bypasses the ordinary host-path prefix requirement.
-          relative =
-            if path == "/", do: [], else: Enum.drop(segments(path), length(segments(root)))
+    with {:ok, controllers} <- controller_mounts(mounts) do
+      Enum.reduce_while(memberships, {:ok, []}, fn {version, path}, {:ok, acc} ->
+        matching =
+          for %{version: ^version, root: root, mount: mount} = controller <- controllers,
+              path == "/" or beneath?(path, root) do
+            # A cgroup namespace reports its own root as `/`, while mountinfo
+            # can retain the host-side controller root. Only this unambiguous
+            # root case bypasses the ordinary host-path prefix requirement.
+            relative =
+              if path == "/", do: [], else: Enum.drop(segments(path), length(segments(root)))
 
-          leaf = Path.join([mount | relative])
-          {version, leaf, mount}
+            leaf = Path.join([mount | relative])
+            {controller, {version, leaf, mount}}
+          end
+
+        if matching != [] and
+             Enum.all?(matching, &controller_paths_visible?(&1, mounts)) do
+          {:cont, {:ok, Enum.map(matching, &elem(&1, 1)) ++ acc}}
+        else
+          {:halt, {:error, :cgroup_mount_unavailable}}
         end
+      end)
+    end
+  end
 
-      if matching == [],
-        do: {:halt, {:error, :cgroup_mount_unavailable}},
-        else: {:cont, {:ok, matching ++ acc}}
+  defp controller_paths_visible?({controller, {version, leaf, root}}, mounts) do
+    files =
+      case version do
+        :v2 ->
+          ["memory.max", "memory.current", "memory.high"]
+
+        :v1 ->
+          [
+            "memory.limit_in_bytes",
+            "memory.stat",
+            "memory.usage_in_bytes",
+            "memory.use_hierarchy"
+          ]
+      end
+
+    # A nested mount can intercept a directory or an individual controller file.
+    # Its missing files must not be interpreted as an unlimited cgroup ceiling.
+    Enum.all?(ancestors(leaf, root), fn directory ->
+      Enum.all?(files, &(visible_mount(Path.join(directory, &1), mounts) == controller.id))
     end)
   end
 

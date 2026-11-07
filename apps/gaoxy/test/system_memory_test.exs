@@ -71,6 +71,169 @@ defmodule Gaoxy.ResourceBudget.SystemMemoryTest do
     refute snapshot.fallback?
   end
 
+  test "Podman overmounts retain the visible finite capacity and safety headroom" do
+    {snapshot, sample} = mounted_memory(podman_mounts())
+
+    assert %{capacity: @gib, cgroup_limit_bytes: @gib, fallback?: false} = snapshot
+    assert snapshot.metadata.controller_locations == [{:v2, @mount, @mount}]
+    assert {:ok, %{available_bytes: available, cgroup_headroom_bytes: headroom} = safety} = sample
+    assert available == 4 * @gib
+    assert headroom == div(3 * @gib, 4)
+
+    assert :ok =
+             Gaoxy.ResourceBudget.Safety.check(
+               %{retained_bytes: 0, temporary_bytes: 1, pending_processes: 0},
+               Map.put(safety, :retained_baseline, 0),
+               snapshot.capacity,
+               1000,
+               %{}
+             )
+  end
+
+  test "Podman overmounts retain physical capacity and safety with an unlimited controller" do
+    {snapshot, sample} = mounted_memory(podman_mounts(), %{(@mount <> "/memory.max") => "max"})
+
+    assert %{capacity: capacity, cgroup_limit_bytes: nil, fallback?: false} = snapshot
+    assert capacity == 8 * @gib
+    assert {:ok, %{cgroup_headroom_bytes: nil, high_pressure?: false}} = sample
+  end
+
+  test "mount visibility follows attachments rather than row order or numeric ID priority" do
+    rows = [
+      "2 40 0:124 / #{@mount} rw - tmpfs tmpfs rw",
+      "3 2 0:21 / #{@mount} ro - cgroup2 cgroup2 rw",
+      "40 1 0:21 /../../../../../.. #{@mount} rw - cgroup2 cgroup2 rw"
+    ]
+
+    for rows <- [rows, Enum.reverse(rows)] do
+      {snapshot, sample} = mounted_memory(rows)
+      assert %{capacity: @gib, fallback?: false} = snapshot
+      assert {:ok, %{cgroup_headroom_bytes: headroom}} = sample
+      assert headroom == div(3 * @gib, 4)
+    end
+  end
+
+  test "an overmount hides descendants attached to the old controller mount" do
+    rows =
+      podman_mounts() ++
+        ["1500 1488 0:21 /../hidden #{@mount}/child rw - cgroup2 cgroup2 rw"]
+
+    {snapshot, sample} = mounted_memory(rows)
+    assert %{capacity: @gib, fallback?: false} = snapshot
+    assert snapshot.metadata.controller_locations == [{:v2, @mount, @mount}]
+    assert {:ok, _} = sample
+  end
+
+  test "a controller attached below the covering mount remains visible" do
+    rows = [
+      "1488 1486 0:21 /../../../../../.. #{@mount} rw - cgroup2 cgroup2 rw",
+      "1500 1488 0:21 /../hidden #{@mount}/child rw - cgroup2 cgroup2 rw",
+      "1507 1488 0:124 / #{@mount} rw - tmpfs tmpfs rw",
+      "1508 1507 0:21 / #{@mount}/child ro - cgroup2 cgroup2 rw"
+    ]
+
+    {snapshot, sample} =
+      mounted_memory(rows, %{
+        (@mount <> "/child/memory.max") => Integer.to_string(@gib),
+        (@mount <> "/child/memory.current") => Integer.to_string(div(@gib, 4)),
+        (@mount <> "/child/memory.high") => "max"
+      })
+
+    assert %{capacity: @gib, fallback?: false} = snapshot
+
+    assert snapshot.metadata.controller_locations == [
+             {:v2, @mount <> "/child", @mount <> "/child"}
+           ]
+
+    assert {:ok, _} = sample
+  end
+
+  test "a final non-controller overmount leaves memory observations unavailable" do
+    {snapshot, sample} = mounted_memory(Enum.take(podman_mounts(), 2))
+
+    assert %{capacity: nil, fallback?: true} = snapshot
+    assert :cgroup_mount_unavailable in snapshot.reasons
+    assert {:error, :safety_sample_unavailable} = sample
+  end
+
+  test "a nested overmount cannot turn an inaccessible controller leaf into unlimited capacity" do
+    rows = podman_mounts() ++ ["1510 1508 0:124 / #{@mount}/app rw - tmpfs tmpfs rw"]
+
+    {snapshot, sample} = mounted_memory(rows, %{"/proc/self/cgroup" => "0::/app\n"})
+
+    assert %{capacity: nil, fallback?: true} = snapshot
+    assert :cgroup_mount_unavailable in snapshot.reasons
+    assert {:error, :safety_sample_unavailable} = sample
+  end
+
+  test "an overmounted controller file cannot conceal an enforcing limit" do
+    rows =
+      podman_mounts() ++
+        ["1510 1508 254:0 /fake #{@mount}/memory.max rw - ext4 /dev/root rw"]
+
+    {snapshot, sample} = mounted_memory(rows, %{(@mount <> "/memory.max") => "max"})
+
+    assert %{capacity: nil, fallback?: true} = snapshot
+    assert :cgroup_mount_unavailable in snapshot.reasons
+    assert {:error, :safety_sample_unavailable} = sample
+  end
+
+  test "visible controller roots still reject traversal after hiding older mounts" do
+    rows =
+      List.replace_at(
+        podman_mounts(),
+        2,
+        "1508 1507 0:21 /../escape #{@mount} ro - cgroup2 cgroup2 rw"
+      )
+
+    {snapshot, sample} = mounted_memory(rows)
+
+    assert %{capacity: nil, fallback?: true} = snapshot
+    assert :invalid_cgroup_mount in snapshot.reasons
+    assert {:error, :safety_sample_unavailable} = sample
+  end
+
+  test "ambiguous duplicate cyclic and inconsistent mount attachments fail closed" do
+    malformed = [
+      podman_mounts() ++ ["1510 1507 0:21 / #{@mount} ro - cgroup2 cgroup2 rw"],
+      podman_mounts() ++ ["1508 1508 0:21 / #{@mount} ro - cgroup2 cgroup2 rw"],
+      List.replace_at(podman_mounts(), 0, "1488 1508 0:21 / #{@mount} rw - cgroup2 cgroup2 rw"),
+      podman_mounts() ++ ["1510 1508 0:124 / /outside rw - tmpfs tmpfs rw"]
+    ]
+
+    for rows <- malformed do
+      {snapshot, sample} = mounted_memory(rows)
+      assert %{capacity: nil, fallback?: true} = snapshot
+      assert :invalid_cgroup_mount in snapshot.reasons
+      assert {:error, :safety_sample_unavailable} = sample
+    end
+  end
+
+  test "independently visible controller aliases retain the smallest limit and headroom" do
+    rows = podman_mounts() ++ ["80 20 0:21 / /budget ro - cgroup2 cgroup2 rw"]
+
+    {snapshot, sample} =
+      mounted_memory(rows, %{
+        "/budget/memory.max" => Integer.to_string(div(@gib, 2)),
+        "/budget/memory.current" => Integer.to_string(div(@gib, 4)),
+        "/budget/memory.high" => "max"
+      })
+
+    assert %{capacity: capacity, fallback?: false} = snapshot
+    assert capacity == div(@gib, 2)
+    assert [_, _] = snapshot.metadata.controller_locations
+    assert {:ok, %{cgroup_headroom_bytes: headroom}} = sample
+    assert headroom == div(@gib, 4)
+  end
+
+  test "visible controller current and high observations remain required behind overmounts" do
+    for file <- ["memory.current", "memory.high"] do
+      {snapshot, sample} = mounted_memory(podman_mounts(), %{(@mount <> "/" <> file) => nil})
+      assert %{capacity: @gib, fallback?: false} = snapshot
+      assert {:error, :safety_sample_unavailable} = sample
+    end
+  end
+
   test "v2 root does not need to expose memory.max" do
     snapshot = v2("/", %{})
     assert snapshot.capacity == 8 * @gib
@@ -370,6 +533,45 @@ defmodule Gaoxy.ResourceBudget.SystemMemoryTest do
 
     assert SystemMemory.select(2, []).capacity == 2
     assert SystemMemory.select(@maximum, []).capacity == @maximum
+  end
+
+  defp podman_mounts do
+    [
+      "1488 1486 0:21 /../../../../../.. #{@mount} rw,nosuid,nodev,noexec,relatime - cgroup2 cgroup2 rw,nsdelegate,memory_recursiveprot,memory_hugetlb_accounting",
+      "1507 1488 0:124 / #{@mount} rw,relatime - tmpfs tmpfs rw,size=4k,nr_inodes=1,uid=1000,gid=100",
+      "1508 1507 0:21 / #{@mount} ro,nosuid,nodev,noexec,relatime - cgroup2 cgroup2 rw,nsdelegate,memory_recursiveprot,memory_hugetlb_accounting"
+    ]
+  end
+
+  defp mounted_memory(rows, extra \\ %{}) do
+    files =
+      Map.merge(
+        %{
+          "/proc/meminfo" => "MemTotal: 8388608 kB\nMemAvailable: 4194304 kB\n",
+          "/proc/self/cgroup" => "0::/\n",
+          "/proc/self/mountinfo" => Enum.join(rows, "\n") <> "\n",
+          (@mount <> "/memory.max") => Integer.to_string(@gib),
+          (@mount <> "/memory.current") => Integer.to_string(div(@gib, 4)),
+          (@mount <> "/memory.high") => "max"
+        },
+        extra
+      )
+
+    read = fn path ->
+      case Map.get(files, path) do
+        value when is_binary(value) -> {:ok, value}
+        _ -> {:error, :enoent}
+      end
+    end
+
+    detection = SystemMemory.detect(platform: {:unix, :linux}, read_file: read)
+
+    {detection,
+     Gaoxy.ResourceBudget.Safety.detect(detection,
+       platform: {:unix, :linux},
+       read_file: read,
+       now: fn -> 1000 end
+     )}
   end
 
   defp linux(files) do
