@@ -68,6 +68,7 @@ defmodule Gaoxy.BackendOptions do
         :backlog,
         :nodelay,
         :keepalive,
+        :ipv6_v6only,
         :recbuf,
         :sndbuf,
         :buffer,
@@ -97,7 +98,7 @@ defmodule Gaoxy.BackendOptions do
             key not in allowed ->
               {:error, {:unsupported_backend_option, entry, {:transport_options, key}}}
 
-            key in [:nodelay, :keepalive] ->
+            key in [:nodelay, :keepalive, :ipv6_v6only] ->
               valid(value, is_boolean(value), entry, {:transport_options, key})
 
             key in [:tos, :ttl] ->

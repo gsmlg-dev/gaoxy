@@ -1,5 +1,16 @@
 # Dependency audit
 
+## Current RC selection — 2026-11-08
+
+The root and Phoenix example lockfiles select the published HTTP/TLS/QUIC, Abyss
+and Hell **1.0.0-rc.9** cohort. Abyss and Hell use compatible `~> 1.0.0-rc.4`
+requirements, allowing consumers to resolve the refreshed RC without overrides.
+The published Hell library is unchanged from rc.4; Abyss adds optional DATAGRAM
+APIs without changing the APIs Gaoxy uses. This upgrade adds no Gaoxy DATAGRAM
+or WebTransport capability. Core remains free of `abyss_raw` and Rustler.
+
+Earlier dependency identities and verification outcomes below remain historical.
+
 ## Current Abyss selection — 2026-10-21
 
 Gaoxy selects Hex `abyss == 0.9.0`, replacing the bundled 0.7.0 Git revision

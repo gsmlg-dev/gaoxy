@@ -5,9 +5,9 @@ custom TCP, TLS and UDP services. It provides native HTTP/1.1 and HTTP/2, with
 HTTP/3 available through an optional package. Run it inside your application's
 supervision tree or use the standalone release with JSON configuration.
 
-This source targets version **0.15.1**:
-[GitHub release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.15.1) ·
-[release notes](docs/releases/0.15.1.md) ·
+This source targets version **0.15.2**:
+[GitHub release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.15.2) ·
+[release notes](docs/releases/0.15.2.md) ·
 [backend-options verification](docs/acceptance/backend-options.md).
 
 TCP/TLS acceptor and socket tuning uses validated `hell_options`; UDP/QUIC uses
@@ -51,8 +51,8 @@ For an existing Phoenix application, the essential changes are:
 1. Replace the explicit Bandit dependency in `mix.exs` with:
 
    ```elixir
-   {:gaoxy_http, "~> 0.15.1"},
-   {:websock_adapter, "~> 0.15.1", hex: :gaoxy_websock_adapter, override: true}
+   {:gaoxy_http, "~> 0.15.2"},
+   {:websock_adapter, "~> 0.15.2", hex: :gaoxy_websock_adapter, override: true}
    ```
 
    Keep the dependency name `:websock_adapter`: that is the OTP application
@@ -94,7 +94,7 @@ WebSocket additionally requires `extended_connect: true` and an explicit
 
 ## Serve a Plug
 
-Add `{:gaoxy_http, "~> 0.15.1"}` to your dependencies. Given a Plug module such
+Add `{:gaoxy_http, "~> 0.15.2"}` to your dependencies. Given a Plug module such
 as `MyApp.Router`, add a listener to your application's supervision tree:
 
 ```elixir
@@ -146,7 +146,7 @@ proxy configuration, TLS and local route reload.
 ## Requirements and development
 
 The packages require Elixir **1.18+** with Erlang/OTP crypto and public-key
-support. Core uses Hex `abyss == 1.0.0-rc.4`, which excludes the former bundled DHCP
+support. Core uses Hex `abyss ~> 1.0.0-rc.4 (locked at 1.0.0-rc.9)`, which excludes the former bundled DHCP
 Rust NIF and Rustler build. Gaoxy does not depend on `abyss_raw`. HTTP/3 and the
 proxy dependency graph add QUIC/TLS libraries; see their package guides for
 requirements. Core-only consumers remain independent of Plug, Phoenix and the

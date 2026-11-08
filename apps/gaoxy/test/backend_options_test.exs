@@ -186,4 +186,32 @@ defmodule Gaoxy.BackendOptionsTest do
                BackendOptions.normalize(%{transport: :quic, abyss_options: [{key, 1}]})
     end
   end
+
+  test "TCP and TLS preserve explicit IPv6 dual-stack boolean options" do
+    for transport <- [:tcp, :tls], v6only <- [false, true] do
+      options = [transport_options: [ipv6_v6only: v6only]]
+
+      raw = %{
+        transport: transport,
+        ip: {0, 0, 0, 0, 0, 0, 0, 0},
+        hell_options: options
+      }
+
+      assert {:ok, normalized} = BackendOptions.normalize(raw)
+      assert normalized.hell_options == options
+      assert {:ok, ^normalized} = BackendOptions.normalize(normalized)
+    end
+  end
+
+  test "IPv6-only transport options reject nonboolean values before startup" do
+    for transport <- [:tcp, :tls], value <- [nil, 0, 1, :enabled, "false", []] do
+      assert {:error,
+              {:invalid_backend_option, :hell_options, {:transport_options, :ipv6_v6only}}} =
+               BackendOptions.normalize(%{
+                 transport: transport,
+                 ip: {0, 0, 0, 0, 0, 0, 0, 0},
+                 hell_options: [transport_options: [ipv6_v6only: value]]
+               })
+    end
+  end
 end

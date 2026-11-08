@@ -36,8 +36,8 @@ REQUIREMENTS = {
         "plug_cowboy": ("plug_cowboy", "~> 2.6", True),
     },
     "gaoxy": {
-        "hell": ("hell", "== 1.0.0-rc.4", False),
-        "abyss": ("abyss", "== 1.0.0-rc.4", False),
+        "hell": ("hell", "~> 1.0.0-rc.4", False),
+        "abyss": ("abyss", "~> 1.0.0-rc.4", False),
         "telemetry": ("telemetry", "~> 1.3", False),
     },
     "gaoxy_http": {
@@ -189,8 +189,8 @@ IO.puts(JSON.encode!(convert.(terms, convert)))
                 for forbidden in ["in_umbrella:", "override:", "path:", "git:", "config_path:", "build_path:", "deps_path:", "lockfile:"]:
                     self.assertNotIn(forbidden, manifest)
                 if name == "gaoxy":
-                    self.assertIn('hell: "== 1.0.0-rc.4"', manifest)
-                    self.assertIn('abyss: "== 1.0.0-rc.4"', manifest)
+                    self.assertIn('hell: "~> 1.0.0-rc.4"', manifest)
+                    self.assertIn('abyss: "~> 1.0.0-rc.4"', manifest)
                     self.assertTrue({"abyss_raw", "rustler"}.isdisjoint(
                         entry["name"] for entry in metadata["requirements"]))
                 if name == "gaoxy_http":

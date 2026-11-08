@@ -10,6 +10,11 @@ defmodule Gaoxy.Test do
   records at most that many bytes as the callback reads, without consuming the
   body ahead of it. Journal eviction never removes verification accounting.
 
+  `limits:` and `http_limits:` maps configure the selected profile's service and
+  HTTP budgets through its public service constructor. Omitted budgets keep the
+  profile defaults; explicit limits must be finite. Body acquisition accounts for
+  buffers and temporary copies in addition to the document's wire size.
+
   `close/2` retains its report for `:retention` milliseconds (default 60 seconds).
   Automatic on-exit verification consumes that report; expired handles fail.
   """
@@ -21,7 +26,9 @@ defmodule Gaoxy.Test do
     timeout: 5_000,
     retention: 60_000,
     journal_limit: 100,
-    capture_body: false
+    capture_body: false,
+    limits: %{},
+    http_limits: %{}
   ]
 
   def open(options \\ []) do
@@ -158,6 +165,13 @@ defmodule Gaoxy.Test do
 
     for key <- [:timeout, :retention, :journal_limit], do: positive!(options[key], key)
     unless options[:capture_body] == false, do: positive!(options[:capture_body], :capture_body)
+
+    for key <- [:limits, :http_limits] do
+      unless is_map(options[key]) and
+               not Enum.any?(options[key], fn {_, value} -> value == :infinity end),
+             do: raise(ArgumentError, "#{key} must be a map of finite limits")
+    end
+
     options
   end
 

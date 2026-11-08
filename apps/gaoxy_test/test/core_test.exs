@@ -137,6 +137,89 @@ defmodule Gaoxy.Test.CoreTest do
     refute Map.has_key?(hd(Fixture.requests(fixture).entries), :body)
   end
 
+  test "finite fixture budgets allow complete multilingual document acquisition" do
+    body = String.duplicate("技能文档: café Ελληνικά العربية 日本語 한국어 🌍\n", 4_900)
+    assert byte_size(body) > 368 * 1_024
+    assert byte_size(body) < 1_048_576
+
+    fixture =
+      Fixture.open(
+        mode: :manual,
+        limits: %{max_bytes: 16_777_216},
+        http_limits: %{max_body_bytes: 1_048_576},
+        capture_body: 64
+      )
+
+    Fixture.expect_once(fixture, :post, "/document", fn conn ->
+      {:ok, acquired, conn} = read_complete_body(conn)
+      assert acquired == body
+      Plug.Conn.send_resp(conn, 200, "complete")
+    end)
+
+    assert request(fixture, "POST", "/document", body) =~ "200"
+
+    assert [%{outcome: :ok, body: %{data: captured, complete: true, truncated: true}}] =
+             Fixture.requests(fixture).entries
+
+    assert captured == binary_part(body, 0, 64)
+    assert :ok = Fixture.verify_and_close!(fixture)
+  end
+
+  test "insufficient explicit fixture byte budget retains the body acquisition failure" do
+    body = String.duplicate("技能文档: café Ελληνικά العربية 日本語 한국어 🌍\n", 4_900)
+
+    fixture =
+      Fixture.open(
+        mode: :manual,
+        limits: %{max_bytes: 524_288},
+        http_limits: %{max_body_bytes: 1_048_576}
+      )
+
+    Fixture.expect_once(fixture, :post, "/document", fn conn ->
+      {:ok, _body, conn} = read_complete_body(conn)
+      Plug.Conn.send_resp(conn, 200, "unexpected")
+    end)
+
+    assert request(fixture, "POST", "/document", body) =~ "500"
+
+    assert [%{outcome: {:failure, :error, {:badmatch, {:error, :byte_limit}}, _}}] =
+             Fixture.requests(fixture).entries
+
+    assert %{
+             status: :error,
+             admitted: 1,
+             completed: 1,
+             failures: [%{type: :callback, reason: {:badmatch, {:error, :byte_limit}}}]
+           } =
+             Fixture.close(fixture)
+  end
+
+  test "explicit HTTP body ceiling remains enforced with ample service budget" do
+    fixture =
+      Fixture.open(
+        mode: :manual,
+        limits: %{max_bytes: 16_777_216},
+        http_limits: %{max_body_bytes: 8}
+      )
+
+    Fixture.stub(fixture, :post, "/document", fn conn ->
+      {:ok, _body, conn} = read_complete_body(conn)
+      Plug.Conn.send_resp(conn, 200, "unexpected")
+    end)
+
+    assert request(fixture, "POST", "/document", "too large") =~ "413"
+    assert Fixture.requests(fixture).entries == []
+    assert :ok = Fixture.verify_and_close!(fixture)
+  end
+
+  defp read_complete_body(conn, chunks \\ []) do
+    case Plug.Conn.read_body(conn) do
+      {:ok, chunk, conn} -> {:ok, IO.iodata_to_binary(Enum.reverse([chunk | chunks])), conn}
+      {:more, chunk, conn} -> read_complete_body(conn, [chunk | chunks])
+      {:error, _} = error -> error
+    end
+  end
+
   test "events are direct observations with bounded journal display and durable failures" do
     fixture = Fixture.open(mode: :manual, journal_limit: 1)
 

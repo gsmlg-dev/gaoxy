@@ -9,8 +9,21 @@ defmodule Gaoxy.Test.Server do
     profile = Keyword.get(options, :profile, :http1)
 
     with :ok <- preflight(profile),
-         {:ok, tls} <- credentials(profile) do
-      GenServer.start_link(__MODULE__, {coordinator, options, profile, tls})
+         {:ok, tls} <- credentials(profile),
+         {:ok, spec} <- build_specification(coordinator, options, profile, tls) do
+      GenServer.start_link(__MODULE__, {coordinator, options, profile, tls, spec})
+    end
+  end
+
+  @doc false
+  def service_spec(coordinator, options) do
+    profile = Keyword.get(options, :profile, :http1)
+
+    if profile in @profiles do
+      with {:ok, tls} <- credentials(profile),
+           do: build_specification(coordinator, options, profile, tls)
+    else
+      {:error, {:unsupported_profile, profile}}
     end
   end
 
@@ -25,15 +38,12 @@ defmodule Gaoxy.Test.Server do
   end
 
   @impl true
-  def init({coordinator, options, profile, tls}) do
+  def init({coordinator, options, profile, tls, spec}) do
     Process.flag(:trap_exit, true)
     monitor = Process.monitor(coordinator)
     timeout = Keyword.get(options, :timeout, 5_000)
-    plug = {Gaoxy.Test.DispatchPlug, {coordinator, Keyword.fetch!(options, :fixture_id)}}
-    common = [id: @service, ip: {127, 0, 0, 1}, port: 0, plug: plug]
 
-    with {:ok, spec} <- specification(profile, common, tls),
-         {:ok, runtime} <- Gaoxy.start_link(services: [spec]) do
+    with {:ok, runtime} <- Gaoxy.start_link(services: [spec]) do
       state = %{runtime: runtime, monitor: monitor, timeout: timeout, info: nil}
 
       case Gaoxy.info(runtime, @service) do
@@ -129,11 +139,25 @@ defmodule Gaoxy.Test.Server do
 
   defp credentials(_), do: {:ok, nil}
 
-  defp specification(:http3, common, tls),
-    do:
+  defp build_specification(coordinator, options, profile, tls) do
+    plug = {Gaoxy.Test.DispatchPlug, {coordinator, Keyword.fetch!(options, :fixture_id)}}
+
+    common =
+      [id: @service, ip: {127, 0, 0, 1}, port: 0, plug: plug] ++
+        Keyword.take(options, [:limits, :http_limits])
+
+    specification(profile, common, tls)
+  end
+
+  defp specification(:http3, common, tls) do
+    if Code.ensure_loaded?(Gaoxy.HTTP.HTTP3) do
       apply(Gaoxy.HTTP.HTTP3, :service_spec, [
         common ++ [tls: Map.take(tls, [:certfile, :keyfile])]
       ])
+    else
+      {:error, {:http3_unavailable, :optional_dependency_required}}
+    end
+  end
 
   defp specification(profile, common, tls) do
     options =

@@ -94,7 +94,11 @@ defmodule Gaoxy.HTTP.BackendOptionsRuntimeTest do
     assert Gaoxy.Lifecycle.remaining(deadline) > 0
 
     for {_, ip, port} <- listeners do
-      assert {:ok, socket} = :gen_tcp.listen(port, ip: ip, active: false, reuseaddr: true)
+      family = if tuple_size(ip) == 8, do: :inet6, else: :inet
+
+      assert {:ok, socket} =
+               :gen_tcp.listen(port, [family, ip: ip, active: false, reuseaddr: true])
+
       :gen_tcp.close(socket)
     end
   end
@@ -185,5 +189,157 @@ defmodule Gaoxy.HTTP.BackendOptionsRuntimeTest do
 
     stop_and_rebind(instance, fn -> GenServer.stop(owner, :normal, 3_000) end, listeners)
     assert {:error, :not_running} = Gaoxy.PhoenixAdapter.listeners(PhoenixEndpoint)
+  end
+
+  defp dual_stack_options(v6only),
+    do: [
+      ip: {0, 0, 0, 0, 0, 0, 0, 0},
+      port: 0,
+      hell_options: [transport_options: [ipv6_v6only: v6only]]
+    ]
+
+  defp optional_client_certificate_tls(dir),
+    do:
+      Keyword.delete(secure(dir), :port) ++
+        [verify: :verify_peer, cacertfile: Path.join(dir, "ca.pem"), fail_if_no_peer_cert: false]
+
+  defp assert_dual_stack(instance, id, transport, v6only, dir) do
+    assert {:ok, service, _} = GenServer.call(instance, {:lookup, id})
+    backend = :sys.get_state(service).backend
+    listener = Hell.Server.listener_pid(backend)
+    [{1, socket}] = :sys.get_state(listener).listener_sockets
+    getter = if transport == :tls, do: :ssl, else: :inet
+    assert {:ok, [ipv6_v6only: ^v6only]} = apply(getter, :getopts, [socket, [:ipv6_v6only]])
+    assert %{local: {:ok, {{0, 0, 0, 0, 0, 0, 0, 0} = ip, port}}} = Gaoxy.info(instance, id)
+    assert port > 0
+    client = if transport == :tls, do: :ssl, else: :gen_tcp
+
+    tls =
+      if transport == :tls,
+        do: [
+          verify: :verify_peer,
+          cacertfile: String.to_charlist(Path.join(dir, "ca.pem")),
+          server_name_indication: ~c"localhost"
+        ],
+        else: []
+
+    options = [:binary, active: false] ++ tls
+
+    assert {:ok, connection} =
+             apply(client, :connect, [{0, 0, 0, 0, 0, 0, 0, 1}, port, [:inet6 | options], 1_000])
+
+    assert_dual_stack_response(client, connection)
+
+    if v6only do
+      assert {:error, :econnrefused} =
+               apply(client, :connect, [{127, 0, 0, 1}, port, [:inet | options], 1_000])
+    else
+      assert {:ok, connection} =
+               apply(client, :connect, [{127, 0, 0, 1}, port, [:inet | options], 1_000])
+
+      assert_dual_stack_response(client, connection)
+    end
+
+    await_idle(instance, id, Gaoxy.Lifecycle.deadline(1_000))
+    {backend, ip, port}
+  end
+
+  defp assert_dual_stack_response(client, connection) do
+    assert :ok =
+             apply(client, :send, [
+               connection,
+               "GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n"
+             ])
+
+    response = receive_response(client, connection, Gaoxy.Lifecycle.deadline(1_000), "")
+    assert response =~ "HTTP/1.1 200"
+    assert response =~ "backend-options"
+    apply(client, :close, [connection])
+  end
+
+  @tag :tmp_dir
+  test "direct HTTP and optional-client-certificate HTTPS honor dual-stack and IPv6-only", %{
+    tmp_dir: dir
+  } do
+    certificates(dir)
+
+    for v6only <- [false, true], transport <- [:tcp, :tls] do
+      tls = if transport == :tls, do: Map.new(optional_client_certificate_tls(dir)), else: %{}
+
+      assert {:ok, instance} =
+               Gaoxy.HTTP.start_link(
+                 dual_stack_options(v6only) ++
+                   [endpoint: {Endpoint, []}, transport: transport, tls: tls, protocols: [:http1]]
+               )
+
+      Process.unlink(instance)
+      on_exit(fn -> if Process.alive?(instance), do: Gaoxy.stop(instance, 1_000) end)
+      listener = assert_dual_stack(instance, :http, transport, v6only, dir)
+      stop_and_rebind(instance, fn -> Gaoxy.stop(instance, 2_000) end, [listener])
+    end
+  end
+
+  @tag :tmp_dir
+  test "ListenerSet honors dual-stack and IPv6-only HTTP and optional-client-certificate HTTPS",
+       %{
+         tmp_dir: dir
+       } do
+    certificates(dir)
+
+    for v6only <- [false, true] do
+      binding = dual_stack_options(v6only)
+
+      assert {:ok, owner} =
+               ListenerSet.start_link(
+                 id: :dual_stack_listeners,
+                 endpoint: {Endpoint, []},
+                 listeners: [
+                   http: binding,
+                   https: binding ++ optional_client_certificate_tls(dir) ++ [protocols: [:http1]]
+                 ]
+               )
+
+      Process.unlink(owner)
+      on_exit(fn -> if Process.alive?(owner), do: GenServer.stop(owner) end)
+      %{instance: instance} = ListenerSet.info(owner)
+
+      listeners = [
+        assert_dual_stack(instance, "dual_stack_listeners:http", :tcp, v6only, dir),
+        assert_dual_stack(instance, "dual_stack_listeners:https", :tls, v6only, dir)
+      ]
+
+      stop_and_rebind(instance, fn -> GenServer.stop(owner, :normal, 3_000) end, listeners)
+    end
+  end
+
+  @tag :tmp_dir
+  test "Phoenix honors dual-stack and IPv6-only HTTP and optional-client-certificate HTTPS", %{
+    tmp_dir: dir
+  } do
+    certificates(dir)
+
+    for v6only <- [false, true] do
+      binding = dual_stack_options(v6only)
+
+      [child] =
+        Gaoxy.PhoenixAdapter.child_specs(PhoenixEndpoint,
+          http: binding,
+          https: binding ++ optional_client_certificate_tls(dir) ++ [protocols: [:http1]]
+        )
+
+      {module, function, arguments} = child.start
+      assert {:ok, owner} = apply(module, function, arguments)
+      Process.unlink(owner)
+      on_exit(fn -> if Process.alive?(owner), do: GenServer.stop(owner) end)
+      %{phase: :ready, instance: instance} = Gaoxy.PhoenixAdapter.listeners(PhoenixEndpoint)
+
+      listeners = [
+        assert_dual_stack(instance, Module.concat(PhoenixEndpoint, HTTP), :tcp, v6only, dir),
+        assert_dual_stack(instance, Module.concat(PhoenixEndpoint, HTTPS), :tls, v6only, dir)
+      ]
+
+      stop_and_rebind(instance, fn -> GenServer.stop(owner, :normal, 3_000) end, listeners)
+      assert {:error, :not_running} = Gaoxy.PhoenixAdapter.listeners(PhoenixEndpoint)
+    end
   end
 end

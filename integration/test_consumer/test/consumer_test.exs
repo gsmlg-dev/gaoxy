@@ -2,6 +2,95 @@ defmodule GaoxyTestConsumerTest do
   use ExUnit.Case, async: false
   alias HTTP.HTTP2.HPACK
 
+  defmodule DualStackPlug do
+    def init(options), do: options
+    def call(conn, _), do: Plug.Conn.send_resp(conn, 200, "dual-stack")
+  end
+
+  test "published fixture budgets preserve a complete multilingual request and response" do
+    payload = String.duplicate("完整技能文档 — fixture budget\n", 12_000)
+    assert byte_size(payload) > 368 * 1_024
+
+    fixture =
+      Gaoxy.Test.open(
+        limits: %{max_bytes: 8 * 1_024 * 1_024},
+        http_limits: %{max_body_bytes: 1_024 * 1_024}
+      )
+
+    Gaoxy.Test.expect_once(fixture, :post, "/document", fn conn ->
+      {body, conn} = complete_body(conn, [])
+      assert body == payload
+      Plug.Conn.send_resp(conn, 200, body)
+    end)
+
+    assert {:ok, {{_, 200, _}, _, ^payload}} =
+             :httpc.request(
+               :post,
+               {String.to_charlist(Gaoxy.Test.url(fixture, "/document")), [],
+                ~c"application/octet-stream", payload},
+               [timeout: 5_000],
+               body_format: :binary
+             )
+
+    assert :ok = Gaoxy.Test.verify!(fixture)
+    assert [%{outcome: :ok}] = Gaoxy.Test.requests(fixture).entries
+    assert %{status: :ok} = Gaoxy.Test.close(fixture)
+  end
+
+  test "published HTTPS explicitly supports dual-stack and IPv6-only with optional client certificates" do
+    directory = Application.app_dir(:gaoxy_test, "priv/tls")
+
+    tls = %{
+      certfile: Path.join(directory, "cert.pem"),
+      keyfile: Path.join(directory, "key.pem"),
+      cacertfile: Path.join(directory, "ca.pem"),
+      verify: :verify_peer,
+      fail_if_no_peer_cert: false
+    }
+
+    for v6only <- [false, true] do
+      assert {:ok, runtime} =
+               Gaoxy.HTTP.start_link(
+                 ip: {0, 0, 0, 0, 0, 0, 0, 0},
+                 port: 0,
+                 transport: :tls,
+                 tls: tls,
+                 protocols: [:http1],
+                 hell_options: [transport_options: [ipv6_v6only: v6only]],
+                 plug: {DualStackPlug, []}
+               )
+
+      try do
+        assert %{local: {:ok, {_, port}}} = Gaoxy.info(runtime, :http)
+
+        options = [
+          :binary,
+          active: false,
+          verify: :verify_peer,
+          cacertfile: String.to_charlist(tls.cacertfile),
+          server_name_indication: ~c"localhost"
+        ]
+
+        assert {:ok, socket} =
+                 :ssl.connect({0, 0, 0, 0, 0, 0, 0, 1}, port, [:inet6 | options], 2_000)
+
+        assert_tls_response(socket)
+
+        if v6only do
+          assert {:error, :econnrefused} =
+                   :ssl.connect({127, 0, 0, 1}, port, [:inet | options], 2_000)
+        else
+          assert {:ok, socket} =
+                   :ssl.connect({127, 0, 0, 1}, port, [:inet | options], 2_000)
+
+          assert_tls_response(socket)
+        end
+      after
+        assert :ok = Gaoxy.stop(runtime, 2_000)
+      end
+    end
+  end
+
   test "public automatic fixtures serve H1 and verified HTTPS from packaged assets" do
     for profile <- [:http1, :https] do
       fixture = Gaoxy.Test.open(profile: profile)
@@ -151,6 +240,37 @@ defmodule GaoxyTestConsumerTest do
 
   defp frame(type, flags, stream, payload),
     do: <<byte_size(payload)::24, type, flags, 0::1, stream::31, payload::binary>>
+
+  defp complete_body(conn, chunks) do
+    case Plug.Conn.read_body(conn) do
+      {:more, body, conn} -> complete_body(conn, [body | chunks])
+      {:ok, body, conn} -> {IO.iodata_to_binary(Enum.reverse([body | chunks])), conn}
+    end
+  end
+
+  defp assert_tls_response(socket) do
+    try do
+      assert :ok =
+               :ssl.send(socket, "GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n")
+
+      response = tls_response(socket, "", System.monotonic_time(:millisecond) + 2_000)
+      assert response =~ "HTTP/1.1 200"
+      assert String.ends_with?(response, "dual-stack")
+    after
+      :ssl.close(socket)
+    end
+  end
+
+  defp tls_response(socket, bytes, deadline) do
+    remaining = deadline - System.monotonic_time(:millisecond)
+    assert remaining > 0
+
+    case :ssl.recv(socket, 0, remaining) do
+      {:ok, chunk} -> tls_response(socket, bytes <> chunk, deadline)
+      {:error, :closed} -> bytes
+      error -> flunk("TLS response failed: #{inspect(error)}")
+    end
+  end
 
   defp fixture_resources do
     Enum.sort(

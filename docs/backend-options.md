@@ -8,16 +8,27 @@ APIs; arbitrary Hell, Abyss or OTP options are not accepted.
 
 | Transport | Entry | Supported options |
 |---|---|---|
-| Core TCP / OTP TLS | `hell_options` | `num_acceptors`; `transport_options: [backlog: ..., nodelay: ..., keepalive: ..., recbuf: ..., sndbuf: ..., buffer: ..., tos: ...]` |
+| Core TCP / OTP TLS | `hell_options` | `num_acceptors`; `transport_options: [backlog: ..., nodelay: ..., keepalive: ..., ipv6_v6only: ..., recbuf: ..., sndbuf: ..., buffer: ..., tos: ...]` |
 | HTTP / HTTPS, including ListenerSet and Phoenix | `hell_options` | Same subset, excluding `recbuf` and `buffer`, which the HTTP protocol owns |
 | UDP, all existing modes | `abyss_options` | `udp_buffer_size`; `transport_options: [tos: ..., ttl: ...]` |
 | QUIC / HTTP3 | `abyss_options` | `event_batch`, `poll_interval` |
 
 TCP/TLS buffer sizes and backlog, and UDP `udp_buffer_size`, accept integers in
-`1..2_147_483_647`. `nodelay` and `keepalive` are booleans. TOS and TTL accept
-integers in `0..255` on IPv4 only. OS support and kernel buffer limits still
-apply: requested buffer sizes may be rounded or clamped. An OS rejection is a
-startup error, without fallback to a different configuration.
+`1..2_147_483_647`. `nodelay`, `keepalive` and `ipv6_v6only` are booleans.
+TOS and TTL accept integers in `0..255` on IPv4 only. OS support and kernel
+buffer limits still apply: requested buffer sizes may be rounded or clamped.
+An OS rejection is a startup error, without fallback to a different configuration.
+
+For an IPv6 wildcard binding (`ip: {0, 0, 0, 0, 0, 0, 0, 0}`), explicitly set
+`hell_options: [transport_options: [ipv6_v6only: false]]` to accept IPv4 and IPv6
+on the same port, or `true` to accept IPv6 only. Gaoxy passes the value unchanged
+to Hell for TCP and OTP TLS, including HTTP, HTTPS, ListenerSet and Phoenix
+listeners. Omitting it preserves the platform's socket default. Dual-stack
+availability depends on the operating system; unsupported settings fail at
+startup. TLS client-certificate policy remains in `tls` or the HTTPS listener
+keys: `verify: :verify_peer`, `cacertfile: ...` and
+`fail_if_no_peer_cert: false` still verify presented certificates while allowing
+clients that do not present one.
 
 HTTP rejects backend `recbuf` and `buffer` before endpoint initialization.
 For H1, the protocol derives these receive buffers from

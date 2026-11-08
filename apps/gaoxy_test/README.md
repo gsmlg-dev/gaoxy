@@ -4,7 +4,7 @@ Real, isolated HTTP fixtures with atomic expectations and ordinary Plug handlers
 Install the aligned package as a test-only dependency:
 
 ```elixir
-{:gaoxy_test, "~> 0.15.1", only: :test}
+{:gaoxy_test, "~> 0.15.2", only: :test}
 ```
 
 The application starts fixture supervision, but starts no listener until `open/1`.
@@ -54,6 +54,34 @@ body observation as the callback reads. `await_request/3` accepts an exact
 `{:error, :timeout}`. `verify!/2` checks a snapshot without closing the fixture.
 `close/2` returns a final report; `verify_and_close!/2` raises on failures.
 Terminal options accept a finite positive `timeout:` in milliseconds.
+
+## Service and HTTP budgets
+
+`open/1` accepts `limits:` and `http_limits:` maps using the selected profile's
+public service options. Omitted values retain that profile's defaults. For
+example, a fixture accepting documents up to 1 MiB can reserve a larger finite
+service budget for body acquisition:
+
+```elixir
+fixture = Gaoxy.Test.open(
+  limits: %{max_bytes: 16_777_216},
+  http_limits: %{max_body_bytes: 1_048_576}
+)
+```
+
+`limits.max_bytes` bounds service resource accounting; `http_limits.max_body_bytes`
+bounds the request body on the wire. Body acquisition also reserves buffers,
+retained chunks and temporary copies, so its service budget can exceed the
+document size. Raising the body ceiling alone does not reserve those resources.
+Concurrent requests share the service budget. Use ordinary recursive
+`Plug.Conn.read_body/1` and retain the connection returned by each read.
+
+Both maps use normal Gaoxy validation, including unknown keys, positive finite
+limits and protocol reservation checks. Fixtures reject explicit `:infinity`;
+the default `stream_timeout: :request` retains the finite request deadline.
+Invalid budgets fail before a fixture listener starts. These options apply to
+all profiles, including optional HTTP/3, without changing lazy reads, body
+capture or verification accounting.
 
 ## Profiles and trust
 
