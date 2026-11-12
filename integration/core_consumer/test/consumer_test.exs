@@ -18,8 +18,7 @@ defmodule CoreConsumerTest do
       :http_fetch,
       :http_core,
       :hpax,
-      :elixir_quic,
-      :ex_ssl
+      :elixir_quic
     ]
 
     for app <- forbidden do
@@ -32,6 +31,9 @@ defmodule CoreConsumerTest do
 
     assert :hell in resolved
     assert :hell in running
+    # Hell's TLS transport runs on ex_ssl (a hard Hell dependency since rc.12).
+    assert :ex_ssl in resolved
+    assert :ex_ssl in running
 
     for app <- forbidden,
         do: refute(app in running)

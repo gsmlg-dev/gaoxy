@@ -27,7 +27,9 @@ to rc.14 because Gaoxy depends on its APIs and fixes:
   `Abyss.Endpoint` with `datagram_handler:`.
 
 The `integration/quic_consumer` and `integration/h3_consumer` floor fixtures keep
-their own historical rc.4 locks. Core remains free of `abyss_raw` and Rustler.
+their own historical rc.4 locks. Core remains free of `abyss_raw`, Rustler and
+the HTTP/QUIC packages; it now includes `ex_ssl`, a hard Hell dependency since
+rc.12 that has no dependencies of its own.
 
 Earlier dependency identities and verification outcomes below remain historical.
 

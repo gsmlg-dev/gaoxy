@@ -55,7 +55,14 @@ defmodule PhoenixNative.ClientCertificateTest do
     {:ok, directory: directory, certificate: certificate}
   end
 
-  for version <- [:"tlsv1.2", :"tlsv1.3"] do
+  test "tlsv1.2 listeners are rejected before binding", ctx do
+    assert_raise RuntimeError, ~r/invalid_tls_versions/, fn ->
+      start_endpoint(ctx.directory, :"tlsv1.2", false)
+    end
+  end
+
+  # The ex_ssl server engine is TLS 1.3 only.
+  for version <- [:"tlsv1.3"] do
     @version version
     test "#{version} optional verified certificates reach Phoenix HTTP and WebSocket peer data",
          ctx do
