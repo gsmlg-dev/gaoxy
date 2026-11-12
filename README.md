@@ -7,8 +7,7 @@ supervision tree or use the standalone release with JSON configuration.
 
 This source targets version **0.16.2**:
 [GitHub release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.16.2) ·
-[release notes](docs/releases/0.16.2.md) ·
-[backend-options verification](docs/acceptance/backend-options.md).
+[release notes](docs/releases/0.16.2.md).
 
 TCP/TLS acceptor and socket tuning uses validated `hell_options`; UDP/QUIC uses
 `abyss_options`. See the [support matrix](docs/backend-options.md) and
