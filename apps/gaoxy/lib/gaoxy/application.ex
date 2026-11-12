@@ -6,7 +6,7 @@ defmodule Gaoxy.Application do
     with {:ok, supervisor} <-
            Supervisor.start_link(
              [
-               {Registry, keys: :unique, name: Gaoxy.Registry},
+               Gaoxy.RegistrySupervisor,
                {Gaoxy.ResourceBudget.Supervisor, lease_limit: Gaoxy.Config.lease_safety_limit()}
              ],
              strategy: :one_for_one

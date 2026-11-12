@@ -20,12 +20,17 @@ defmodule Gaoxy.DatagramBridge do
     %{spec: spec, gate: gate, scope: scope} = state.context
     deadline = Lifecycle.deadline(spec.limits.callback_timeout)
 
-    with {:ok, lease} <-
-           Admission.acquire(gate, byte_size(bytes),
+    # Optionally pre-fund the largest permitted reply as temporary credit, so an
+    # admitted datagram can still reply after drain fences new growth. Tight
+    # budgets fall back to the exact input and charge the reply on demand.
+    with {:ok, lease, funded} <-
+           Admission.acquire_funded(gate, byte_size(bytes),
              kind: :connection,
-             memberships: %{connection: make_ref()}
+             memberships: %{connection: make_ref()},
+             headroom: output_limit(spec)
            ),
-         :ok <- Admission.begin(gate, lease, byte_size(bytes)) do
+         # The funded total keeps retained == input and temporary == headroom.
+         :ok <- Admission.begin(gate, lease, funded) do
       packet = %{
         data: bytes,
         peer: {datagram.peer.addr, datagram.peer.port},
@@ -46,26 +51,26 @@ defmodule Gaoxy.DatagramBridge do
           send_output(
             reply_destination(datagram.peer),
             output,
-            byte_size(bytes),
+            {byte_size(bytes), funded},
             lease,
             deadline,
             state
           )
 
         {:send, destination, output} ->
-          send_output(destination, output, byte_size(bytes), lease, deadline, state)
+          send_output(destination, output, {byte_size(bytes), funded}, lease, deadline, state)
       end
     end
 
     {:ok, state, []}
   end
 
-  defp send_output(destination, output, input_size, lease, deadline, state) do
+  defp send_output(destination, output, {input_size, funded}, lease, deadline, state) do
     %{spec: spec, gate: gate, scope: scope} = state.context
     size = IO.iodata_length(output)
 
-    if size <= min(spec.limits.max_output, 65_507) do
-      with :ok <- Admission.update(gate, lease, input_size + size) do
+    if size <= output_limit(spec) do
+      with :ok <- charge_output(gate, lease, input_size, funded, size, deadline) do
         case destination(destination, spec) do
           :ok ->
             with {:ok, operation} <- Admission.start_send(gate, lease, size) do
@@ -81,6 +86,28 @@ defmodule Gaoxy.DatagramBridge do
       Gaoxy.Telemetry.emit(:admission_rejected, %{count: 1}, scope, %{reason: :output_limit})
     end
   end
+
+  defp output_limit(spec), do: min(spec.limits.max_output, 65_507)
+
+  # Funded headroom converts temporary credit into retained output without
+  # growth; otherwise the reply grows the exact lease under current admission.
+  defp charge_output(gate, lease, input_size, funded, size, deadline)
+       when funded > input_size and input_size + size <= funded do
+    Admission.repartition_until(
+      gate,
+      lease,
+      %{
+        retained_bytes: input_size + size,
+        temporary_bytes: funded - input_size - size,
+        transport_bytes: funded
+      },
+      make_ref(),
+      deadline
+    )
+  end
+
+  defp charge_output(gate, lease, input_size, _funded, size, _deadline),
+    do: Admission.update(gate, lease, input_size + size)
 
   defp transmit(capability, destination, output, deadline) do
     with {:ok, ref} <-

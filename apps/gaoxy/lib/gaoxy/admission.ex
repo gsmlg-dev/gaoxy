@@ -8,6 +8,14 @@ defmodule Gaoxy.Admission do
   def acquire(gate, bytes), do: acquire(gate, bytes, [])
   def acquire(gate, bytes, options), do: GenServer.call(gate, {:acquire, bytes, options})
 
+  # Like `acquire/3`, also returning the funded transport total. A positive
+  # `headroom:` option first tries to fund that many additional temporary
+  # bytes; a byte/memory capacity rejection of that probe silently falls back
+  # to the exact reservation. Funded credit can later be repartitioned (not
+  # grown), so it remains usable while the gate drains.
+  def acquire_funded(gate, bytes, options),
+    do: GenServer.call(gate, {:acquire_funded, bytes, options})
+
   def spawn_request(gate, parent_lease, token, bytes, deadline, mfa),
     do: spawn_request(gate, parent_lease, token, bytes, deadline, mfa, [])
 
@@ -375,20 +383,17 @@ defmodule Gaoxy.Admission do
     end
   end
 
-  def handle_call({:acquire, bytes, options}, {pid, _}, state) do
+  def handle_call({action, bytes, options}, {pid, _}, state)
+      when action in [:acquire, :acquire_funded] do
     ref = make_ref()
 
-    case reserve_lease(
-           state,
-           ref,
-           pid,
-           bytes,
-           options,
-           if(Keyword.keyword?(options), do: Keyword.get(options, :deadline)),
-           0
-         ) do
-      {:ok, state} -> {:reply, {:ok, ref}, sample(state)}
-      {:error, reason, state} -> reject(state, reason)
+    case acquire_lease(state, ref, pid, bytes, options) do
+      {:ok, funded, state} ->
+        reply = if action == :acquire_funded, do: {:ok, ref, funded}, else: {:ok, ref}
+        {:reply, reply, sample(state)}
+
+      {:error, reason, state} ->
+        reject(state, reason)
     end
   end
 
@@ -1382,7 +1387,75 @@ defmodule Gaoxy.Admission do
     end
   end
 
-  defp reserve_lease(state, ref, pid, bytes, options, deadline, pending) do
+  defp acquire_lease(state, ref, pid, bytes, options) do
+    with {:ok, headroom, options} <- split_headroom(options) do
+      deadline = if Keyword.keyword?(options), do: Keyword.get(options, :deadline)
+
+      exact = fn state ->
+        with {:ok, state} <- reserve_lease(state, ref, pid, bytes, options, deadline, 0) do
+          {:ok, accounting} = Gaoxy.ResourceBudget.normalize_accounting(bytes)
+          {:ok, accounting.transport_bytes, state}
+        end
+      end
+
+      case funded_accounting(state, bytes, headroom) do
+        {:ok, funded} ->
+          case reserve_lease(state, ref, pid, funded, options, deadline, 0, :reserve_optional) do
+            {:ok, state} ->
+              {:ok, funded.transport_bytes, state}
+
+            {:error, reason, state} ->
+              if Gaoxy.ResourceBudget.capacity_reason?(reason),
+                do: exact.(state),
+                else: {:error, reason, state}
+          end
+
+        :exact ->
+          exact.(state)
+      end
+    else
+      {:error, reason} -> {:error, reason, state}
+    end
+  end
+
+  defp split_headroom(options) do
+    if Keyword.keyword?(options) do
+      case Keyword.get_values(options, :headroom) do
+        [] ->
+          {:ok, 0, options}
+
+        [headroom] when is_integer(headroom) and headroom >= 0 ->
+          {:ok, headroom, Keyword.delete(options, :headroom)}
+
+        _ ->
+          {:error, :invalid_options}
+      end
+    else
+      {:ok, 0, options}
+    end
+  end
+
+  # Headroom is an optional shared-budget envelope; legacy local gates and a
+  # zero allowance keep the exact historical reservation.
+  defp funded_accounting(%{budget: budget}, bytes, headroom)
+       when not is_nil(budget) and headroom > 0 do
+    case Gaoxy.ResourceBudget.normalize_accounting(bytes) do
+      {:ok, accounting} ->
+        {:ok,
+         %{
+           accounting
+           | temporary_bytes: accounting.temporary_bytes + headroom,
+             transport_bytes: accounting.transport_bytes + headroom
+         }}
+
+      {:error, _} ->
+        :exact
+    end
+  end
+
+  defp funded_accounting(_, _, _), do: :exact
+
+  defp reserve_lease(state, ref, pid, bytes, options, deadline, pending, name \\ :reserve) do
     with true <- Keyword.keyword?(options) || {:error, :invalid_options},
          true <- length(options) == map_size(Map.new(options)) || {:error, :invalid_options},
          true <-
@@ -1447,7 +1520,7 @@ defmodule Gaoxy.Admission do
         end
       end
 
-      Budget.run(state, :reserve, [pid, kind, accounting], deadline, commit)
+      Budget.run(state, name, [pid, kind, accounting], deadline, commit)
     else
       {:error, reason} -> {:error, reason, state}
     end

@@ -148,6 +148,22 @@ defmodule Gaoxy.RegistryFailureTest do
     end
   end
 
+  test "abrupt Registry deaths keep the application and resource budget available" do
+    # Each abrupt death must recover the Registry without exhausting the
+    # application supervisor: losing it would fence the ledger for the VM.
+    for _ <- 1..3 do
+      registry = Process.whereis(Gaoxy.Registry)
+      monitor = Process.monitor(registry)
+      Process.exit(registry, :kill)
+      assert_receive {:DOWN, ^monitor, :process, ^registry, :killed}, 1_000
+      eventually(fn -> Process.whereis(Gaoxy.Registry) not in [nil, registry] end)
+    end
+
+    assert List.keymember?(Application.started_applications(), :gaoxy, 0)
+    instance = runtime()
+    assert %{availability: :ready} = Gaoxy.resource_budget(instance)
+  end
+
   test "unavailable Registry returns bounded errors and closes resources without restart storms",
        %{
          application_supervisor: supervisor

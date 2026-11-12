@@ -70,6 +70,7 @@ SUITES = {
     'component': [
         ('apps/gaoxy_http/test/body_accounting_window_test.exs', 13),
         ('apps/gaoxy/test/resource_budget_admission_test.exs', 60),
+        ('apps/gaoxy/test/admission_headroom_test.exs', 8),
         ('apps/gaoxy_http/test/resource_budget_phoenix_test.exs', 1),
         ('apps/gaoxy_http3/test/resource_budget_h3_test.exs', 8),
         ('apps/gaoxy/test/resource_budget_owner_test.exs', 58),
@@ -138,6 +139,7 @@ SUITES = {
         ('apps/gaoxy/test/runtime_instance_network_test.exs', 1),
         ('apps/gaoxy/test/tls_test.exs', 1),
         ('apps/gaoxy/test/datagram_egress_test.exs', 3),
+        ('apps/gaoxy/test/datagram_drain_reply_test.exs', 1),
         ('apps/gaoxy/test/backend_telemetry_test.exs', 1),
     ],
 }

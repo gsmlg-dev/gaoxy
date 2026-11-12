@@ -64,6 +64,25 @@ defmodule Gaoxy.ResourceBudget do
   def reserve(client, owner, kind, accounting, operation, deadline),
     do: mutation(client, operation, deadline, {:reserve, owner, kind, accounting})
 
+  # Byte/memory capacity outcomes after which a smaller reservation may fit.
+  # Count quotas, modes and ambiguous outcomes apply equally to an exact retry.
+  @capacity_reasons [
+    :byte_limit,
+    :memory_hard_limit,
+    :system_memory_pressure,
+    :safety_sample_unavailable
+  ]
+
+  @doc false
+  def capacity_reason?(reason), do: reason in @capacity_reasons
+
+  # Optional probe: identical to `reserve/6` (same operation sequence and
+  # receipt), except a capacity rejection (`capacity_reason?/1`) is not counted
+  # or reported; the caller then falls back to an exact reservation.
+  @doc false
+  def reserve_optional(client, owner, kind, accounting, operation, deadline),
+    do: mutation(client, operation, deadline, {:reserve, owner, kind, accounting, :optional})
+
   @doc false
   def reserve_native(client, service, accounting, operation, deadline),
     do: mutation(client, operation, deadline, {:reserve_native, service, accounting})

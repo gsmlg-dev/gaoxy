@@ -466,6 +466,8 @@ defmodule Gaoxy.ResourceBudget.Ledger do
           {{:error, :operation_expired}, state}
 
         nil ->
+          {action, optional} = optional_action(action)
+
           result =
             with :ok <- available(state),
                  :ok <- timely(state, deadline),
@@ -477,10 +479,17 @@ defmodule Gaoxy.ResourceBudget.Ledger do
               {:error, _} = error -> {error, state}
             end
 
+          # An optional probe keeps its receipt, but its capacity rejection is
+          # not a rejected admission: the caller retries the exact reservation.
           changed =
             case outcome do
-              {:error, reason} -> rejection(state, client, reason)
-              {:ok, _} -> changed
+              {:error, reason} ->
+                if optional and Gaoxy.ResourceBudget.capacity_reason?(reason),
+                  do: state,
+                  else: rejection(state, client, reason)
+
+              {:ok, _} ->
+                changed
             end
 
           # Retirement deliberately invalidates its generation. Other operations
@@ -502,6 +511,11 @@ defmodule Gaoxy.ResourceBudget.Ledger do
       error -> {error, state}
     end
   end
+
+  defp optional_action({:reserve, owner, kind, input, :optional}),
+    do: {{:reserve, owner, kind, input}, true}
+
+  defp optional_action(action), do: {action, false}
 
   defp execute(state, client, gate, {:set_mode, target}, actor, sequence) do
     {kind, mode} =
