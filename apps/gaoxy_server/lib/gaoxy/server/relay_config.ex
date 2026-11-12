@@ -4,7 +4,7 @@ defmodule Gaoxy.Server.RelayConfig do
 
   @stream_keys ~w(upstream mode max_chunk_bytes connect_timeout idle_timeout max_lifetime write_timeout upstream_tls)a
   @udp_keys ~w(upstream ingress destination limits)a
-  @udp_limits ~w(max_associations queue_items queue_bytes max_packet idle_timeout lifetime reservation_timeout send_timeout drain_grace rate_packets rate_bytes packet_ratio byte_ratio)a
+  @udp_limits ~w(max_associations max_source_associations queue_items queue_bytes max_packet idle_timeout lifetime reservation_timeout send_timeout drain_grace rate_packets rate_bytes packet_ratio byte_ratio)a
   @modes %{
     "tcp" => :tcp,
     "tls_termination" => :tls_termination,

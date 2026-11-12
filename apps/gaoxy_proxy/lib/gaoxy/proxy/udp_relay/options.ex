@@ -5,6 +5,9 @@ defmodule Gaoxy.Proxy.UDPRelay.Options do
 
   @limits %{
     max_associations: 256,
+    # Associations one source address may hold. The default equals the global
+    # ceiling, which leaves the per-source limit off.
+    max_source_associations: 256,
     queue_items: 8,
     queue_bytes: 65_536,
     max_packet: 65_507,
@@ -58,7 +61,8 @@ defmodule Gaoxy.Proxy.UDPRelay.Options do
          limits = Map.merge(@limits, limits),
          true <- Enum.all?(limits, fn {_, n} -> is_integer(n) and n > 0 end),
          true <-
-           limits.max_associations <= 256 and limits.queue_items <= 64 and
+           limits.max_associations <= 256 and limits.max_source_associations <= 256 and
+             limits.queue_items <= 64 and
              limits.queue_bytes <= 1_048_576 and limits.max_packet <= 65_507 and
              limits.packet_ratio <= 16 and limits.byte_ratio <= 16 and
              limits.reservation_timeout <= 1_000 and limits.send_timeout <= 5_000 and

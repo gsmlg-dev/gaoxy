@@ -129,6 +129,7 @@ SUITES = {
         ('apps/gaoxy_proxy/test/forward_http_test.exs', 8),
         ('apps/gaoxy_proxy/test/upstream_transports_test.exs', 47),
         ('apps/gaoxy_proxy/test/upstream_groups_test.exs', 8),
+        ('apps/gaoxy_proxy/test/udp_relay_test.exs', 18),
         ('apps/gaoxy_proxy/test/websocket_protocol_rejection_test.exs', 1),
         ('apps/gaoxy_http3/test/websocket_proxy_rejection_test.exs', 1),
         ('apps/gaoxy_proxy/test/websocket_tls_test.exs', 3),

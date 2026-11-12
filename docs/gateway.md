@@ -133,7 +133,11 @@ this slice; ordinary core multicast hosting keeps its earlier contract.
 Associations are generation-tagged by ingress peer. Defaults limit associations
 to 256, each queue to 8 items/65,536 bytes, datagrams to 65,507 bytes, idle time to
 30 seconds and lifetime to 300 seconds. Service admission and aggregate byte
-capacity apply as well. Empty payloads still charge one item/byte. Only the
+capacity apply as well. `max_source_associations` caps how many associations
+one source address may hold; it defaults to 256, which leaves it off. Set it
+below `max_associations` when ingress peers are individual hosts, so one host
+cannot occupy every slot; leave it off when many clients share an address
+behind NAT. Empty payloads still charge one item/byte. Only the
 pinned upstream source earns return delivery, and return packet/byte credits
 come from admitted ingress. Rates and amplification ratios are finite; no
 uncertain/admitted send is retried. UDP CIDRs restrict sources without

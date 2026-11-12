@@ -108,6 +108,10 @@ defmodule Gaoxy.Proxy.UDPRelay.Controller do
           map_size(state.associations) >= state.options.reservation.max_associations ->
         reject(state, :association_limit)
 
+      existing == nil and
+          source_associations(state, key) >= state.options.limits.max_source_associations ->
+        reject(state, :source_association_limit)
+
       true ->
         with :ok <- Admission.adjust_bytes(state.context.gate, state.lease, bytes),
              {:ok, association, state} <- admitted_association(state, key, bytes) do
@@ -374,6 +378,10 @@ defmodule Gaoxy.Proxy.UDPRelay.Controller do
         {:ok, association, state}
     end
   end
+
+  # Counted only when a new association would be created, over at most 256 keys.
+  defp source_associations(state, {_, _, ip, _}),
+    do: Enum.count(state.associations, fn {{_, _, source, _}, _} -> source == ip end)
 
   defp find(state, pid, token),
     do:

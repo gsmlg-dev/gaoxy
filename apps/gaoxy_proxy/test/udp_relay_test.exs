@@ -105,6 +105,28 @@ defmodule Gaoxy.Proxy.UDPRelayTest do
     send(upstream, :stop)
   end
 
+  test "one source address cannot hold more than its share of associations" do
+    {upstream, port} = upstream()
+
+    instance =
+      instance(port, %{
+        handler_options:
+          options(port, %{limits: %{max_associations: 4, max_source_associations: 1}})
+      })
+
+    {ip, relay_port} = endpoint(instance)
+    a = client()
+    b = client()
+    :ok = :gen_udp.send(a, ip, relay_port, "admitted")
+    assert {:ok, {^ip, ^relay_port, "admitted"}} = :gen_udp.recv(a, 0, 1_500)
+    # Same address, another port: global capacity remains, the source's does not.
+    :ok = :gen_udp.send(b, ip, relay_port, "rejected")
+    assert {:error, :timeout} = :gen_udp.recv(b, 0, 100)
+    :ok = :gen_udp.send(a, ip, relay_port, "retained")
+    assert {:ok, {^ip, ^relay_port, "retained"}} = :gen_udp.recv(a, 0, 1_500)
+    send(upstream, :stop)
+  end
+
   test "idle expiry releases owned upstream socket and creates a fresh association" do
     {_upstream, port} = upstream()
 

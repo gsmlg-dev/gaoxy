@@ -20,6 +20,8 @@
 | C10 | 暂不处理 | 复核后发现 `QUICBridge` 在 gate 无法为回调提供资金时同样跳过 `terminate/2`,这是既定设计;StreamBridge 的差别只是以 MatchError 崩溃而不是静默返回 |
 | C1 | 已修复 | 终结重试改为 single-flight;复现测试中 5 个终结项在 150 ms 内触发 155 次全量 sweep,修复后在上限内 |
 | A2(上游部分) | 已完成(未发布) | transport / custodian / group 进入终态隔离时发 `[:gaoxy, :upstream_quarantined]` 并打 warning;`docs/gateway.md` 增加状态表;`upstream_transports_test.exs`(47 例)与 `upstream_groups_test.exs`(8 例)纳入 protocol 门禁。恢复路径(C4/C5/C11)尚未改动 |
+| S3 | 已完成(未发布,默认关闭) | 新增 UDP `max_source_associations`(默认 256,等于全局上限,即不生效);设小于 `max_associations` 时单个源地址不能占满全部槽位。默认值是否收紧取决于部署形态(NAT 后多客户端共用地址会被误伤),留给你决定。`udp_relay_test.exs`(18 例)纳入 protocol 门禁 |
+| S7(部分) | 已完成(未发布) | 全部 53 处 `uses:` 固定到 commit SHA(含原先浮动的 `dtolnay/rust-toolchain@stable`,行尾保留版本注释);依赖漏洞扫描与 rc 依赖说明尚未做 |
 | S1 | 已修复 | 对端在存活流上诱发的重置计入 `control_rate`;新增 `http2_peer_reset_rate_test.exs`(protocol 套件,2 例) |
 
 0.16.3 已于 2026-11-13 发布(GitHub release 与 Hex 包均已确认)。标"未发布"的条目在其后提交。
