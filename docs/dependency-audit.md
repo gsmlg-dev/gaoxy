@@ -1,4 +1,4 @@
-## Current dependency requirements — 0.16.3
+## Current dependency requirements — 0.16.4
 
 Stable dependencies use two-component pessimistic requirements: `~> 1.20` for
 Plug, `~> 0.5` for WebSock while the HTTP/TLS/QUIC cohort and Abyss/Hell require

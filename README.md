@@ -5,9 +5,9 @@ custom TCP, TLS and UDP services. It provides native HTTP/1.1 and HTTP/2, with
 HTTP/3 available through an optional package. Run it inside your application's
 supervision tree or use the standalone release with JSON configuration.
 
-This source targets version **0.16.3**:
-[GitHub release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.16.3) ·
-[release notes](docs/releases/0.16.3.md).
+This source targets version **0.16.4**:
+[GitHub release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.16.4) ·
+[release notes](docs/releases/0.16.4.md).
 
 TCP/TLS acceptor and socket tuning uses validated `hell_options`; UDP/QUIC uses
 `abyss_options`. See the [support matrix](docs/backend-options.md) and
