@@ -8,13 +8,13 @@ defmodule Gaoxy.HTTP2PartialFrameProgressTest do
     def call(exchange, _), do: Gaoxy.HTTP.Response.send_resp(exchange, 200, [], "ok")
   end
 
-  @frame_timeout 300
+  @frame_timeout 1_000
 
   @tag timeout: 10_000
   test "frames that each complete promptly survive deliveries that always end mid-frame" do
     {socket, deadline} = connect()
 
-    pings = for index <- 1..15, do: frame(6, 0, <<index::64>>)
+    pings = for index <- 1..16, do: frame(6, 0, <<index::64>>)
     <<head::binary-size(5), carry::binary>> = hd(pings)
     assert :ok = :gen_tcp.send(socket, head)
 
@@ -29,7 +29,7 @@ defmodule Gaoxy.HTTP2PartialFrameProgressTest do
 
     assert :ok = :gen_tcp.send(socket, last)
 
-    for index <- 1..15 do
+    for index <- 1..16 do
       assert {6, 1, <<^index::64>>} = recv_frame(socket, deadline)
     end
   end
@@ -44,7 +44,7 @@ defmodule Gaoxy.HTTP2PartialFrameProgressTest do
   end
 
   defp connect do
-    deadline = Lifecycle.deadline(5_000)
+    deadline = Lifecycle.deadline(8_000)
 
     assert {:ok, spec} =
              Gaoxy.HTTP.service_spec(

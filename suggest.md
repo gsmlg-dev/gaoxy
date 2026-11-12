@@ -18,6 +18,7 @@
 | S2 | 已修复 | forward 代理路径不再追加 `X-Forwarded-*`(仍剥离入站的);`forward_http_test.exs` 增加断言 |
 | T1(第 1 步) | 已完成 | `forward_http_test.exs`(protocol,8 例)与 `destination_policy_test.exs`(component,8 例)纳入门禁;前者有一个过期用例(TLS listener 默认启用 H2 后 32 MB 预算不足),已将该用例固定为 `protocols: [:http1]` |
 | C10 | 暂不处理 | 复核后发现 `QUICBridge` 在 gate 无法为回调提供资金时同样跳过 `terminate/2`,这是既定设计;StreamBridge 的差别只是以 MatchError 崩溃而不是静默返回 |
+| C1 | 已修复 | 终结重试改为 single-flight;复现测试中 5 个终结项在 150 ms 内触发 155 次全量 sweep,修复后在上限内 |
 | S1 | 已修复 | 对端在存活流上诱发的重置计入 `control_rate`;新增 `http2_peer_reset_rate_test.exs`(protocol 套件,2 例) |
 
 ## 先看这些
@@ -493,6 +494,8 @@ HTTP 和 WebSocket 两条路径都总是用 socket 对端地址替换 `X-Forward
 - `managed_h2_group_generation_test.exs`(5,033 行)、`managed_h2_fixed_generation_test.exs`(3,792 行)。
 
 也就是说,改坏目标策略或 managed H2 记账,CI 不会报错。
+
+**2026-11-13 补充(实测,core)**:`apps/gaoxy` 整套一起跑(453 例)在未改动的代码上有 4–5 例失败:`DatagramDispatcherTest`(1)、`SendOutcomeTest`(2)、`QUICContextTest`(2,单独按门禁方式运行时通过),以及负载下偶发的 `AdmittedSpawnTest`(1,单独运行稳定通过)。说明这些测试对并发运行或共享状态敏感。
 
 **2026-11-13 补充(实测)**:修 S1 时跑了 `apps/gaoxy_http` 的全部 H2 测试文件(含未调度的),在未改动的 `main` 上 163 例中已有 30 例失败,集中在 `http2_integration_test.exs`、`http2_worker_startup_extended_test.exs`、`http2_network_test.exs`、`http2_capacity_test.exs`。未调度的测试确实已经在腐烂;这些失败尚未诊断,不清楚是测试过期还是产品缺陷。
 

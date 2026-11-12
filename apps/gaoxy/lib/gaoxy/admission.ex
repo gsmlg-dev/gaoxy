@@ -172,6 +172,7 @@ defmodule Gaoxy.Admission do
       {:ok,
        %{
          budget: budget,
+         terminal_retry: nil,
          limits: limits,
          scope: Map.drop(scope, [:service_pid, :budget]),
          service: Map.get(scope, :service_pid),
@@ -1255,12 +1256,10 @@ defmodule Gaoxy.Admission do
     end
   end
 
-  def handle_info(:budget_retry_terminals, state) do
-    state = Enum.reduce(Map.keys(state.spawns), state, &settle_spawn(&2, &1))
-    state = Enum.reduce(Map.keys(state.leases), state, &settle_lease(&2, &1))
-    state = Enum.reduce(Map.keys(state.cleanups), state, &settle_cleanup(&2, &1))
-    {:noreply, state}
-  end
+  def handle_info(:budget_retry_terminals, state), do: {:noreply, settle_terminals(state)}
+
+  def handle_info({:budget_retry_terminals, ref}, %{terminal_retry: ref} = state),
+    do: {:noreply, settle_terminals(%{state | terminal_retry: nil})}
 
   def handle_info(_, state), do: {:noreply, state}
   @impl true
@@ -1768,12 +1767,25 @@ defmodule Gaoxy.Admission do
     end
   end
 
+  defp settle_terminals(state) do
+    state = Enum.reduce(Map.keys(state.spawns), state, &settle_spawn(&2, &1))
+    state = Enum.reduce(Map.keys(state.leases), state, &settle_lease(&2, &1))
+    Enum.reduce(Map.keys(state.cleanups), state, &settle_cleanup(&2, &1))
+  end
+
   defp terminal_result({:ok, state}), do: state
 
-  defp terminal_result({:error, :budget_pending, state}) do
-    Process.send_after(self(), :budget_retry_terminals, 10)
-    state
+  # One sweep settles every terminal entry, so one outstanding retry is enough
+  # however many entries are waiting on the pending budget operation.
+  # Only that delayed retry clears the marker; sweeps requested for other reasons
+  # run in between without starting a second retry chain.
+  defp terminal_result({:error, :budget_pending, %{terminal_retry: nil} = state}) do
+    ref = make_ref()
+    Process.send_after(self(), {:budget_retry_terminals, ref}, 10)
+    %{state | terminal_retry: ref}
   end
+
+  defp terminal_result({:error, :budget_pending, state}), do: state
 
   defp terminal_result({:error, _, state}), do: state
   defp reply_mutation({:ok, state}), do: {:reply, :ok, state}

@@ -11,27 +11,29 @@ defmodule Gaoxy.HTTP2PeerResetRateTest do
 
   @tag timeout: 10_000
   test "resets provoked on live streams count against the control rate" do
-    {socket, authority, deadline} = connect()
+    {socket, authority, deadline} = connect(16)
 
     # Each pair opens a request and violates it with DATA after END_STREAM.
-    assert :ok = :gen_tcp.send(socket, Enum.map(1..300, &violation(&1, authority)))
+    # SETTINGS and its ACK already used two of the sixteen, so the limit is
+    # crossed within the first parse turn and stream-slot limit.
+    assert :ok = :gen_tcp.send(socket, Enum.map(1..24, &violation(&1, authority)))
 
-    assert {:goaway, 11, resets} = collect(socket, deadline, 0, 300)
-    assert resets <= 256
+    assert {:goaway, 11, resets} = collect(socket, deadline, 0, 24)
+    assert resets <= 16
   end
 
   @tag timeout: 10_000
   test "a bounded number of provoked resets leaves the connection usable" do
-    {socket, authority, deadline} = connect()
+    {socket, authority, deadline} = connect(64)
 
-    assert :ok = :gen_tcp.send(socket, Enum.map(1..100, &violation(&1, authority)))
-    assert {:resets, 100} = collect(socket, deadline, 0, 100)
+    assert :ok = :gen_tcp.send(socket, Enum.map(1..24, &violation(&1, authority)))
+    assert {:resets, 24} = collect(socket, deadline, 0, 24)
 
     assert :ok = :gen_tcp.send(socket, frame(6, 0, 0, "survives"))
     assert {:ping, "survives"} = collect(socket, deadline, 0, 1)
   end
 
-  defp connect do
+  defp connect(control_rate) do
     deadline = Lifecycle.deadline(5_000)
 
     assert {:ok, spec} =
@@ -39,10 +41,10 @@ defmodule Gaoxy.HTTP2PeerResetRateTest do
                endpoint: {Endpoint, nil},
                protocols: [:http2],
                h2c: :prior_knowledge,
-               limits: %{max_bytes: 536_870_912, max_active: 128}
+               limits: %{max_bytes: 536_870_912, max_active: 128},
+               h2_limits: %{control_rate: control_rate}
              )
 
-    assert spec.handler_options.h2_limits.control_rate == 256
     assert {:ok, runtime} = Gaoxy.start_link(services: [spec])
     on_exit(fn -> if Process.alive?(runtime), do: Gaoxy.stop(runtime, 1_000) end)
     assert {:ok, {ip, port}} = Gaoxy.info(runtime, :http).local

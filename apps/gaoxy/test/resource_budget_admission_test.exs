@@ -1955,4 +1955,52 @@ defmodule Gaoxy.ResourceBudget.AdmissionTest do
 
     assert %{connections: 1, leases: 2} = snapshot(b)
   end
+
+  test "terminal retries stay single-flight while a budget operation is pending" do
+    {server, _} = b = budget()
+    g = gate(b)
+    test = self()
+
+    holders =
+      for _ <- 1..5 do
+        pid =
+          spawn(fn ->
+            send(test, {:acquired, self(), Admission.acquire(g, 10)})
+
+            receive do
+              :stop -> :ok
+            end
+          end)
+
+        assert_receive {:acquired, ^pid, {:ok, _}}, 1_000
+        pid
+      end
+
+    hold_native_commit(server)
+    spawn(fn -> send(test, {:stalled, Admission.acquire(g, 10)}) end)
+    assert_receive {:native_commit_held, ledger}, 1_000
+    assert_receive {:stalled, {:error, :budget_timeout}}, 1_000
+
+    :erlang.trace(g, true, [:receive])
+    Enum.each(holders, &stop_native(&1, :kill))
+    Process.sleep(150)
+    :erlang.trace(g, false, [:receive])
+    delivered = :erlang.trace_delivered(g)
+    assert_receive {:trace_delivered, ^g, ^delivered}, 1_000
+    send(ledger, :release_native_commit)
+
+    # At most one delayed sweep per retry interval while the operation is pending.
+    assert sweeps(g, 0) in 1..40
+    eventually(fn -> Admission.status(g).active == 0 end)
+  end
+
+  defp sweeps(gate, count) do
+    receive do
+      {:trace, ^gate, :receive, :budget_retry_terminals} -> sweeps(gate, count + 1)
+      {:trace, ^gate, :receive, {:budget_retry_terminals, _}} -> sweeps(gate, count + 1)
+      {:trace, ^gate, :receive, _} -> sweeps(gate, count)
+    after
+      0 -> count
+    end
+  end
 end

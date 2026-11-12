@@ -70,7 +70,7 @@ SUITES = {
     'component': [
         ('apps/gaoxy_proxy/test/destination_policy_test.exs', 8),
         ('apps/gaoxy_http/test/body_accounting_window_test.exs', 13),
-        ('apps/gaoxy/test/resource_budget_admission_test.exs', 60),
+        ('apps/gaoxy/test/resource_budget_admission_test.exs', 61),
         ('apps/gaoxy/test/admission_headroom_test.exs', 8),
         ('apps/gaoxy_http/test/resource_budget_phoenix_test.exs', 1),
         ('apps/gaoxy_http3/test/resource_budget_h3_test.exs', 8),
