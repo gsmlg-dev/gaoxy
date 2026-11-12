@@ -29,8 +29,8 @@ is rc.16 because Gaoxy depends on these APIs and fixes:
 - `Abyss.Handler` is deprecated; Gaoxy's UDP datagram bridge uses
   `Abyss.Endpoint` with `datagram_handler:`.
 
-The `integration/quic_consumer` and `integration/h3_consumer` floor fixtures keep
-their own historical rc.4 locks. Core remains free of `abyss_raw`, Rustler and
+The `integration/quic_consumer` and `integration/h3_consumer` path consumers use
+the same rc.16 cohort. Core remains free of `abyss_raw`, Rustler and
 the HTTP/QUIC packages; it now includes `ex_ssl`, a hard Hell dependency since
 rc.12 that has no dependencies of its own.
 
