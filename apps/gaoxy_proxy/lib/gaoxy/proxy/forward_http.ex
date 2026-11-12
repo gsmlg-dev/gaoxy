@@ -101,7 +101,7 @@ defmodule Gaoxy.Proxy.ForwardHTTP do
     upstream = URI.to_string(%URI{scheme: "http", host: target.host, port: target.port})
     options = Map.merge(config.limits, %{upstream: upstream, connect_address: address})
 
-    with {:ok, proxy} <- HTTPProxy.init(options), do: HTTPProxy.call(exchange, proxy)
+    with {:ok, proxy} <- HTTPProxy.init(options), do: HTTPProxy.forward(exchange, proxy)
   end
 
   defp dispatch(exchange, config, %{operation: :connect} = target, address) do

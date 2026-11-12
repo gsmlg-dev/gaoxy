@@ -12,6 +12,12 @@
 | D2 | 已完成 | AGENTS.md 重写,旧文件归档到 `docs/history/agents-instructions-2026-10.md` |
 | D3 | 已完成 | `docs/acceptance` 不再追踪,已加入 `.gitignore`(历史提交中仍保留) |
 | P5 | 等待上游 | [gsmlg-dev/http_fetch#170](https://github.com/gsmlg-dev/http_fetch/issues/170) |
+| C6 | 已修复 | 完成一帧(或一个 CONTINUATION 头块)即清除 partial 定时器;新增 `http2_partial_frame_progress_test.exs`(修复前 300 ms 后连接被关闭) |
+| C9 | 已修复 | 未注册状态码用空 reason phrase;实测修复前原生 endpoint 返回 599/499 时连接被直接关闭、无任何响应;新增 `http1_unregistered_status_network_test.exs` |
+| C8 | 不成立 | 实测 drain 后 last-stream-id 之上的流既不被应答也不被 endpoint 执行(5 轮,执行数恒等于应答数);未改产品代码,`http2_drain_goaway_test.exs` 留作不变量守护 |
+| S2 | 已修复 | forward 代理路径不再追加 `X-Forwarded-*`(仍剥离入站的);`forward_http_test.exs` 增加断言 |
+| T1(第 1 步) | 已完成 | `forward_http_test.exs`(protocol,8 例)与 `destination_policy_test.exs`(component,8 例)纳入门禁;前者有一个过期用例(TLS listener 默认启用 H2 后 32 MB 预算不足),已将该用例固定为 `protocols: [:http1]` |
+| C10 | 暂不处理 | 复核后发现 `QUICBridge` 在 gate 无法为回调提供资金时同样跳过 `terminate/2`,这是既定设计;StreamBridge 的差别只是以 MatchError 崩溃而不是静默返回 |
 | S1 | 已修复 | 对端在存活流上诱发的重置计入 `control_rate`;新增 `http2_peer_reset_rate_test.exs`(protocol 套件,2 例) |
 
 ## 先看这些
@@ -154,7 +160,7 @@ TLS 引擎是 ex_ssl,它会缓冲最多 1 MiB 明文并一次性投递;默认上
 
 **建议**:增量解析投递,把上限施加在未解析的残留部分(小于 `max_frame + 9`);按 ex_ssl 的实际上界重新推导 `@max_delivery`。
 
-#### C8 ✔ H2 优雅 drain:GOAWAY 的 last-stream-id 不包含已接纳但未 dispatch 的流 — Medium / S
+#### C8 ~~H2 优雅 drain~~(2026-11-13 实测不成立,见修复进度)原文:H2 优雅 drain:GOAWAY 的 last-stream-id 不包含已接纳但未 dispatch 的流 — Medium / S
 
 [http2/connection.ex:1528-1538](apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex#L1528-L1538),`accepted` 只在 [1624 行](apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex#L1624) 的 dispatch 中推进
 
@@ -457,6 +463,10 @@ end
 
 **建议**:提供基于 `Plug.Crypto.secure_compare/2` 的 `DestinationPolicy.static_bearer/1`(`plug_crypto` 已在依赖中),在文档中写明要求,让策略声明自己的 challenge 字符串。
 
+#### S8 代理在客户端未发送 User-Agent 时添加自己的标识 — Low(2026-11-13 修 S2 时观察到,未处理)
+
+`forward_http_test.exs` 里上游收到的请求头包含 `user-agent: mozilla/5.0 (linux; ...) otp/28 beam/... elixir/1.18.5 http_fetch/1.0.0-rc.16`,而客户端并没有发送 User-Agent。代理不应替客户端添加 User-Agent,更不应暴露自身的 OTP/Elixir/依赖版本。需要确认这是 http_fetch 的默认行为还是 Gaoxy 的配置,再决定是本地关闭还是走上游 issue。
+
 #### S6 没有 trusted-proxy 选项 — Low(设计缺口)
 
 HTTP 和 WebSocket 两条路径都总是用 socket 对端地址替换 `X-Forwarded-For`。这能防伪造,但 Gaoxy 部署在另一层负载均衡后面时真实客户端地址会丢失。考虑加 `trusted_proxies` CIDR 列表来决定追加还是替换。
@@ -530,7 +540,6 @@ assert c.reservation_bytes == 16_478_862
 | --- | --- |
 | S1 | H2:循环 `HEADERS(END_STREAM)` + DATA,断言超过 `control_rate` 后 GOAWAY |
 | C6 | H2:持续 > `frame_timeout` 的帧中间投递(每帧都及时完成),断言连接存活 |
-| C8 | H2:drain 时有已接纳未 dispatch 的流,断言 GOAWAY last-stream-id 覆盖它或它被 REFUSED_STREAM |
 | C9 | H1:Plug 返回 599 / 499,断言状态码原样到达 |
 | S2 | Forward 代理:断言上游请求不含 `X-Forwarded-For` |
 | S3 | UDP:单源多端口,断言按源上限生效 |

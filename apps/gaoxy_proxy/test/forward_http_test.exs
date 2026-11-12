@@ -39,6 +39,8 @@ defmodule Gaoxy.Proxy.ForwardHTTPTest do
     assert String.downcase(upstream) =~ "host: localhost:#{port}\r\n"
     refute String.downcase(upstream) =~ "proxy-authorization"
     refute upstream =~ "secret"
+    # A forward proxy must not disclose its client to the destination.
+    refute String.downcase(upstream) =~ "x-forwarded-"
     assert_peer(peer)
     restored(server)
   end
@@ -192,9 +194,12 @@ defmodule Gaoxy.Proxy.ForwardHTTPTest do
         assert {:error, :closed} = :gen_tcp.recv(socket, 0, @timeout)
       end)
 
+    # Forward targets are HTTP/1.1 absolute-form; the HTTPS default would add
+    # HTTP/2 and its larger byte budget.
     server =
       server(port, @timeout,
         transport: :tls,
+        protocols: [:http1],
         tls: %{certfile: Path.join(dir, "cert.pem"), keyfile: Path.join(dir, "key.pem")}
       )
 

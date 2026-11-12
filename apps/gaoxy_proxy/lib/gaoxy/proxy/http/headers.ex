@@ -9,12 +9,14 @@ defmodule Gaoxy.Proxy.HTTP.Headers do
                         proxy-authenticate www-authenticate content-encoding content-type
                         content-range expect cache-control cookie set-cookie)
 
-  def request(exchange) do
+  # `:reverse` tells the origin who the client is. `:forward` serves a client's
+  # own egress, so it strips inbound forwarding fields and adds none.
+  def request(exchange, mode \\ :reverse) when mode in [:reverse, :forward] do
     with :ok <- preflight(exchange.request.headers, 256),
          {:ok, fields} <- normalize(exchange.request.headers),
          {:ok, policy} <- trailer_policy(fields, exchange.limits),
          policy = distrust_forwarding_trailers(policy),
-         {:ok, forwarded} <- forwarding(exchange),
+         {:ok, forwarded} <- forwarding(exchange, mode),
          true <-
            (policy.allowed == [] or exchange.request.body == :chunked or
               exchange.request.version in [:"HTTP/2", :"HTTP/3"]) ||
@@ -127,7 +129,9 @@ defmodule Gaoxy.Proxy.HTTP.Headers do
   defp declare_trailers(fields, []), do: fields
   defp declare_trailers(fields, names), do: fields ++ [{"trailer", Enum.join(names, ", ")}]
 
-  defp forwarding(exchange) do
+  defp forwarding(_exchange, :forward), do: {:ok, []}
+
+  defp forwarding(exchange, :reverse) do
     host =
       Enum.find_value(exchange.request.headers, exchange.request.host, fn
         {"host", value} -> value

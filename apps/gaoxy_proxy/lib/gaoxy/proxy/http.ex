@@ -294,6 +294,11 @@ defmodule Gaoxy.Proxy.HTTP do
   def call(exchange, config), do: dispatch_request(exchange, config)
 
   @doc false
+  # Forward-proxy entry: same pipeline without client-identifying fields.
+  def forward(exchange, %__MODULE__{transport: nil} = config),
+    do: dispatch_request(exchange, config, :forward)
+
+  @doc false
   def captured_resources?(pins, handles) when is_list(pins) and length(pins) <= 64 do
     :erlang.external_size(pins) <= 65_536 and
       Enum.all?(handles, fn handle -> Enum.any?(pins, &captured_pin?(&1, handle)) end)
@@ -341,14 +346,14 @@ defmodule Gaoxy.Proxy.HTTP do
     end
   end
 
-  defp dispatch_request(exchange, config) do
+  defp dispatch_request(exchange, config, mode \\ :reverse) do
     client = selected_client(config)
 
     with true <- client.host_supported?() || {:error, :unsupported_http_proxy_host},
          true <-
            exchange.request.target_form in [:origin, :absolute] || {:error, :unsupported_target},
          {:ok, method} <- method(exchange.request.method),
-         {:ok, headers, policy} <- Headers.request(exchange),
+         {:ok, headers, policy} <- Headers.request(exchange, mode),
          {:ok, session, monitor, deadline, handoff} <-
            start_session(exchange, config, method, headers, policy) do
       pump(pump_state(exchange, config, client, policy, session, monitor, deadline, handoff))
