@@ -16,16 +16,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7.0.1
-      - uses: erlef/setup-beam@v1.24.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
         with:
           elixir-version: '1.18.5'
           otp-version: '28.5'
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: actions/setup-python@v7.0.0
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
-      - uses: actions/cache@v6.1.0
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             deps
@@ -59,12 +59,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7.0.1
-      - uses: erlef/setup-beam@v1.24.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
         with:
           elixir-version: '1.18.5'
           otp-version: '28.5'
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
       - name: Provision certificate tool
         shell: bash
         run: |
@@ -72,8 +72,8 @@ jobs:
           certificate_tool="$(command -v openssl)"
           "$certificate_tool" version -a
           echo "OPENSSL_BIN=$certificate_tool" >> "$GITHUB_ENV"
-      - uses: astral-sh/setup-uv@v10.2.0
-      - uses: actions/cache@v6.1.0
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             integration/quic_consumer/deps

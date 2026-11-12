@@ -22,16 +22,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7.0.1
-      - uses: erlef/setup-beam@v1.24.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
         with:
           elixir-version: '1.18.5'
           otp-version: '28.5'
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: actions/setup-python@v7.0.0
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
-      - uses: actions/cache@v6.1.0
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             deps
@@ -62,20 +62,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7.0.1
-      - uses: erlef/setup-beam@v1.24.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
         with:
           elixir-version: '1.18.5'
           otp-version: '28.5'
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: actions/setup-go@v7.0.0
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: '1.26.6'
           cache-dependency-path: integration/http3/channel_peer/go.sum
-      - uses: actions/setup-python@v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
-      - uses: actions/cache@v6.1.0
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             deps
@@ -122,7 +122,7 @@ jobs:
         env:
           GAOXY_PHOENIX_EVIDENCE: .audit/unified-phoenix
         run: .audit/h2peer/bin/python integration/phoenix_native/unified.py
-      - uses: actions/upload-artifact@v7.0.2
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: protocol-evidence
@@ -135,12 +135,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7.0.1
-      - uses: erlef/setup-beam@v1.24.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
         with:
           elixir-version: '1.18.5'
           otp-version: '28.5'
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
       - name: Provision certificate tool
         shell: bash
         run: |
@@ -148,10 +148,10 @@ jobs:
           certificate_tool="$(command -v openssl)"
           "$certificate_tool" version -a
           echo "OPENSSL_BIN=$certificate_tool" >> "$GITHUB_ENV"
-      - uses: actions/setup-python@v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.14'
-      - uses: actions/cache@v6.1.0
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             deps
@@ -181,8 +181,8 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       GAOXY_E2E_VERSION: ${{ inputs.version }}
     steps:
-      - uses: actions/checkout@v7.0.1
-      - uses: actions/setup-python@v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
       - name: HTTP clients and certificate tools
@@ -192,7 +192,7 @@ jobs:
           .audit/released-client-venv/bin/python -m pip install -r integration/e2e/requirements.txt
       - name: Downloaded release with independent clients
         run: .audit/released-client-venv/bin/python integration/e2e/run.py --version "$GAOXY_E2E_VERSION" --evidence .audit/released-clients
-      - uses: actions/upload-artifact@v7.0.2
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: released-client-evidence
