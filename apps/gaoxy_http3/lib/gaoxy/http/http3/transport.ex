@@ -51,6 +51,9 @@ defmodule Gaoxy.HTTP.HTTP3.Transport do
     monitor = Process.monitor(owner)
 
     try do
+      # TODO(upstream): gsmlg-dev/http_fetch#170
+      # The owner only executes this on its next Abyss poll tick; wake it here
+      # once Abyss exposes a supported wake-up.
       with {:ok, ref} <- Operations.submit(table, key, token, {operation, deadline}) do
         await(owner, monitor, table, key, token, ref, deadline)
       end

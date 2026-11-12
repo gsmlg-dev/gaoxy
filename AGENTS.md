@@ -1,224 +1,169 @@
 # Gaoxy agent instructions
 
-## Current adaptive-budget extension — 2026-10-30
+Gaoxy is an Elixir/OTP server runtime: native HTTP/1.1, HTTP/2 and HTTP/3, a Plug
+and Phoenix adapter, reverse/forward proxying and a standalone JSON-configured
+release. This file holds the rules that are in force now. Earlier time-boxed
+authorizations and stage dispositions are archived in
+[docs/history/agents-instructions-2026-10.md](docs/history/agents-instructions-2026-10.md)
+and grant nothing.
 
-The user extends the existing time quota by **24 hours**, moving the fixed
-deadline from 2026-10-30 10:09:44 to **2026-10-31 10:09:44 Asia/Shanghai**
-(UTC **2026-10-31 02:09:44**). The original start remains 2026-10-29 22:09:44
-Asia/Shanghai, for a total allowance of 36 hours. Resume the unfinished adaptive
-resource-budget goal and its already-authorized implementation, verification,
-independent review, commit, push and coordinated release within this window.
-Failure counts remain historical and impose no numerical stop during it.
-Preserve the earlier expiry/model-capacity evidence and cumulative repair
-counters. Already-escalated recovery stays on Astra, with at most one active
-Astra worker and serialized shared builds. All existing scope, ownership,
-assertion, dependency-blocker and publication guards remain effective. Stop
-new work at the extended deadline or once the full objective is verified and
-delivered. No branch/worktree or deployment permission is added.
+## Layout
 
-## Initial adaptive-budget time quota — 2026-10-29
+| Path | Contents |
+| --- | --- |
+| `apps/gaoxy` | Core: service lifecycle, admission gate, adaptive resource budget, TCP/TLS/UDP/QUIC bridges |
+| `apps/gaoxy_http` | Native H1/H2, WebSocket, Plug and Phoenix adapters, listener sets, routing generations |
+| `apps/gaoxy_http3` | Optional native H3 over QUIC |
+| `apps/gaoxy_proxy` | HTTP/WebSocket/stream/UDP proxying, forward proxy policy, upstream groups and transports, gateway |
+| `apps/gaoxy_server` | Standalone application and JSON config; ships in the release, not on Hex |
+| `apps/gaoxy_test` | Test-only HTTP fixtures published for consumers |
+| `vendor/websock_adapter` | Gaoxy distribution of WebSockAdapter, published as `gaoxy_websock_adapter` |
+| `integration/`, `examples/` | Independent consumers, protocol peers and sample applications |
+| `docs/` | Guides, ADRs, designs, plans and release notes |
+| `suggest.md` | Review backlog from 2026-11-13; check an item against current code before acting on it |
 
-The user replaces failure-count limits for the active adaptive resource-budget
-goal with a twelve-hour execution window, from **2026-10-29 22:09:44** through
-**2026-10-30 10:09:44 Asia/Shanghai** (UTC 2026-10-29 14:09:44 through
-2026-10-30 02:09:44). Continue implementation, diagnosis, repair, verification,
-independent review and the already-authorized delivery within that window.
-Repeated failures do not exhaust this allowance. Existing Sol/Astra counts and
-failed evidence remain historical records; do not reset or erase them.
+Dependency direction is `gaoxy` ← `gaoxy_http` ← `gaoxy_http3` / `gaoxy_proxy` ←
+`gaoxy_server`. Core-only consumers must keep compiling without the HTTP apps.
 
-This explicit additional repair authorization supersedes the numerical repair
-ceilings and pending-approval stops below for this goal during the window.
-Already-escalated CORE, H1/H2 and H3 recovery stays on Astra, with at most one
-active Astra worker and serialized shared builds. Preserve scope, assertions,
-ownership, independent review, dependency-blocker rules and publication guards.
-Stop new work when the window expires or the full objective is verified and
-delivered; report actual completion and remaining blockers. No branch/worktree,
-production deployment or operational-data permission is added.
+## Commands
 
-## Current automated testing boundaries — 2026-10-22
+Toolchain: Elixir 1.18.5, OTP 28.5, Rust stable, Python 3.12. CI sets
+`ELIXIR_ERL_OPTIONS='+S 2:2'`.
 
-These boundaries supersede historical browser-verification requirements below.
+```sh
+mix deps.get --check-locked
+mix format --check-formatted
+mix compile --warnings-as-errors
+python3 scripts/check-test-inventory.py     # every app test file is classified
+python3 scripts/check-repairs.py unit       # no sockets, exact case counts
+python3 scripts/check-repairs.py component  # real component integration
+python3 scripts/check-repairs.py protocol   # real network and protocol peers
+python3 scripts/check-tests.py <test file>  # one file, as the gates run it
+```
 
-- `test.yml` has one `ubuntu-latest` unit job, without an OS or BEAM matrix.
-  Service interactions use mocks or controlled doubles. Unit tests must not open
-  real listeners/sockets, request even localhost services, launch protocol peers
-  or start a complete multi-component runtime.
-- `e2e.yml` owns Linux component integration, real network/protocol tests and
-  independent HTTP-client acceptance. Source jobs run on push/PR/manual without
-  requiring a published version. Released-server checks have a separate manual,
-  nonempty-version gate after their actual harness is qualified.
-- `portable.yml` alone owns cross-platform execution. Keep its smoke to one
-  native HTTP start, GET `/health` requiring 200 and `ok`, and successful stop.
-- `package.yml` owns package staging, clean consumers, dependency isolation and
-  source-built release smoke. Release qualification repeats required checks on
-  the exact publication source and retains its separate publication guards.
-- Use HTTP clients and protocol peers; do not add browser automation, Playwright,
-  Chromium installation, UI assertions or screenshots to server test gates.
-- `scripts/check-repairs.py` is the sole active app-file/count manifest with
-  `unit`, `component` and `protocol` suites. Classify every new app test file;
-  explicitly retain unscheduled/specialist paths in `scripts/test-inventory.json`.
-  Keep unit module declarations consistent and review their real dependencies.
-- Preserve ordinary assertions and exact, positive executed counts. Deferred
-  specialist cases and immutable historical evidence retain their disposition.
+`_build` and `deps` are shared: run one build or test command at a time, including
+across parallel agents.
 
-## Current M3 acceptance and local merge scope — 2026-10-19
+## Working rules
 
-The user accepts M3 as **COMPLETE within the implemented product functionality
-and ordinary verification scope** and authorizes merging the existing local
-implementation into local `main`. This current decision supersedes older
-`WholeTask6/Task5/M3 OPEN` dispositions and automatic progression instructions
-for exceptional, slow-peer, pressure, sustained-load and combined qualification
-slices. Stop executing or extending those slices in this work; transfer their
-remaining validation to a dedicated specialist test environment. Their failed,
-blocked and unexecuted results retain their actual status and are no longer
-blockers for this local merge. Preserve all historical evidence and assertions;
-this acceptance does not implement any absent capability or certify those tests.
+- Work on the current checkout and branch. Create a branch or worktree only when
+  the user asks for one; then put worktrees under `.trees/` on a `codex/` branch.
+- Make the smallest correct change in the existing style. No unrelated cleanup, no
+  speculative features. Preserve unrelated changes and untracked user files, and
+  stage only files the task owns.
+- Commits follow Conventional Commits, without generated-by or AI co-author trailers.
+- Give parallel agents disjoint files and explicit ownership. The coordinating
+  agent reviews and verifies the combined result.
+- Ordinary test or implementation failures go to diagnosis and repair, not to a
+  request for approval. Stop only for a new external permission, a product
+  decision, or an external blocker; keep working on whatever is not blocked.
 
-The sole-native-H1 blocked-upload disconnect slice has not established a product
-defect: its executed case failed during fixture setup before request creation,
-and the subsequent test-only `Code.require_file` fix has not been rerun. Do not
-continue that slice or include it as part of this implementation. Keep its
-source and evidence preserved separately from the accepted implementation.
+## Design rules
 
-Complete ordinary fresh merge verification and local integration under this
-scope. This authorization adds no push, release, package/image publication or
-deployment permission. Historical v0.3.0 publication is separate from the new
-local M3 implementation. Existing production-data/certificate, Vault,
-public-management and disabled release-artifact E2E restrictions remain intact.
-See [M3 completion](docs/acceptance/m3-completion.md) for accepted functionality,
-historical evidence and the fresh ordinary merge verification.
+- Configuration and policy live in pure modules. Add a process only for mutable
+  runtime state, concurrency or fault isolation.
+- Gaoxy owns server lifecycle and adapters. Use supported dependency APIs; do not
+  patch `deps/`, depend on private client processes, or hide Bandit as the
+  production server.
+- Do not ship an open proxy. Forward and CONNECT policies require explicit
+  authentication and destination rules, validated at connection time against the
+  address that is actually dialled.
+- Never build atoms from external input. Bound every buffer, queue and table that
+  a peer can grow, and count work the server does on a peer's behalf (resets,
+  rejections) against the same limits as work the peer sends.
+- Failing closed is the default under uncertainty, and every such state needs a
+  way out: emit telemetry with the reason when entering it, and give it a bounded
+  retry or a documented operator action. A state that needs a reload or restart to
+  clear is a defect unless the docs say so.
+- A timed-out `GenServer.call` means the outcome is unknown, not that the callee
+  is gone. Reconcile by token or retry; do not tear down a connection, listener or
+  transport because one accounting call was slow.
+- Prefer events to timers. Do not add millisecond polling where a monitor, an
+  active socket or a message already signals the change.
+- The admission gate, the budget Authority and Ledger, `Generation.Store` and the
+  upstream owners are each one process. Keep per-chunk and per-frame paths off
+  them: account on transitions, keep counters incrementally, index instead of
+  scanning.
+- Do not validate another module's private state shape at runtime, and do not put
+  test fixtures or qualification worksheets under `lib/`.
+- Keep one definition of protocol and security tables (header grammar, hop-by-hop
+  and forbidden-trailer lists, reserved address ranges); reuse it, do not copy it.
 
-## Historical instructions — retained below
+## Tests
 
-## Reviewed M3 disposition and release authorization — 2026-10-11
+- `test.yml` runs one Linux unit job. Unit tests use mocks or controlled doubles
+  and must not open listeners or sockets, call even localhost services, launch
+  protocol peers or start a complete multi-component runtime.
+- `e2e.yml` owns component integration, real network and protocol tests and
+  independent HTTP-client acceptance. `portable.yml` alone owns cross-platform
+  execution: one native HTTP start, `GET /health` returning 200 and `ok`, and a
+  clean stop. `package.yml` owns package staging, clean consumers, dependency
+  isolation and the source-built release smoke.
+- No browser automation, Playwright, Chromium, UI assertions or screenshots in
+  server test gates. Use HTTP clients and protocol peers.
+- `scripts/check-repairs.py` is the manifest of scheduled files and their exact
+  case counts. Classify every new app test file there as `unit`, `component` or
+  `protocol`, or list it in `scripts/test-inventory.json` with a reason. Tests that
+  guard a security rule belong in a scheduled suite.
+- Reproduce a bug with a failing test before fixing it where feasible. Never weaken
+  an assertion, skip a required case, or report a failed, blocked or unexecuted
+  check as passing. Require a nonzero executed count.
+- Assert behaviour through public APIs and `status/1`-style observation, not
+  `:sys.get_state` or exact internal byte constants. Use deterministic
+  synchronization, not sleeps, for lifecycle races, with finite deadlines.
+- Specialist slow-peer, pressure, disconnect and sustained-load qualification is
+  deferred to a dedicated environment and does not block ordinary work. Its
+  recorded failed and unexecuted results keep their status.
 
-The user reviewed `gsmlg-dev/http_fetch#97` and excluded its requested proof as
-excessively strict. Do not pursue or re-raise it, introduce equivalent replacement
-requirements, or use it as a stage, release, or M4 blocker. Preserve assertions,
-failures and immutable historical evidence; dismissal is a scope decision.
+## Verification and evidence
 
-The user separately authorizes the necessary integration into main, push, tag
-and GitHub standalone release after relevant verification and independent review.
-Release v0.2.0 covers native H1/H2 and the dedicated-H1 gateway beta subset;
-upstream connection pools and upstream H2 are not implemented. Prepare M4's
-HTTP/3 design and plan under continuing authorization. This exception supersedes
-older publication bans for this release only. Deployment, production data,
-operational certificates, public management, Vault freezes and the disabled
-release-artifact E2E workflow retain their existing restrictions.
+- Run the scoped tests and the gates a change touches, then review the final diff.
+  Get an independent review for protocol, accounting or security changes before
+  they are released.
+- Report commands, source commit, counts and exit status, keeping PASS, FAIL,
+  BLOCKED and NOT RUN distinct. Hosted CI, local runs, publication and production
+  acceptance are separate facts; do not infer one from another.
+- `docs/acceptance/` is local and untracked. Do not commit logs, source snapshots
+  or key material as evidence; summarize results in the commit, pull request or
+  release notes.
 
-Do not re-raise account spending/quota-increase requests for this work. If a
-hosted job cannot start, preserve its unexecuted status and use a separately
-qualified local release build without changing account or repository settings.
+## Dependencies
 
-## Continuing development authorization — renewed 2026-10-13 for M3 H1 resources
+The transport and client stack (`hell`, `abyss`, `http_core`, `http_fetch`,
+`http_web_socket`, `elixir_quic*`, `ex_ssl`) is developed in the
+`gsmlg-dev/http_fetch` monorepo and released as one version cohort. For a bug or
+missing feature in a dependency from gsmlgorg, gsmlg-dev, duskmoon-dev, gsmlg-app,
+Gao-OS, gsmlg-opt, gsmlg-ci, gsmlg-games or gsmlg-com:
 
-The user granted continuing authorization on 2026-10-10 for the existing product
-goals in `implement-plan.md`, beginning with M3. This authorization supersedes
-older routine development approval and phase-stop rules, including historical
-kickoff instructions limited to M0/M1 and old per-file scope lists.
-The user renewed this authorization on 2026-10-11 and 2026-10-12, explicitly
-starting M4 development: ordinary implementation or
-test failures enter diagnosis and repair rather than a user-approval pause.
-Cumulative Sol/Astra counters remain recorded; this renewal does not reset them
-or authorize a third Astra recovery round. Necessary additional local Sol
-repairs are authorized, with fresh independent review and unchanged assertions.
-M4 authorization covers executing its HTTP/3 design and plan, including the
-required downstream/upstream matrix and necessary standalone compatibility;
-the earlier instruction to prepare M4's documents is not an implementation
-stop. Automatically design and execute any remaining bounded slices after
-their preceding gates pass. On 2026-10-13 the user explicitly started
-`docs/plans/m3-h1-resource-foundation.md` and renewed this authorization for the
-established product goals. The completed M4 acceptance/release preparation
-freeze is released by the parent at the verified Task 4 kickoff; historical
-documentation-only ownership does not restrict this execution. Advance to the
-next planned stage after required verification and independent review, retaining
-written designs and plans. This renewal grants no new publication or deployment
-authorization; the completed v0.2.0/v0.3.0 exceptions remain historical.
+1. Resolve the source repository from package metadata, and search its open and
+   closed issues first.
+2. Create the issue with `gh issue create --type Bug` or `--type Feature`, label
+   `internal request`, title `[internal] <concise description>`. Include the
+   requesting repository and branch, the need, a minimal reproduction or expected
+   behaviour, and severity `blocker`, `needed` or `nice-to-have`.
+3. Add `# TODO(upstream): org/repo#<number>` at the affected callsite.
+4. For a blocker, stop that task without a local workaround and resume only after
+   the fix is released and the dependency updated. For lesser severities, mark any
+   temporary repair `# WORKAROUND(upstream): org/repo#<number>` with its removal
+   condition.
 
-- Choose the recommended design and execution approach automatically. Complete
-  design, plans, implementation, necessary compatibility repairs, test-contract
-  updates, documentation, tests, independent review, and local conventional
-  commits without requesting individual `approve` responses.
-- Keep a written design and implementation plan for each stage. Advance to the
-  next planned stage after the prescribed verification and independent review
-  pass, without waiting for another routine stage approval.
-- Stay within the established product scope. A necessary compatibility repair
-  may touch files outside an older file list; this is not a reason to stop.
-- Diagnose and repair failed tests. Never weaken assertions, skip required
-  verification, or describe a failed, blocked, or unexecuted gate as passing.
-- Default to parallel agents for independent work. Give each writer explicit
-  ownership, preserve others' edits, and serialize dependent operations.
-  Sol handles implementation, debugging, tests, and routine independent review.
-  Astra may design architecture or take bounded recovery after two unsuccessful
-  Sol repair rounds or an evidenced technical impasse. Preserve cumulative
-  repair counters across handoffs; allow at most two Astra recovery rounds.
-- Stop only for new external permissions, a product decision the user must
-  make, or a genuine external blocker that cannot be resolved autonomously.
-  Continue other unblocked work when only one task is blocked.
+Do not re-raise `gsmlg-dev/http_fetch#97`; the user reviewed and dismissed it.
 
-This authorization does not expand product scope or remove explicit Vault
-freezes, E2E restrictions, publication/deployment restrictions, or production
-data restrictions. The release-artifact E2E workflow remains disabled until its
-design and real suite meet the existing gate. Required local independent-peer
-and browser verification remains part of implementation acceptance. Do not
-push, publish packages/releases/images, deploy, alter production data, issue
-operational certificates, or enable a public management endpoint without the
-separate authorization required by the product plan.
+## Release
 
-## Conditional M4 publication authorization — 2026-10-12
+Fixes that land on `main` are released; do not stop at "fixed but unreleased".
 
-The user separately authorizes integration into main, push to GitHub and a new
-version release after M4 actually completes its prescribed verification and
-independent review, followed by preparation of the next planned stage. This
-supersedes the local-only publication boundary for that completed release.
-Incomplete or blocked M4 gates do not satisfy the condition. Deployment,
-production data/certificates, Vault, public management and the disabled
-release-artifact E2E retain their explicit restrictions.
+1. Bump the patch version in every `mix.exs` and the README. The user decides
+   minor and breaking bumps.
+2. Add `docs/releases/<version>.md`.
+3. Push, and wait for green CI on that commit.
+4. Run `gh workflow run release.yml -f version=<version> -f expected_sha=<full sha> -f git_ref=main`.
+5. Confirm the GitHub release and the Hex packages.
 
-## Workspace and implementation
+If a hosted job cannot start, record it as NOT RUN; do not change account or
+repository settings or request spending or quota increases.
 
-- Put new worktrees in this project's `.trees/` directory; use `codex/` branches.
-- Preserve unrelated changes and untracked user files. Stage only task-owned
-  files. Omit generated-by and AI co-author trailers from commits.
-- State assumptions, prefer the smallest solution, match existing style, and
-  avoid unrelated cleanup or speculative features.
-- Use pure modules for configuration and policy; introduce processes only for
-  mutable runtime state, concurrency, or fault isolation.
-- Gaoxy owns server lifecycle and adapters. Use supported dependency APIs; do
-  not patch `deps/`, depend on private client processes, or hide Bandit as the
-  production server. Core-only consumers must remain isolated.
-- Do not ship an open proxy. Forward/CONNECT policies require explicit
-  authentication, destination rules, and validation at connection time.
-
-## Dependency issue routing
-
-For a dependency bug or missing required feature sourced from gsmlgorg,
-gsmlg-dev, duskmoon-dev, gsmlg-app, Gao-OS, gsmlg-opt, gsmlg-ci, gsmlg-games,
-or gsmlg-com:
-
-1. Identify the repository from package provenance.
-2. Create an upstream issue with `gh issue create --type Bug` or `--type Feature`,
-   label `internal request` (create the label if missing), and title
-   `[internal] <concise description>`.
-3. Include requesting `org/repo` and branch, need and rationale, minimal bug
-   reproduction or feature expectations, and severity `blocker`, `needed`, or
-   `nice-to-have`.
-4. Add `# TODO(upstream): org/repo#<number>` at the affected callsite.
-5. For a blocker, stop that task without a local workaround. Resume only after
-   the upstream issue is resolved and the dependency is updated. For lesser
-   severities, mark a temporary repair with
-   `# WORKAROUND(upstream): org/repo#<number>`.
-
-## Verification and acceptance
-
-- Run relevant scoped tests and required stage gates; compatibility tests needed
-  by the product goal are authorized. Diagnose failures instead of seeking a
-  routine approval. Unrelated failures stay visible and are not silently fixed.
-- Require nonzero executed tests. Record commands, environment, source identity,
-  counts, exits, and evidence, with PASS, FAIL, BLOCKED, and NOT RUN distinct.
-- Use real network/independent-peer tests for protocol acceptance and deterministic
-  synchronization for lifecycle races. Keep assertions and finite deadlines.
-- Complete independent specification and code review, resolve actionable findings,
-  then run fresh verification before committing or advancing a milestone.
-- Keep hosted CI, local evidence, publication, deployment, and production
-  acceptance separate. Do not infer one from another.
+These always need separate, explicit authorization: deployment, production data,
+operational certificates, a public management endpoint, changes to frozen Vault
+material, and enabling the released-artifact E2E workflow before its harness is
+qualified.
