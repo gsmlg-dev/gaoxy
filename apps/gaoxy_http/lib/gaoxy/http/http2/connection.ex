@@ -365,7 +365,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
               charge(state, provoked)
           end
 
-        parse(state, left - 1)
+        parse(frame_progress(state), left - 1)
     end
   end
 
@@ -1972,6 +1972,16 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
       nil
     )
   end
+
+  # The timer bounds one pending unit: a frame, or a header block spanning
+  # CONTINUATION frames. Completing it clears the timer, so the end of the turn
+  # arms a fresh one only for bytes that are still incomplete.
+  defp frame_progress(%{partial_timer: timer, continuation: nil} = state) when timer != nil do
+    Process.cancel_timer(timer)
+    %{state | partial_timer: nil, partial_token: nil}
+  end
+
+  defp frame_progress(state), do: state
 
   defp partial_timer(state) do
     partial = not state.preface or state.continuation != nil or state.buffer != ""

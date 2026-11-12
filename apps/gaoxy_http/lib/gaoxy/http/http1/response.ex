@@ -350,7 +350,7 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
 
   defp head(exchange, status, headers) do
     version = if exchange.request.version == :"HTTP/1.0", do: "HTTP/1.0", else: "HTTP/1.1"
-    reason = Plug.Conn.Status.reason_phrase(status)
+    reason = reason_phrase(status)
 
     [
       version,
@@ -362,6 +362,14 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
       fields(headers),
       "\r\n"
     ]
+  end
+
+  # Plug raises for codes it has no phrase for (499, 52x, 599 ...). RFC 9112
+  # allows an empty reason phrase, and HTTP/2 and HTTP/3 carry none at all.
+  defp reason_phrase(status) do
+    Plug.Conn.Status.reason_phrase(status)
+  rescue
+    ArgumentError -> ""
   end
 
   defp send_head(exchange, status, headers, final? \\ true) do
