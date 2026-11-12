@@ -328,6 +328,7 @@ defmodule Gaoxy.Proxy.ManagedH2GroupAccountingTransitionsTest do
         http_version: protocol,
         http2_profile: :native_v1,
         http2_reuse: true,
+        http2_unprocessed_retry: false,
         redirect: :manual,
         request_mode: :proxy,
         decode_body: false,

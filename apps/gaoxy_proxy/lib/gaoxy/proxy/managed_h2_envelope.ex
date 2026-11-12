@@ -350,12 +350,14 @@ defmodule Gaoxy.Proxy.ManagedH2Envelope do
 
   defp opaque_scope?(_), do: false
 
-  # TODO(upstream): gsmlg-dev/http_fetch#167 (opt-out of transparent H2 replay)
+  # Never replay an unprocessed (GOAWAY/REFUSED_STREAM) H2 request inside
+  # http_fetch; the proxy surfaces it as a failed upstream attempt.
   defp fetch_options(protocol),
     do: [
       http_version: protocol,
       http2_profile: :native_v1,
       http2_reuse: true,
+      http2_unprocessed_retry: false,
       redirect: :manual,
       request_mode: :proxy,
       decode_body: false,

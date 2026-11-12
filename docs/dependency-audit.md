@@ -1,9 +1,9 @@
-## Current dependency requirements — 0.16.0
+## Current dependency requirements — 0.16.1
 
 Stable dependencies use two-component pessimistic requirements: `~> 1.20` for
 Plug, `~> 0.5` for WebSock while the HTTP/TLS/QUIC cohort and Abyss/Hell require
-`~> 1.0.0-rc.14`. Published sibling packages use `~> 0.16`. Lockfiles fix the
-exact resolved versions; the committed publication source retains the rc.14 cohort.
+`~> 1.0.0-rc.16`. Published sibling packages use `~> 0.16`. Lockfiles fix the
+exact resolved versions; the committed publication source retains the rc.16 cohort.
 Historical audits below describe their original source and requirements.
 
 # Dependency audit
@@ -11,8 +11,8 @@ Historical audits below describe their original source and requirements.
 ## Current RC selection — 2026-11-12
 
 The root and Phoenix example lockfiles select the published HTTP/TLS/QUIC, Abyss
-and Hell **1.0.0-rc.14** cohort (the 1.0 API freeze). The lower bound is raised
-to rc.14 because Gaoxy depends on its APIs and fixes:
+and Hell **1.0.0-rc.16** cohort (the 1.0 API freeze plus fixes). The lower bound
+is rc.16 because Gaoxy depends on these APIs and fixes:
 
 - Hell TLS runs on the ex_ssl server engine: TLS 1.3 only, OTP 28+, OTP-only
   options rejected. Gaoxy rejects TLS 1.2 listener versions before binding.
@@ -23,6 +23,9 @@ to rc.14 because Gaoxy depends on its APIs and fixes:
   rc.12/rc.13 truncated TLS H1 input and are unsupported.
 - `SSL.getopts/2` accepts an `SSL.ListenSocket`
   ([gsmlg-dev/http_fetch#159](https://github.com/gsmlg-dev/http_fetch/issues/159)).
+- `http2_unprocessed_retry: false` (rc.16) keeps managed HTTP/2 upstream requests
+  from being replayed inside http_fetch after GOAWAY/REFUSED_STREAM
+  ([gsmlg-dev/http_fetch#167](https://github.com/gsmlg-dev/http_fetch/issues/167)).
 - `Abyss.Handler` is deprecated; Gaoxy's UDP datagram bridge uses
   `Abyss.Endpoint` with `datagram_handler:`.
 

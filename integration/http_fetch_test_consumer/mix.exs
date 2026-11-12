@@ -28,6 +28,6 @@ defmodule GaoxyTestHTTPFetchConsumer.MixProject do
           ]
       end
 
-    [{:http_fetch, "~> 1.0.0-rc.14", only: :test} | fixtures]
+    [{:http_fetch, "~> 1.0.0-rc.16", only: :test} | fixtures]
   end
 end

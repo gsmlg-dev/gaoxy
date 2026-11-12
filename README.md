@@ -5,9 +5,9 @@ custom TCP, TLS and UDP services. It provides native HTTP/1.1 and HTTP/2, with
 HTTP/3 available through an optional package. Run it inside your application's
 supervision tree or use the standalone release with JSON configuration.
 
-This source targets version **0.16.0**:
-[GitHub release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.16.0) ·
-[release notes](docs/releases/0.16.0.md) ·
+This source targets version **0.16.1**:
+[GitHub release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.16.1) ·
+[release notes](docs/releases/0.16.1.md) ·
 [backend-options verification](docs/acceptance/backend-options.md).
 
 TCP/TLS acceptor and socket tuning uses validated `hell_options`; UDP/QUIC uses
@@ -146,7 +146,7 @@ proxy configuration, TLS and local route reload.
 ## Requirements and development
 
 The packages require Elixir **1.18+** with Erlang/OTP crypto and public-key
-support. Core uses Hex `abyss ~> 1.0.0-rc.14 (locked at 1.0.0-rc.14)`, which excludes the former bundled DHCP
+support. Core uses Hex `abyss ~> 1.0.0-rc.16 (locked at 1.0.0-rc.16)`, which excludes the former bundled DHCP
 Rust NIF and Rustler build. Gaoxy does not depend on `abyss_raw`. HTTP/3 and the
 proxy dependency graph add QUIC/TLS libraries; see their package guides for
 requirements. Core-only consumers remain independent of Plug, Phoenix and the

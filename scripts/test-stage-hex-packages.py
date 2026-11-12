@@ -37,26 +37,26 @@ REQUIREMENTS = {
         "plug_cowboy": ("plug_cowboy", "~> 2.6", True),
     },
     "gaoxy": {
-        "hell": ("hell", "~> 1.0.0-rc.14", False),
-        "abyss": ("abyss", "~> 1.0.0-rc.14", False),
+        "hell": ("hell", "~> 1.0.0-rc.16", False),
+        "abyss": ("abyss", "~> 1.0.0-rc.16", False),
         "telemetry": ("telemetry", "~> 1.3", False),
     },
     "gaoxy_http": {
         "gaoxy": ("gaoxy", SIBLING_REQUIREMENT, False),
         "plug": ("plug", "~> 1.20", False),
-        "http_core": ("http_core", "~> 1.0.0-rc.14", False),
+        "http_core": ("http_core", "~> 1.0.0-rc.16", False),
         "websock": ("websock", "~> 0.5", False),
         "gaoxy_websock_adapter": ("websock_adapter", SIBLING_REQUIREMENT, False),
     },
     "gaoxy_http3": {
         "gaoxy_http": ("gaoxy_http", SIBLING_REQUIREMENT, False),
-        "elixir_quic_http3": ("elixir_quic_http3", "~> 1.0.0-rc.14", False),
+        "elixir_quic_http3": ("elixir_quic_http3", "~> 1.0.0-rc.16", False),
     },
     "gaoxy_proxy": {
         "gaoxy": ("gaoxy", SIBLING_REQUIREMENT, False),
         "gaoxy_http": ("gaoxy_http", SIBLING_REQUIREMENT, False),
-        "http_fetch": ("http_fetch", "~> 1.0.0-rc.14", False),
-        "http_web_socket": ("http_web_socket", "~> 1.0.0-rc.14", False),
+        "http_fetch": ("http_fetch", "~> 1.0.0-rc.16", False),
+        "http_web_socket": ("http_web_socket", "~> 1.0.0-rc.16", False),
     },
     "gaoxy_test": {
         "gaoxy_http": ("gaoxy_http", SIBLING_REQUIREMENT, False),
@@ -190,8 +190,8 @@ IO.puts(JSON.encode!(convert.(terms, convert)))
                 for forbidden in ["in_umbrella:", "override:", "path:", "git:", "config_path:", "build_path:", "deps_path:", "lockfile:"]:
                     self.assertNotIn(forbidden, manifest)
                 if name == "gaoxy":
-                    self.assertIn('hell: "~> 1.0.0-rc.14"', manifest)
-                    self.assertIn('abyss: "~> 1.0.0-rc.14"', manifest)
+                    self.assertIn('hell: "~> 1.0.0-rc.16"', manifest)
+                    self.assertIn('abyss: "~> 1.0.0-rc.16"', manifest)
                     self.assertTrue({"abyss_raw", "rustler"}.isdisjoint(
                         entry["name"] for entry in metadata["requirements"]))
                 if name == "gaoxy_http":

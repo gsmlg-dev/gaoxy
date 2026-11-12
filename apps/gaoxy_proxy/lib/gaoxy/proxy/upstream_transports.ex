@@ -1420,14 +1420,14 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
 
   defp fetch_options(%ManagedH1Preparation.Policy{}), do: @fetch_options
 
-  # http_fetch rc.13+ transparently replays unprocessed (GOAWAY/REFUSED_STREAM)
-  # non-streamed H2 requests on another connection; there is no opt-out yet.
-  # TODO(upstream): gsmlg-dev/http_fetch#167
+  # Never replay an unprocessed (GOAWAY/REFUSED_STREAM) H2 request inside
+  # http_fetch; the proxy surfaces it as a failed upstream attempt.
   defp fetch_options(%ManagedH2Preparation.Policy{protocol: protocol}) do
     [
       http_version: protocol,
       http2_profile: :native_v1,
       http2_reuse: true,
+      http2_unprocessed_retry: false,
       redirect: :manual,
       request_mode: :proxy,
       decode_body: false,

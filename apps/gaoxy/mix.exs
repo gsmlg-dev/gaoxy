@@ -4,15 +4,15 @@ defmodule Gaoxy.MixProject do
   def project do
     [
       app: :gaoxy,
-      version: "0.16.0",
+      version: "0.16.1",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
       elixir: "~> 1.18",
       deps: [
-        {:hell, "~> 1.0.0-rc.14"},
-        {:abyss, "~> 1.0.0-rc.14"},
+        {:hell, "~> 1.0.0-rc.16"},
+        {:abyss, "~> 1.0.0-rc.16"},
         {:telemetry, "~> 1.3"}
       ]
     ]

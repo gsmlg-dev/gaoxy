@@ -4,7 +4,7 @@ defmodule GaoxyProxy.MixProject do
   def project do
     [
       app: :gaoxy_proxy,
-      version: "0.16.0",
+      version: "0.16.1",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -13,8 +13,8 @@ defmodule GaoxyProxy.MixProject do
       deps: [
         {:gaoxy, in_umbrella: true},
         {:gaoxy_http, in_umbrella: true},
-        {:http_fetch, "~> 1.0.0-rc.14"},
-        {:http_web_socket, "~> 1.0.0-rc.14"}
+        {:http_fetch, "~> 1.0.0-rc.16"},
+        {:http_web_socket, "~> 1.0.0-rc.16"}
       ]
     ]
   end

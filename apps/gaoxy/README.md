@@ -16,7 +16,7 @@ defp deps do
 end
 ```
 
-Use Elixir 1.18 or newer with Erlang/OTP. Core uses Hex `abyss ~> 1.0.0-rc.14 (locked at 1.0.0-rc.14)`, which
+Use Elixir 1.18 or newer with Erlang/OTP. Core uses Hex `abyss ~> 1.0.0-rc.16 (locked at 1.0.0-rc.16)`, which
 has no bundled DHCP NIF or Rustler build dependency. Neither Rust/Cargo nor
 `abyss_raw` is required for ordinary Gaoxy services.
 
