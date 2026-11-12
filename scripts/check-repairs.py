@@ -107,6 +107,7 @@ SUITES = {
         ('apps/gaoxy_http/test/resource_budget_h1_test.exs', 3),
         ('apps/gaoxy_http/test/resource_budget_h2_test.exs', 10),
         ('apps/gaoxy_http/test/http2_default_concurrency_test.exs', 1),
+        ('apps/gaoxy_http/test/http2_peer_reset_rate_test.exs', 2),
         ('apps/gaoxy_http/test/plug_response_headers_network_test.exs', 4),
         ('apps/gaoxy_http/test/exchange_peer_close_network_test.exs', 2),
         ('apps/gaoxy_http/test/http2_startup_peer_close_network_test.exs', 1),

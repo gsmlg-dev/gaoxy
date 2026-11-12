@@ -237,7 +237,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   end
 
   defp retained_connection(state) do
-    :erlang.external_size(Map.drop(state, [:decode_reservation])) +
+    :erlang.external_size(Map.drop(state, [:decode_reservation, :provoked_resets])) +
       Enum.reduce(state.streams, 0, fn {_, stream}, total -> total + stream.delivered_wire end)
   end
 
@@ -354,24 +354,36 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
               failure(state, :protocol_error)
 
             true ->
-              receive_frame(%{state | first: false}, frame)
+              # Resets the peer provokes on a live stream cost a worker each and
+              # are charged like the control frames it sends itself.
+              {provoked, state} =
+                %{state | first: false}
+                |> Map.put(:provoked_resets, 0)
+                |> receive_frame(frame)
+                |> Map.pop(:provoked_resets, 0)
+
+              charge(state, provoked)
           end
 
         parse(state, left - 1)
     end
   end
 
-  defp rate(state, %{type: type}) when type in [2, 3, 4, 6, 7, 8] do
+  defp rate(state, %{type: type}) when type in [2, 3, 4, 6, 7, 8], do: charge(state, 1)
+  defp rate(state, _), do: state
+
+  defp charge(state, 0), do: state
+  defp charge(%{closing: true} = state, _), do: state
+
+  defp charge(state, count) do
     state =
       if Lifecycle.now() - state.rate_start >= 1_000,
         do: %{state | rate: 0, rate_start: Lifecycle.now()},
         else: state
 
-    state = %{state | rate: state.rate + 1}
+    state = %{state | rate: state.rate + count}
     if state.rate > state.h2.control_rate, do: failure(state, :enhance_your_calm), else: state
   end
-
-  defp rate(state, _), do: state
 
   defp receive_frame(state, %{type: 4, id: 0, flags: flags, payload: payload}) do
     cond do
@@ -1727,6 +1739,16 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   end
 
   defp reset(state, id, reason, outcome \\ :pending) do
+    state =
+      case state do
+        %{provoked_resets: count, streams: %{^id => _}}
+        when reason in [:protocol_error, :stream_closed, :flow_control_error, :frame_size_error] ->
+          %{state | provoked_resets: count + 1}
+
+        _ ->
+          state
+      end
+
     state =
       enqueue(
         discard(state, id, true, outcome),

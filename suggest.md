@@ -5,6 +5,15 @@
 - 方法:只读审查。所有结论来自阅读代码路径,**没有运行测试、没有在运行时复现任何一条**。标 ✔ 的条目我另外逐行核对过所引用的代码;其余条目由分模块审查得出,修复前建议先写复现用例。性能数字均为按代码推算,未实测。
 - 未覆盖:`listener_set*`、`router.ex`、Phoenix 适配器、`gateway/coordinator.ex` 与 `gateway/supervisor.ex`、`managed_h2_envelope.ex` / `managed_h2_preparation.ex` / `managed_h2_client.ex` 的细节、`system_memory.ex` 的 cgroup 逻辑、`integration/` 与 `examples/`。
 
+## 修复进度
+
+| 项 | 状态 | 说明 |
+| --- | --- | --- |
+| D2 | 已完成 | AGENTS.md 重写,旧文件归档到 `docs/history/agents-instructions-2026-10.md` |
+| D3 | 已完成 | `docs/acceptance` 不再追踪,已加入 `.gitignore`(历史提交中仍保留) |
+| P5 | 等待上游 | [gsmlg-dev/http_fetch#170](https://github.com/gsmlg-dev/http_fetch/issues/170) |
+| S1 | 已修复 | 对端在存活流上诱发的重置计入 `control_rate`;新增 `http2_peer_reset_rate_test.exs`(protocol 套件,2 例) |
+
 ## 先看这些
 
 | # | 问题 | 类别 | 优先级 | 工作量 |
@@ -474,6 +483,8 @@ HTTP 和 WebSocket 两条路径都总是用 socket 对端地址替换 `X-Forward
 - `managed_h2_group_generation_test.exs`(5,033 行)、`managed_h2_fixed_generation_test.exs`(3,792 行)。
 
 也就是说,改坏目标策略或 managed H2 记账,CI 不会报错。
+
+**2026-11-13 补充(实测)**:修 S1 时跑了 `apps/gaoxy_http` 的全部 H2 测试文件(含未调度的),在未改动的 `main` 上 163 例中已有 30 例失败,集中在 `http2_integration_test.exs`、`http2_worker_startup_extended_test.exs`、`http2_network_test.exs`、`http2_capacity_test.exs`。未调度的测试确实已经在腐烂;这些失败尚未诊断,不清楚是测试过期还是产品缺陷。
 
 **建议**:
 
