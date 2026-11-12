@@ -4,7 +4,7 @@
 HTTP/2 and WebSocket implementations. Gaoxy owns listener supervision and
 connection admission; Hell provides TCP and OTP TLS. Bandit is not required.
 
-Requires Elixir `~> 1.18`. Package version: **0.16.2**.
+Requires Elixir `~> 1.18`. Package version: **0.16.3**.
 
 TCP/TLS listeners accept validated `hell_options` for acceptor count and socket
 tuning. Put these inside each HTTP/HTTPS listener when using Phoenix or
