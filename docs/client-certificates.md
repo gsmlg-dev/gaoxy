@@ -16,8 +16,7 @@ config :my_app, MyApp.Endpoint,
     keyfile: "/run/secrets/server-key.pem",
     verify: :verify_peer,
     cacertfile: "/run/secrets/client-ca.pem",
-    fail_if_no_peer_cert: false,
-    versions: [:"tlsv1.3", :"tlsv1.2"]
+    fail_if_no_peer_cert: false
   ]
 ```
 

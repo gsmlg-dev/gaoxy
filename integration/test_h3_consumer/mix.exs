@@ -7,14 +7,17 @@ defmodule GaoxyTestH3Consumer.MixProject do
 
   def application, do: [extra_applications: [:logger, :ssl]]
 
-  defp deps do
-    version = System.fetch_env!("GAOXY_TEST_VERSION")
+  defp requirement do
+    version = Version.parse!(System.fetch_env!("GAOXY_TEST_VERSION"))
+    "~> #{version.major}.#{version.minor}"
+  end
 
+  defp deps do
     case System.get_env("GAOXY_TEST_PACKAGES") do
       nil ->
         [
-          {:gaoxy_test, "== " <> version, only: :test},
-          {:gaoxy_http3, "== " <> version, only: :test}
+          {:gaoxy_test, requirement(), only: :test},
+          {:gaoxy_http3, requirement(), only: :test}
         ]
 
       directory ->

@@ -43,7 +43,6 @@ defmodule Gaoxy.Proxy.UpstreamTransportH2IdentityTest do
 
       assert client.fetch_options == [
                http_version: protocol,
-               tls_backend: :ex_ssl,
                http2_profile: :native_v1,
                http2_reuse: true,
                redirect: :manual,

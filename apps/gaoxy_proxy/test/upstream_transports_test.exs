@@ -634,7 +634,6 @@ defmodule Gaoxy.Proxy.UpstreamTransportsTest do
 
     assert client.fetch_options == [
              http_version: :http1,
-             tls_backend: :ex_ssl,
              http1_reuse: true,
              redirect: :manual,
              request_mode: :proxy,
@@ -754,7 +753,7 @@ defmodule Gaoxy.Proxy.UpstreamTransportsTest do
     assert :ok = Transports.bind_completion(second, second_token, second_completion)
     assert_receive {:completion_request, ^second_peer}, 1000
     send(second_peer, :respond)
-    assert %HTTP.Response{status: 200, stream: stream} = HTTP.Promise.await(second_promise, 1000)
+    assert %HTTP.Response{status: 200, body: stream} = HTTP.Promise.await(second_promise, 1000)
     assert read_public_stream(stream) == "ok"
     assert :ok = HTTP.RequestCompletion.await(second_completion, 1000)
     assert :ok = Transports.finish(second, second_token)
@@ -805,7 +804,7 @@ defmodule Gaoxy.Proxy.UpstreamTransportsTest do
     assert {:error, :cleanup_pending} = Transports.finish(handle, token)
     assert {:ok, %{request_tokens: 1} = pending} = Transports.status(owner)
     send(peer, :respond)
-    assert %HTTP.Response{status: 200, stream: stream} = HTTP.Promise.await(promise, 1000)
+    assert %HTTP.Response{status: 200, body: stream} = HTTP.Promise.await(promise, 1000)
     assert read_public_stream(stream) == "ok"
     assert :ok = HTTP.RequestCompletion.await(completion, 1000)
     assert :ok = Transports.finish(handle, token)
@@ -992,7 +991,7 @@ defmodule Gaoxy.Proxy.UpstreamTransportsTest do
     assert {:error, :cleanup_pending} = HTTP.RequestCompletion.await(completion, 0)
     assert {:ok, %{request_tokens: 1, reserved_connections: 2}} = Transports.status(owner)
     send(peer, :respond)
-    assert %HTTP.Response{status: 200, stream: stream} = HTTP.Promise.await(promise, 1000)
+    assert %HTTP.Response{status: 200, body: stream} = HTTP.Promise.await(promise, 1000)
     assert read_public_stream(stream) == "ok"
     assert :ok = HTTP.RequestCompletion.await(completion, 1000)
     assert :ok = Transports.finish(handle, token)

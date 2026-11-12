@@ -452,14 +452,16 @@ defmodule Gaoxy.Proxy.ManagedH2Client do
            promise:
              %Promise{
                task: %Task{owner: owner, pid: pid, ref: ref, mfa: mfa} = task,
-               completion: original
+               completion: original,
+               # An unchained fetch promise; Gaoxy never registers then/3 callbacks.
+               callbacks: []
              } = promise,
            completion: completion,
            stream: stream,
            resolved: resolved
          } = handle
        )
-       when map_size(handle) == 4 and map_size(promise) == 3 and map_size(task) == 5 and
+       when map_size(handle) == 4 and map_size(promise) == 4 and map_size(task) == 5 and
               is_pid(owner) and is_pid(pid) and is_reference(ref) and is_boolean(resolved) do
     if mfa in [nil, {:erlang, :apply, 2}] and (stream == nil or is_pid(stream)) and
          completion_shell?(completion) and original === completion and

@@ -407,7 +407,7 @@ defmodule Gaoxy.Proxy.ManagedH2ClientTest do
   test "bodyless head and status responses leave stream nil without fabricating completion" do
     for status <- [200, 204, 205, 304], body <- [nil, ""] do
       original = handle()
-      response = %{response() | status: status, stream: nil, body: body}
+      response = %{response() | status: status, body: body}
 
       assert {{:headers, ^status, _}, updated} =
                call(:event, [{original, request().url}, {original.promise.task.ref, response}])
@@ -639,8 +639,6 @@ defmodule Gaoxy.Proxy.ManagedH2ClientTest do
       ok: true,
       headers: %HTTP.Headers{headers: [{"x-repeat", "first"}, {"x-repeat", "second"}]},
       body: self(),
-      body_used: false,
-      stream: self(),
       url: URI.parse(request().url),
       redirected: false,
       type: :basic,
@@ -682,7 +680,6 @@ defmodule Gaoxy.Proxy.ManagedH2ClientTest do
       transport_scope: struct(HTTP.ManagedTransport),
       fetch_options: [
         http_version: :h2c,
-        tls_backend: :ex_ssl,
         http2_profile: :native_v1,
         http2_reuse: true,
         redirect: :manual,

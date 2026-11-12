@@ -277,6 +277,7 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccounting do
         resource_pins: e([]),
         protocol_bytes: e(n),
         funding: m(total: e(w), credit: e(p), memberships: memberships),
+        body_window: e(nil),
         adapter_body_bytes: e(0),
         poll_buffer_bytes: e(0),
         transport: e(Transport),

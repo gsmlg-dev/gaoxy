@@ -32,7 +32,7 @@ defmodule Gaoxy.Proxy.HTTPFetchContractTest do
 
     assert_receive {:response_head, ^peer}, @timeout
 
-    assert %HTTP.Response{status: 200, body: stream, stream: stream} =
+    assert %HTTP.Response{status: 200, body: stream} =
              HTTP.Promise.await(promise, @timeout)
 
     assert is_pid(stream)
@@ -206,7 +206,7 @@ defmodule Gaoxy.Proxy.HTTPFetchContractTest do
           ])
       end)
 
-    assert %HTTP.Response{status: 200, body: ^encoded, stream: nil} =
+    assert %HTTP.Response{status: 200, body: ^encoded} =
              response =
              url
              |> HTTP.fetch(http_version: :http1, redirect: :manual, decode_body: false)
@@ -252,7 +252,7 @@ defmodule Gaoxy.Proxy.HTTPFetchContractTest do
              |> HTTP.fetch(http_version: :http1, redirect: :manual, decode_body: false)
              |> HTTP.Promise.await(@timeout)
 
-    assert response.stream == stream
+    assert is_pid(stream)
     assert HTTP.Headers.get(response.headers, "content-encoding") == "gzip"
     assert HTTP.Headers.get_all(response.headers, "set-cookie") == ["a=1", "b=2"]
     assert HTTP.Headers.to_list(response.trailers) == []

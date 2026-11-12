@@ -297,7 +297,6 @@ defmodule Gaoxy.Proxy.ManagedH2FixedLifecycleTest do
     response = %HTTP.Response{
       status: 200,
       http_version: :http2,
-      stream: self(),
       body: self(),
       url: URI.parse(submitted_url)
     }

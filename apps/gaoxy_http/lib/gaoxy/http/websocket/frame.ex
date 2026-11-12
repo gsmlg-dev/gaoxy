@@ -82,7 +82,7 @@ defmodule Gaoxy.HTTP.WebSocket.Frame do
 
   defp consume(decoder, bytes, events) do
     size = min(decoder.left, byte_size(bytes))
-    <<part::binary-size(size), rest::binary>> = bytes
+    <<part::binary-size(^size), rest::binary>> = bytes
     payload = unmask(part, decoder.key, decoder.offset)
     decoder = %{decoder | left: decoder.left - size, offset: rem(decoder.offset + size, 4)}
 
@@ -157,7 +157,7 @@ defmodule Gaoxy.HTTP.WebSocket.Frame do
     do: take(stack, left - byte_size(binary), [binary | parts])
 
   defp take([binary | stack], left, parts) do
-    <<part::binary-size(left), rest::binary>> = binary
+    <<part::binary-size(^left), rest::binary>> = binary
     {[part | parts], [rest | stack], 0}
   end
 
@@ -207,7 +207,7 @@ defmodule Gaoxy.HTTP.WebSocket.Frame do
 
   defp unmask(payload, key, offset) do
     mask = <<key::32>>
-    <<before::binary-size(offset), after_offset::binary>> = mask
+    <<before::binary-size(^offset), after_offset::binary>> = mask
     <<key::32>> = after_offset <> before
     size = div(byte_size(payload), 4) * 4
     <<blocks::binary-size(^size), tail::binary>> = payload

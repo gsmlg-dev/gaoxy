@@ -9,7 +9,7 @@ whose method is temporarily presented as GET.
 Use this package with `gaoxy_http` when serving Phoenix Channels, LiveView or
 a Plug that upgrades connections to WebSocket. Its public modules and OTP
 application keep the upstream name **`WebSockAdapter` / `:websock_adapter`**.
-Its package version follows Gaoxy, currently **0.15.2**; the upstream source
+Its package version follows Gaoxy, currently **0.16.0**; the upstream source
 base is WebSockAdapter **0.6.0**.
 
 ## Installation
@@ -17,8 +17,8 @@ base is WebSockAdapter **0.6.0**.
 Add these entries to your application's `mix.exs` dependencies:
 
 ```elixir
-{:gaoxy_http, "~> 0.15.2"},
-{:websock_adapter, "~> 0.15.2", hex: :gaoxy_websock_adapter, override: true}
+{:gaoxy_http, "~> 0.16"},
+{:websock_adapter, "~> 0.16", hex: :gaoxy_websock_adapter, override: true}
 ```
 
 Then run `mix deps.get`. The override makes Phoenix's existing

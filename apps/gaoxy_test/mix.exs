@@ -4,7 +4,7 @@ defmodule GaoxyTest.MixProject do
   def project do
     [
       app: :gaoxy_test,
-      version: "0.15.2",
+      version: "0.16.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -19,7 +19,7 @@ defmodule GaoxyTest.MixProject do
       deps: [
         {:gaoxy_http, in_umbrella: true},
         {:gaoxy_http3, in_umbrella: true},
-        {:plug, "== 1.20.3"}
+        {:plug, "~> 1.20"}
       ]
     ]
   end

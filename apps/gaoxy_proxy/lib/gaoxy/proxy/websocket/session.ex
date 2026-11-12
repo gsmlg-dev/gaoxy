@@ -235,7 +235,6 @@ defmodule Gaoxy.Proxy.WebSocket.Session do
       automatic_pong: true,
       headers: state.headers,
       telemetry_url: nil,
-      tls_backend: :ex_ssl,
       ssl: ssl,
       opening_timeout: opening,
       connect_timeout: opening,

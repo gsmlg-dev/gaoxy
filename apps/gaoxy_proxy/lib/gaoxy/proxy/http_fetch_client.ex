@@ -110,7 +110,6 @@ defmodule Gaoxy.Proxy.HTTPFetchClient do
        request_mode: :proxy,
        decode_body: false,
        stream_response: true,
-       tls_backend: :ex_ssl,
        ssl: ssl,
        connect_address: Map.get(options, :connect_address),
        timeout: options.timeout,
@@ -186,9 +185,10 @@ defmodule Gaoxy.Proxy.HTTPFetchClient do
 
   def event(handle, _), do: {:none, handle}
 
-  defp head_result(handle, %Response{stream: stream, body: body} = response)
-       when is_pid(stream) or body in [nil, ""] do
-    handle = %{handle | stream: stream, resolved: true}
+  # A streamed response carries its stream pid in `body`.
+  defp head_result(handle, %Response{body: body} = response)
+       when is_pid(body) or body in [nil, ""] do
+    handle = %{handle | stream: if(is_pid(body), do: body), resolved: true}
     {{:headers, response.status, HTTP.Headers.to_list(response.headers)}, handle}
   end
 

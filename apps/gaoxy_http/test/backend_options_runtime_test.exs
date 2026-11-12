@@ -29,7 +29,7 @@ defmodule Gaoxy.HTTP.BackendOptionsRuntimeTest do
     assert length(Supervisor.which_children(pool)) == count
     listener = Hell.Server.listener_pid(backend)
     [{1, socket}] = :sys.get_state(listener).listener_sockets
-    getter = if transport == :tls, do: :ssl, else: :inet
+    getter = if transport == :tls, do: SSL, else: :inet
     assert {:ok, values} = apply(getter, :getopts, [socket, [:nodelay, :keepalive, :sndbuf]])
     assert values[:nodelay] == false
     assert values[:keepalive] == true
@@ -208,7 +208,7 @@ defmodule Gaoxy.HTTP.BackendOptionsRuntimeTest do
     backend = :sys.get_state(service).backend
     listener = Hell.Server.listener_pid(backend)
     [{1, socket}] = :sys.get_state(listener).listener_sockets
-    getter = if transport == :tls, do: :ssl, else: :inet
+    getter = if transport == :tls, do: SSL, else: :inet
     assert {:ok, [ipv6_v6only: ^v6only]} = apply(getter, :getopts, [socket, [:ipv6_v6only]])
     assert %{local: {:ok, {{0, 0, 0, 0, 0, 0, 0, 0} = ip, port}}} = Gaoxy.info(instance, id)
     assert port > 0

@@ -1187,12 +1187,30 @@ defmodule Gaoxy.Service do
 
   defp backend_status(%{spec: %{transport: :udp}} = state) do
     case Abyss.Listener.for_server(state.backend) do
-      [listener] -> Abyss.Listener.status(listener)
+      [listener] -> datagram_status(Abyss.Listener.status(listener), state)
       _ -> :not_ready
     end
   end
 
   defp backend_status(_), do: :stream
+
+  defp datagram_status(status, %{spec: %{handler_mode: :datagram_dispatcher}}), do: status
+
+  # The datagram runtime, not the listener, owns in-flight work and runtime drops.
+  defp datagram_status(status, state) do
+    case Abyss.Endpoint.info(state.backend) do
+      {:ok, info} ->
+        %{
+          status
+          | active_handlers: Map.get(info, :input_count, 0),
+            active_high_water: Map.get(info, :high_items, 0),
+            dropped: info.dropped
+        }
+
+      _ ->
+        status
+    end
+  end
 
   defp membership_list(%{spec: %{transport: :udp, mode: :multicast}} = state),
     do: Abyss.memberships(state.backend)
@@ -1222,6 +1240,32 @@ defmodule Gaoxy.Service do
 
   defp membership_change(_, _, _), do: {:error, {:unsupported_capability, :memberships}}
 
+  # Serialized Abyss.Datagram metadata and send addressing allowances. They keep
+  # the runtime and writer byte bounds finite while `num_connections` (and
+  # Gaoxy's own admission) stay the binding item/byte ceilings, as with the
+  # former one-process-per-packet handler.
+  @datagram_metadata_allowance 1_024
+  @send_addressing_allowance 256
+
+  defp datagram_handler_options(spec) do
+    capacity = Gaoxy.Config.connection_capacity(spec)
+    output = min(spec.limits.max_output, 65_507) + @send_addressing_allowance
+
+    [
+      datagram_handler: Gaoxy.DatagramBridge,
+      execution: :per_datagram,
+      runtime_options: [
+        max_queue: capacity,
+        max_keys: capacity,
+        max_queue_bytes: capacity * (spec.limits.max_packet + @datagram_metadata_allowance),
+        init_timeout: spec.limits.callback_timeout,
+        callback_timeout: spec.limits.callback_timeout
+      ],
+      dispatcher_max_queue: capacity,
+      dispatcher_max_queue_bytes: capacity * output
+    ]
+  end
+
   defp start_backend(%{transport: :udp} = spec, context) do
     transport =
       case spec.mode do
@@ -1243,7 +1287,6 @@ defmodule Gaoxy.Service do
     options = options ++ Keyword.get(spec.abyss_options, :transport_options, [])
 
     host_options = [
-      handler_module: Gaoxy.DatagramBridge,
       handler_options: context,
       port: spec.port,
       transport_module: transport,
@@ -1267,10 +1310,10 @@ defmodule Gaoxy.Service do
           dispatcher_max_queue_bytes: spec.dispatcher.max_bytes
         )
       else
-        host_options
+        host_options ++ datagram_handler_options(spec)
       end
 
-    Abyss.start_link(host_options)
+    Abyss.Endpoint.start_link(host_options)
   end
 
   defp start_backend(%{transport: :quic} = spec, context) do

@@ -13,8 +13,8 @@ Remove your explicit `{:bandit, ...}` dependency from `mix.exs`. Add these
 entries to your existing `deps/0`, retaining the rest of your application deps:
 
 ```elixir
-{:gaoxy_http, "~> 0.14.1"},
-{:websock_adapter, "~> 0.14.1", hex: :gaoxy_websock_adapter, override: true}
+{:gaoxy_http, "~> 0.16"},
+{:websock_adapter, "~> 0.16", hex: :gaoxy_websock_adapter, override: true}
 ```
 
 The second entry is required for Phoenix: `gaoxy_websock_adapter` is the
@@ -190,8 +190,8 @@ end
 
 Supply readable PEM files and a certificate chain trusted for `PHX_HOST`.
 `https` does not obtain certificates or configure an HTTP-to-HTTPS redirect.
-TLS defaults to TLS 1.3 and ALPN `h2`, then `http/1.1`. If you need both TLS
-1.3 and TLS 1.2, use `versions: [:"tlsv1.3", :"tlsv1.2"]` in `https`.
+TLS is TLS 1.3 only, with ALPN `h2`, then `http/1.1`. TLS 1.2 listener versions
+are rejected before binding.
 Port 8443 avoids requiring a privileged bind; adjust both the public URL and
 listener to your deployment.
 
@@ -218,7 +218,7 @@ These are keyword lists; their three limit values are maps.
 | `h2_limits` | `%{}`; merges H2 limits below |
 | `hell_options` | `[]`; validated TCP/TLS backend tuning, described below |
 | `certfile`, `keyfile` | HTTPS only, required binary file paths |
-| `versions` | HTTPS only, `[:"tlsv1.3"]`; also `[:"tlsv1.2"]` or `[:"tlsv1.3", :"tlsv1.2"]` |
+| `versions` | HTTPS only, `[:"tlsv1.3"]` (TLS 1.2 is rejected) |
 | `alpn` | HTTPS only; automatically derived from `protocols` |
 | `verify` | HTTPS only; `:verify_none` default or `:verify_peer` |
 | `cacertfile` | HTTPS only; nonempty binary CA path, required for `:verify_peer` |

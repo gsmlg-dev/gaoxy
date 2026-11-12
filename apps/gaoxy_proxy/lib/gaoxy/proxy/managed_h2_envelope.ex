@@ -148,24 +148,25 @@ defmodule Gaoxy.Proxy.ManagedH2Envelope do
           ok: ok,
           headers: headers,
           body: body,
-          body_used: used,
           url: url,
           redirected: redirected,
           type: type,
-          stream: stream,
           http_version: :http2,
           response_stream_idle_timeout: nil,
           informational: informational,
-          trailers: trailers
+          trailers: trailers,
+          http3: nil
         } = response,
         submitted_url
       )
-      when map_size(response) == 15 and is_integer(status) and status in 200..599 and
-             is_boolean(ok) and is_boolean(used) and is_boolean(redirected) and
+      when map_size(response) == 14 and is_integer(status) and status in 200..599 and
+             is_boolean(ok) and is_boolean(redirected) and
              type in [:basic, :cors, :error, :opaque] do
+    # A streamed response carries its stream pid in `body`.
+    stream = if is_pid(body), do: body
+
     with :ok <- bounded_binary(text, 64, true),
-         true <- stream == nil or is_pid(stream),
-         true <- body in [nil, ""] or (is_pid(body) and body == stream),
+         true <- body in [nil, ""] or is_pid(body),
          :ok <- bounded_binary(submitted_url, @binary_cap, false),
          true <- compact?(submitted_url),
          {:ok, submitted_uri} <- parse_url(submitted_url),
@@ -349,10 +350,10 @@ defmodule Gaoxy.Proxy.ManagedH2Envelope do
 
   defp opaque_scope?(_), do: false
 
+  # TODO(upstream): gsmlg-dev/http_fetch#167 (opt-out of transparent H2 replay)
   defp fetch_options(protocol),
     do: [
       http_version: protocol,
-      tls_backend: :ex_ssl,
       http2_profile: :native_v1,
       http2_reuse: true,
       redirect: :manual,

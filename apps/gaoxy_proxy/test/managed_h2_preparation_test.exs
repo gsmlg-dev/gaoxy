@@ -45,7 +45,6 @@ defmodule Gaoxy.Proxy.ManagedH2PreparationTest do
                origin: "http://example.test",
                connect_address: {127, 0, 0, 1},
                http_version: :h2c,
-               tls_backend: :ex_ssl,
                http2_profile: :native_v1,
                max_requests: 32,
                max_connections: 2,
@@ -73,7 +72,6 @@ defmodule Gaoxy.Proxy.ManagedH2PreparationTest do
              origin: source.origin,
              connect_address: source.connect_address,
              http_version: :http2,
-             tls_backend: :ex_ssl,
              http2_profile: :native_v1,
              max_requests: 32,
              max_connections: 2,
@@ -333,10 +331,10 @@ defmodule Gaoxy.Proxy.ManagedH2PreparationTest do
                logical_bytes: 50,
                backing_bytes: 50,
                binary_occurrences: 3,
-               cons_cells: 17,
-               tuples: %{2 => 17, 4 => 2},
+               cons_cells: 16,
+               tuples: %{2 => 16, 4 => 2},
                maps: %{8 => 1},
-               atom_occurrences: 33,
+               atom_occurrences: 31,
                integer_occurrences: 17,
                pid_occurrences: 0
              },
@@ -355,7 +353,7 @@ defmodule Gaoxy.Proxy.ManagedH2PreparationTest do
     assert {:ok, policy, manifest} = prepare_policy(source)
     assert manifest.source == constructor_facts(source)
     assert manifest.owned == constructor_facts(policy)
-    assert manifest.owned.cons_cells == 17 + 5 + 2 + 1 + 12
+    assert manifest.owned.cons_cells == 16 + 5 + 2 + 1 + 12
     assert manifest.owned.integer_occurrences == 17 + 1 + 12
     assert manifest.source_external_bytes == :erlang.external_size(source)
     assert manifest.prepared_external_bytes == :erlang.external_size(policy)

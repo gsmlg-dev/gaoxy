@@ -95,7 +95,6 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
 
   @fetch_options [
     http_version: :http1,
-    tls_backend: :ex_ssl,
     http1_reuse: true,
     redirect: :manual,
     request_mode: :proxy,
@@ -1421,10 +1420,12 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
 
   defp fetch_options(%ManagedH1Preparation.Policy{}), do: @fetch_options
 
+  # http_fetch rc.13+ transparently replays unprocessed (GOAWAY/REFUSED_STREAM)
+  # non-streamed H2 requests on another connection; there is no opt-out yet.
+  # TODO(upstream): gsmlg-dev/http_fetch#167
   defp fetch_options(%ManagedH2Preparation.Policy{protocol: protocol}) do
     [
       http_version: protocol,
-      tls_backend: :ex_ssl,
       http2_profile: :native_v1,
       http2_reuse: true,
       redirect: :manual,

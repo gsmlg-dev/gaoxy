@@ -116,7 +116,7 @@ host and budget before advertising SETTINGS or starting codec/stream work.
 
 The qualified native H2 host uses OTP 28 with the `:inet` TCP backend. TLS
 additionally requires integer `:ssl, :internal_active_n` in `1..100`, TLS 1.3
-or the accepted TLS 1.2 forward-secret AEAD suites. Unsupported profiles are
+(the ex_ssl server engine has no TLS 1.2). Unsupported profiles are
 rejected. Hell uses active-once delivery with fixed 16 KiB socket buffers; a larger
 endpoint body-read credit does not enlarge them.
 

@@ -97,7 +97,7 @@ defmodule Gaoxy.Proxy.ManagedH2FixedControlBoundsTest do
 
       {:messages, messages} = Process.info(guardian, :messages)
 
-      assert {ref, %HTTP.Response{stream: stream} = response} =
+      assert {ref, %HTTP.Response{body: stream} = response} =
                List.keyfind(messages, task.ref, 0)
 
       assert ref == task.ref and is_pid(stream)
@@ -373,7 +373,7 @@ defmodule Gaoxy.Proxy.ManagedH2FixedControlBoundsTest do
 
   defp assert_all_families(state, response, f) do
     [pin] = state.transport_pins
-    stream = response.stream
+    stream = response.body
     task = state.original_request.promise.task
     # These are constructor-boundary specimens anchored to the captured real
     # actors/capabilities, distinct from the separately checked live traces.

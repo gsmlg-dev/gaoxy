@@ -40,7 +40,7 @@ defmodule Gaoxy.Proxy.ManagedH2FixedReleaseOrderTest do
       end)
 
       {:messages, messages} = Process.info(guardian, :messages)
-      assert {^task_ref, %HTTP.Response{stream: stream}} = List.keyfind(messages, task_ref, 0)
+      assert {^task_ref, %HTTP.Response{body: stream}} = List.keyfind(messages, task_ref, 0)
       assert is_pid(stream)
       assert {:DOWN, task_ref, :process, task_pid, :normal} in messages
 

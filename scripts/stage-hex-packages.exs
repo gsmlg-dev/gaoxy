@@ -26,7 +26,8 @@ defmodule StageHexPackages do
     output = Path.expand(output)
     root = Mix.Project.in_project(:gaoxy_package_source, source, fn _ -> Mix.Project.config() end)
     version = Keyword.fetch!(root, :version)
-    {:ok, _} = Version.parse(version)
+    {:ok, parsed_version} = Version.parse(version)
+    sibling_requirement = "~> #{parsed_version.major}.#{parsed_version.minor}"
     licenses = get_in(root, [:package, :licenses])
 
     unless is_list(licenses) and licenses != [] and Enum.all?(licenses, &is_binary/1) do
@@ -49,7 +50,7 @@ defmodule StageHexPackages do
           raise "source application/version mismatch: #{path}"
         end
 
-        deps = Enum.map(config[:deps], &dependency(&1, version, app))
+        deps = Enum.map(config[:deps], &dependency(&1, sibling_requirement, app))
         readme_file = if app == :websock_adapter, do: "README.gaoxy.md", else: "README.md"
         readme = File.read!(Path.join(path, readme_file))
         {name, app, path, config, application, deps, readme}
@@ -127,24 +128,25 @@ defmodule StageHexPackages do
     end
   end
 
-  defp dependency({app, requirement}, version, package_app) when is_binary(requirement),
-    do: dependency({app, requirement, []}, version, package_app)
+  defp dependency({app, requirement}, sibling_requirement, package_app)
+       when is_binary(requirement),
+       do: dependency({app, requirement, []}, sibling_requirement, package_app)
 
-  defp dependency({app, options}, version, package_app) when is_list(options),
-    do: dependency({app, nil, options}, version, package_app)
+  defp dependency({app, options}, sibling_requirement, package_app) when is_list(options),
+    do: dependency({app, nil, options}, sibling_requirement, package_app)
 
-  defp dependency({app, requirement, options} = original, version, package_app) do
+  defp dependency({app, requirement, options} = original, sibling_requirement, package_app) do
     cond do
       package_app == :gaoxy_test and app == :gaoxy_http3 and options == [in_umbrella: true] ->
-        {app, "== #{version}", optional: true}
+        {app, sibling_requirement, optional: true}
 
       app in [:gaoxy, :gaoxy_http, :gaoxy_http3, :gaoxy_proxy, :gaoxy_test] and
           options == [in_umbrella: true] ->
-        {app, "== #{version}"}
+        {app, sibling_requirement}
 
       app == :websock_adapter and
           Map.new(options) == %{path: "../../vendor/websock_adapter", override: true} ->
-        {app, "== #{version}", hex: :gaoxy_websock_adapter}
+        {app, sibling_requirement, hex: :gaoxy_websock_adapter}
 
       Enum.any?([:git, :github, :path, :in_umbrella, :override], &Keyword.has_key?(options, &1)) ->
         unsupported!(original)

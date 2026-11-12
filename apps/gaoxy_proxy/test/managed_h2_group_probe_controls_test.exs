@@ -90,7 +90,6 @@ defmodule Gaoxy.Proxy.ManagedH2GroupProbeControlsTest do
         status: 204,
         ok: true,
         http_version: :http2,
-        stream: self(),
         body: self()
       }
 
@@ -417,7 +416,6 @@ defmodule Gaoxy.Proxy.ManagedH2GroupProbeControlsTest do
       HTTP.fetch("http://127.0.0.1:#{port}/completion",
         http_version: :http1,
         http1_reuse: false,
-        tls_backend: :ex_ssl,
         redirect: :manual,
         decode_body: false,
         request_mode: :proxy,

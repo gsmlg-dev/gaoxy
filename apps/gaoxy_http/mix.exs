@@ -4,7 +4,7 @@ defmodule GaoxyHttp.MixProject do
   def project do
     [
       app: :gaoxy_http,
-      version: "0.15.2",
+      version: "0.16.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -12,9 +12,9 @@ defmodule GaoxyHttp.MixProject do
       elixir: "~> 1.18",
       deps: [
         {:gaoxy, in_umbrella: true},
-        {:plug, "== 1.20.3"},
-        {:http_core, "~> 1.0.0-rc.4"},
-        {:websock, "== 0.5.3"},
+        {:plug, "~> 1.20"},
+        {:http_core, "~> 1.0.0-rc.14"},
+        {:websock, "~> 0.5"},
         {:websock_adapter, path: "../../vendor/websock_adapter", override: true}
       ]
     ]

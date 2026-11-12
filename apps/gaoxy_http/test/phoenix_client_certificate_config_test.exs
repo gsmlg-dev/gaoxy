@@ -17,7 +17,7 @@ defmodule Gaoxy.PhoenixClientCertificateConfigTest do
                  verify: :verify_peer,
                  cacertfile: "ca.pem",
                  fail_if_no_peer_cert: false,
-                 versions: [:"tlsv1.3", :"tlsv1.2"]
+                 versions: [:"tlsv1.3"]
                ]
              )
 
@@ -25,7 +25,7 @@ defmodule Gaoxy.PhoenixClientCertificateConfigTest do
     assert tls.verify == :verify_peer
     assert tls.cacertfile == "ca.pem"
     assert tls.fail_if_no_peer_cert == false
-    assert tls.versions == [:"tlsv1.3", :"tlsv1.2"]
+    assert tls.versions == [:"tlsv1.3"]
   end
 
   test "Phoenix HTTPS fails invalid peer-verification combinations before binding" do
@@ -37,6 +37,21 @@ defmodule Gaoxy.PhoenixClientCertificateConfigTest do
 
       case Gaoxy.HTTP.ListenerSet.preflight(options[:plan]) do
         {:error, reason} -> raise ArgumentError, inspect(reason)
+      end
+    end
+  end
+
+  test "Phoenix HTTPS rejects TLS 1.2 listener versions before binding" do
+    for versions <- [[:"tlsv1.2"], [:"tlsv1.3", :"tlsv1.2"]] do
+      assert_raise ArgumentError, ~r/invalid_tls_versions/, fn ->
+        [%{start: {Gaoxy.HTTP.ListenerSet, :start_link, [options]}}] =
+          Gaoxy.PhoenixAdapter.child_specs(Endpoint,
+            https: [port: 0, certfile: "cert.pem", keyfile: "key.pem", versions: versions]
+          )
+
+        case Gaoxy.HTTP.ListenerSet.preflight(options[:plan]) do
+          {:error, reason} -> raise ArgumentError, inspect(reason)
+        end
       end
     end
   end

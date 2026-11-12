@@ -90,6 +90,17 @@ def main():
                 shutil.copyfile(ROOT / "integration/h3_consumer/peer.py", target / "peer.py")
             execute(["mix", "deps.get"], target, env)
             execute(["mix", "compile", "--warnings-as-errors"], target, env)
+            if args.published:
+                # Compatible declarations still qualify the exact requested release.
+                execute(["mix", "run", "--no-compile", "--no-start", "-e", '''
+                expected = System.fetch_env!("GAOXY_TEST_VERSION")
+                packages = ~w(gaoxy gaoxy_http gaoxy_http3 gaoxy_proxy gaoxy_test gaoxy_websock_adapter)
+                selected = for {_, {:hex, name, version, _, _, _, _, _}} <- Mix.Dep.Lock.read(),
+                  Atom.to_string(name) in packages, do: {name, version}
+                unless selected != [] and Enum.all?(selected, fn {_, version} -> version == expected end),
+                  do: raise("consumer resolved unexpected package versions: #{inspect(selected)}")
+                IO.puts("CONSUMER_EXACT_VERSION_PASS #{expected} #{inspect(selected)}")
+                '''], target, env, "CONSUMER_EXACT_VERSION_PASS " + version)
             output = execute([sys.executable, str(ROOT / "scripts/check-tests.py"),
                               "test/consumer_test.exs", "--seed", "0"], target, env)
             if re.search(r"[1-9]\d* (?:excluded|skipped)", output):

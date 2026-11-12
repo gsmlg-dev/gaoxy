@@ -67,7 +67,7 @@ defmodule Gaoxy.Proxy.UpstreamTransportHandoffTest do
 
     assert {200, "old", ^completion, :ok, :ok} =
              call(f.guardian, fn ->
-               %HTTP.Response{status: status, stream: stream} = HTTP.Promise.await(promise, 2000)
+               %HTTP.Response{status: status, body: stream} = HTTP.Promise.await(promise, 2000)
                bytes = read_stream(stream)
                original = HTTP.Promise.completion(promise)
                joined = HTTP.RequestCompletion.await(completion, 2000)
@@ -357,7 +357,7 @@ defmodule Gaoxy.Proxy.UpstreamTransportHandoffTest do
 
     assert {200, "old", ^completion, :ok} =
              call(f.guardian, fn ->
-               %HTTP.Response{status: status, stream: stream} = HTTP.Promise.await(promise, 2000)
+               %HTTP.Response{status: status, body: stream} = HTTP.Promise.await(promise, 2000)
                bytes = read_stream(stream)
                original = HTTP.Promise.completion(promise)
                joined = HTTP.RequestCompletion.await(completion, 2000)
@@ -1154,7 +1154,7 @@ defmodule Gaoxy.Proxy.UpstreamTransportHandoffTest do
   defp consume(actor, promise, completion),
     do:
       call(actor, fn ->
-        %HTTP.Response{status: status, stream: stream} = HTTP.Promise.await(promise, 2000)
+        %HTTP.Response{status: status, body: stream} = HTTP.Promise.await(promise, 2000)
         bytes = read_stream(stream)
         original = HTTP.Promise.completion(promise)
         joined = HTTP.RequestCompletion.await(completion, 2000)

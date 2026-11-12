@@ -145,9 +145,11 @@ defmodule Gaoxy.HTTP.PollBoundaryNetworkTest do
     assert byte_size(pipeline) == input_size
     digest = :crypto.hash(:sha256, pipeline)
     :ok = :ssl.send(socket, pipeline)
+    # OTP 28 TLS 1.3 write shutdown sends a TCP FIN without close_notify;
+    # ex_ssl reports that unclean peer EOF as :econnreset once drained.
     :ok = :ssl.shutdown(socket, :write)
     send(reader, {:observe, 100})
-    {count, :closed} = await_error(reader, Gaoxy.Lifecycle.deadline(2_000))
+    {count, :econnreset} = await_error(reader, Gaoxy.Lifecycle.deadline(2_000))
     assert count <= 64
     assert_receive {:poll_input, ^reader, ^input_size, ^digest}, 1_000
   end

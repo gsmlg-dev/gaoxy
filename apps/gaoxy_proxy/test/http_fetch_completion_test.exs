@@ -40,7 +40,7 @@ defmodule Gaoxy.Proxy.HTTPFetchCompletionTest do
 
     promise = fetch(url, stream_response: true)
     completion = Promise.completion(promise)
-    assert %HTTP.Response{status: 200, stream: stream} = Promise.await(promise, @timeout)
+    assert %HTTP.Response{status: 200, body: stream} = Promise.await(promise, @timeout)
     monitor = Process.monitor(stream)
     send(stream, {:read_chunk, self(), :ack})
     assert_receive {:stream_chunk, ^stream, "body", _ack}, @timeout
@@ -144,7 +144,6 @@ defmodule Gaoxy.Proxy.HTTPFetchCompletionTest do
         [
           http_version: :http1,
           http1_reuse: false,
-          tls_backend: :ex_ssl,
           redirect: :manual,
           decode_body: false,
           request_mode: :proxy,

@@ -349,7 +349,7 @@ defmodule Gaoxy.Proxy.ManagedH2EnvelopeTest do
 
   test "checked client uses only exact public options and matching prepared H2 policy" do
     for protocol <- [:http2, :h2c] do
-      assert checked_client(protocol).fetch_options[:tls_backend] == :ex_ssl
+      refute Keyword.has_key?(checked_client(protocol).fetch_options, :tls_backend)
       assert :ok == call(:validate_checked_client, [checked_client(protocol), protocol])
       other = if protocol == :http2, do: :h2c, else: :http2
       reject(:validate_checked_client, [checked_client(protocol), other])
@@ -445,8 +445,9 @@ defmodule Gaoxy.Proxy.ManagedH2EnvelopeTest do
 
     for status <- [200, 599],
         type <- [:basic, :cors, :error, :opaque],
-        {body, stream} <- [{nil, nil}, {"", nil}, {nil, self()}, {"", self()}, {self(), self()}] do
-      response = %{response() | status: status, type: type, body: body, stream: stream}
+        # A streamed response carries its stream pid in `body`.
+        {body, stream} <- [{nil, nil}, {"", nil}, {self(), self()}] do
+      response = %{response() | status: status, type: type, body: body}
 
       assert {:ok, %{status: ^status, fields: fields, stream: ^stream} = result} =
                call(:validate_response, [response, source().url])
@@ -507,9 +508,10 @@ defmodule Gaoxy.Proxy.ManagedH2EnvelopeTest do
           %{response() | http_version: :h2c},
           %{response() | http_version: :http1},
           %{response() | body: "buffered"},
-          %{response() | body: self(), stream: nil},
-          %{response() | body: self(), stream: :erlang.list_to_pid(~c"<0.1.0>")},
-          %{response() | stream: make_ref()},
+          %{response() | body: make_ref()},
+          %{response() | http3: %{resumed: false, early_data: false}},
+          Map.put(response(), :stream, nil),
+          Map.put(response(), :body_used, false),
           %{response() | headers: []},
           %{response() | headers: Map.put(response().headers, :extra, [])},
           %{response() | headers: Map.from_struct(response().headers)},
@@ -519,7 +521,7 @@ defmodule Gaoxy.Proxy.ManagedH2EnvelopeTest do
       reject(:validate_response, [bad, source().url])
     end
 
-    for key <- [:ok, :body_used, :redirected], value <- [nil, 1, "true"] do
+    for key <- [:ok, :redirected], value <- [nil, 1, "true"] do
       reject(:validate_response, [Map.put(response(), key, value), source().url])
     end
 
@@ -793,7 +795,6 @@ defmodule Gaoxy.Proxy.ManagedH2EnvelopeTest do
       transport_scope: struct(HTTP.ManagedTransport),
       fetch_options: [
         http_version: protocol,
-        tls_backend: :ex_ssl,
         http2_profile: :native_v1,
         http2_reuse: true,
         redirect: :manual,
@@ -815,11 +816,9 @@ defmodule Gaoxy.Proxy.ManagedH2EnvelopeTest do
       ok: true,
       headers: %HTTP.Headers{headers: [{"x-trace", "first"}, {"x-trace", "second"}]},
       body: nil,
-      body_used: false,
       url: URI.parse(source().url),
       redirected: false,
       type: :basic,
-      stream: nil,
       http_version: :http2,
       informational: [],
       trailers: %HTTP.Headers{}

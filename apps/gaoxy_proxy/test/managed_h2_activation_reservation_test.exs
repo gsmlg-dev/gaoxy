@@ -220,7 +220,6 @@ defmodule Gaoxy.Proxy.ManagedH2ActivationReservationTest do
       ok: true,
       http_version: :http2,
       headers: %HTTP.Headers{headers: [{"x", :binary.copy("v", 65_535)}]},
-      stream: self(),
       body: self(),
       url: URI.parse(valid.request.url)
     }
@@ -447,7 +446,6 @@ defmodule Gaoxy.Proxy.ManagedH2ActivationReservationTest do
       transport_scope: struct(HTTP.ManagedTransport),
       fetch_options: [
         http_version: :http2,
-        tls_backend: :ex_ssl,
         http2_profile: :native_v1,
         http2_reuse: true,
         redirect: :manual,

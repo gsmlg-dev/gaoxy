@@ -1,11 +1,24 @@
 defmodule Gaoxy.DatagramBridge do
   @moduledoc false
-  use Abyss.Handler
-  alias Gaoxy.Admission
+  # Per-datagram `Abyss.DatagramHandler`: each admitted packet gets its own
+  # worker process, which owns the Gaoxy admission lease and exits after the
+  # callback, so the lease is released on every path (including a killed
+  # callback). Output is sent through the endpoint send capability and awaited
+  # so `Admission.finish_send/4` records the actual local outcome.
+  @behaviour Abyss.DatagramHandler
+  alias Gaoxy.{Admission, Lifecycle}
+
+  # Matches Abyss's runtime `send_timeout` default for both writer admission
+  # and outcome await; never beyond the remaining callback budget.
+  @send_timeout 100
 
   @impl true
-  def handle_data({peer, port, bytes}, state) do
-    %{spec: spec, gate: gate, scope: scope} = state.server_config.handler_options
+  def init(context, %{send: capability}), do: {:ok, %{context: context, send: capability}}
+
+  @impl true
+  def handle_datagram(%Abyss.Datagram{payload: bytes} = datagram, state) do
+    %{spec: spec, gate: gate, scope: scope} = state.context
+    deadline = Lifecycle.deadline(spec.limits.callback_timeout)
 
     with {:ok, lease} <-
            Admission.acquire(gate, byte_size(bytes),
@@ -13,15 +26,13 @@ defmodule Gaoxy.DatagramBridge do
              memberships: %{connection: make_ref()}
            ),
          :ok <- Admission.begin(gate, lease, byte_size(bytes)) do
-      metadata = state.connection_span.start_metadata
-
       packet = %{
         data: bytes,
-        peer: {peer, port},
-        local: metadata[:local_info],
+        peer: {datagram.peer.addr, datagram.peer.port},
+        local: datagram.local_endpoint,
         destination: :unknown,
         interface: :unknown,
-        ancillary: Map.get(metadata, :ancillary, [])
+        ancillary: datagram.ancillary
       }
 
       case spec.handler.handle_datagram(packet, spec.handler_options) do
@@ -32,18 +43,25 @@ defmodule Gaoxy.DatagramBridge do
           Gaoxy.Telemetry.emit(:handler_error, %{count: 1}, scope, %{reason: reason})
 
         {:reply, output} ->
-          send_output({peer, port}, output, byte_size(bytes), lease, state)
+          send_output(
+            reply_destination(datagram.peer),
+            output,
+            byte_size(bytes),
+            lease,
+            deadline,
+            state
+          )
 
         {:send, destination, output} ->
-          send_output(destination, output, byte_size(bytes), lease, state)
+          send_output(destination, output, byte_size(bytes), lease, deadline, state)
       end
     end
 
-    {:close, state}
+    {:ok, state, []}
   end
 
-  defp send_output(destination, output, input_size, lease, state) do
-    %{spec: spec, gate: gate, scope: scope} = state.server_config.handler_options
+  defp send_output(destination, output, input_size, lease, deadline, state) do
+    %{spec: spec, gate: gate, scope: scope} = state.context
     size = IO.iodata_length(output)
 
     if size <= min(spec.limits.max_output, 65_507) do
@@ -51,7 +69,7 @@ defmodule Gaoxy.DatagramBridge do
         case destination(destination, spec) do
           :ok ->
             with {:ok, operation} <- Admission.start_send(gate, lease, size) do
-              result = transmit(state, destination, output)
+              result = transmit(state.send, destination, output, deadline)
               Admission.finish_send(gate, lease, operation, result)
             end
 
@@ -64,11 +82,34 @@ defmodule Gaoxy.DatagramBridge do
     end
   end
 
-  defp transmit(state, {address, port}, output),
-    do: state.server_config.transport_module.send(state.socket, address, port, output)
+  defp transmit(capability, destination, output, deadline) do
+    with {:ok, ref} <-
+           Abyss.Endpoint.send(
+             capability,
+             sockaddr(destination),
+             IO.iodata_to_binary(output),
+             send_timeout(deadline)
+           ) do
+      case Abyss.Endpoint.await(capability, ref, send_timeout(deadline)) do
+        {:ok, _completed_at} -> :ok
+        {:error, _reason} = error -> error
+        # Admission records an awaited timeout as an unknown local outcome.
+        {:unknown, ^ref} -> {:error, :timeout}
+      end
+    end
+  end
 
-  defp transmit(state, address, output),
-    do: state.server_config.transport_module.send(state.socket, address, output)
+  defp send_timeout(deadline), do: min(@send_timeout, Lifecycle.remaining(deadline))
+
+  defp sockaddr({address, port}), do: Abyss.Datagram.sockaddr(address, port)
+  defp sockaddr(%{} = scoped), do: scoped
+
+  # Retain an observed IPv6 scope; otherwise reply exactly as an address/port.
+  defp reply_destination(%{family: :inet6, scope_id: scope} = peer)
+       when is_integer(scope) and scope > 0,
+       do: Map.take(peer, [:family, :addr, :port, :scope_id])
+
+  defp reply_destination(peer), do: {peer.addr, peer.port}
 
   defp destination({address, port}, spec) do
     if scope_required?(address),

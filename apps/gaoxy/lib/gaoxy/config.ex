@@ -350,12 +350,10 @@ defmodule Gaoxy.Config do
              {:error, :missing_credentials},
          :ok <- tls_verification(spec.tls),
          true <- valid_alpn?(Map.get(spec.tls, :alpn, [])) || {:error, :invalid_alpn},
+         # The ex_ssl server engine is TLS 1.3 only; reject TLS 1.2 before binding.
          true <-
-           Map.get(spec.tls, :versions, [:"tlsv1.3"]) in [
-             [:"tlsv1.3"],
-             [:"tlsv1.2"],
-             [:"tlsv1.3", :"tlsv1.2"]
-           ] || {:error, :invalid_tls_versions},
+           Map.get(spec.tls, :versions, [:"tlsv1.3"]) == [:"tlsv1.3"] ||
+             {:error, :invalid_tls_versions},
          :ok <- empty(spec.udp),
          :ok <- unicast(spec.mode) do
       :ok

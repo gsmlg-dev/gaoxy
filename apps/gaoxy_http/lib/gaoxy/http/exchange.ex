@@ -26,6 +26,7 @@ defmodule Gaoxy.HTTP.Exchange do
     resource_pins: [],
     protocol_bytes: 0,
     funding: nil,
+    body_window: nil,
     adapter_body_bytes: 0,
     poll_buffer_bytes: 0,
     transport: nil,
@@ -591,13 +592,118 @@ defmodule Gaoxy.HTTP.Exchange do
   def update_body_retention(exchange, bytes) do
     deadline = operation_deadline(exchange)
 
-    if Gaoxy.Lifecycle.remaining(deadline) == 0,
-      do: {:error, :timeout},
-      else: update_accounting(exchange, accounting(exchange, bytes), deadline)
+    cond do
+      Gaoxy.Lifecycle.remaining(deadline) == 0 ->
+        {:error, :timeout}
+
+      body_window_owner?(exchange) ->
+        if Process.alive?(exchange.gate) do
+          ceiling = exchange.body_window.ceiling
+
+          if bytes <= ceiling,
+            do: :ok,
+            else: update_accounting(exchange, window_accounting(exchange, bytes), deadline)
+        else
+          {:error, :closed}
+        end
+
+      true ->
+        update_accounting(exchange, accounting(exchange, bytes), deadline)
+    end
   catch
     :exit, {:timeout, _} -> {:error, :timeout}
     :exit, _ -> {:error, :closed}
   end
+
+  # Plug owns these reservations only during one synchronous H1 body read.
+  # Keep the entire promise temporary: a Safety sample must never forgive
+  # unmaterialized headroom as an already-observed retained baseline.
+  @body_window_bytes 262_144
+  @body_window_rejections [
+    :byte_limit,
+    :memory_hard_limit,
+    :system_memory_pressure,
+    :safety_sample_unavailable,
+    :paused,
+    :draining
+  ]
+
+  @doc false
+  def reserve_plug_body(%{transport: nil, funding: funding, body_window: window} = exchange)
+      when is_map(funding) and window != :disabled do
+    bytes = retained_bytes(exchange)
+
+    # Cover native backing/tail copies and framing retained between Plug pieces,
+    # including one-byte reads of chunk lines/trailers. Exact inner reservations
+    # still admit any obligation exceeding this bounded cushion before allocation.
+    cushion =
+      2 * exchange.limits.max_buffer_bytes +
+        2 * Map.get(exchange.body.limits, :max_trailer_bytes, 8_192) +
+        exchange.limits.max_read_chunk
+
+    ceiling =
+      max(
+        funding.total,
+        div(bytes + cushion + @body_window_bytes - 1, @body_window_bytes) *
+          @body_window_bytes
+      )
+
+    cond do
+      Gaoxy.Lifecycle.remaining(exchange.deadline) == 0 ->
+        {:error, :timeout}
+
+      body_window_owner?(exchange) and not Process.alive?(exchange.gate) ->
+        {:error, :closed}
+
+      body_window_owner?(exchange) and ceiling <= window.ceiling ->
+        {:ok, exchange}
+
+      true ->
+        case update_accounting(
+               exchange,
+               window_accounting(exchange, ceiling),
+               operation_deadline(exchange)
+             ) do
+          :ok ->
+            {:ok,
+             %{
+               exchange
+               | body_window: %{
+                   owner: self(),
+                   gate: exchange.gate,
+                   lease: exchange.lease,
+                   ceiling: ceiling
+                 }
+             }}
+
+          {:error, reason} when reason in @body_window_rejections ->
+            # Optional headroom must not reject work that fits existing completion
+            # credit or a tight limit. Fall back once per logical Plug read.
+            reserve_plug_body(%{exchange | body_window: :disabled})
+
+          error ->
+            error
+        end
+    end
+  catch
+    :exit, {:timeout, _} -> {:error, :timeout}
+    :exit, _ -> {:error, :closed}
+  end
+
+  def reserve_plug_body(exchange) do
+    case update_body_retention(exchange, retained_bytes(exchange)) do
+      :ok -> {:ok, exchange}
+      error -> error
+    end
+  end
+
+  defp body_window_owner?(%{body_window: %{owner: owner, gate: gate, lease: lease}} = exchange),
+    do: owner == self() and gate == exchange.gate and lease == exchange.lease
+
+  defp body_window_owner?(_), do: false
+
+  defp window_accounting(exchange, ceiling),
+    do: %{accounting(exchange, 0) | temporary_bytes: ceiling, transport_bytes: ceiling}
 
   defp update_accounting(%{funding: nil} = exchange, bytes, deadline),
     do: Admission.update_until(exchange.gate, exchange.lease, bytes, make_ref(), deadline)

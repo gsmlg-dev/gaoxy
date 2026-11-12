@@ -27,6 +27,7 @@ PACKAGES = {
     "gaoxy_test": "apps/gaoxy_test",
 }
 VERSION = "9.8.7"
+SIBLING_REQUIREMENT = "~> 9.8"
 ENV = {**os.environ, "ELIXIR_ERL_OPTIONS": "+S 2:2", "MIX_ENV": "prod"}
 REQUIREMENTS = {
     "gaoxy_websock_adapter": {
@@ -36,31 +37,31 @@ REQUIREMENTS = {
         "plug_cowboy": ("plug_cowboy", "~> 2.6", True),
     },
     "gaoxy": {
-        "hell": ("hell", "~> 1.0.0-rc.4", False),
-        "abyss": ("abyss", "~> 1.0.0-rc.4", False),
+        "hell": ("hell", "~> 1.0.0-rc.14", False),
+        "abyss": ("abyss", "~> 1.0.0-rc.14", False),
         "telemetry": ("telemetry", "~> 1.3", False),
     },
     "gaoxy_http": {
-        "gaoxy": ("gaoxy", f"== {VERSION}", False),
-        "plug": ("plug", "== 1.20.3", False),
-        "http_core": ("http_core", "~> 1.0.0-rc.4", False),
-        "websock": ("websock", "== 0.5.3", False),
-        "gaoxy_websock_adapter": ("websock_adapter", f"== {VERSION}", False),
+        "gaoxy": ("gaoxy", SIBLING_REQUIREMENT, False),
+        "plug": ("plug", "~> 1.20", False),
+        "http_core": ("http_core", "~> 1.0.0-rc.14", False),
+        "websock": ("websock", "~> 0.5", False),
+        "gaoxy_websock_adapter": ("websock_adapter", SIBLING_REQUIREMENT, False),
     },
     "gaoxy_http3": {
-        "gaoxy_http": ("gaoxy_http", f"== {VERSION}", False),
-        "elixir_quic_http3": ("elixir_quic_http3", "~> 1.0.0-rc.4", False),
+        "gaoxy_http": ("gaoxy_http", SIBLING_REQUIREMENT, False),
+        "elixir_quic_http3": ("elixir_quic_http3", "~> 1.0.0-rc.14", False),
     },
     "gaoxy_proxy": {
-        "gaoxy": ("gaoxy", f"== {VERSION}", False),
-        "gaoxy_http": ("gaoxy_http", f"== {VERSION}", False),
-        "http_fetch": ("http_fetch", "~> 1.0.0-rc.4", False),
-        "http_web_socket": ("http_web_socket", "~> 1.0.0-rc.4", False),
+        "gaoxy": ("gaoxy", SIBLING_REQUIREMENT, False),
+        "gaoxy_http": ("gaoxy_http", SIBLING_REQUIREMENT, False),
+        "http_fetch": ("http_fetch", "~> 1.0.0-rc.14", False),
+        "http_web_socket": ("http_web_socket", "~> 1.0.0-rc.14", False),
     },
     "gaoxy_test": {
-        "gaoxy_http": ("gaoxy_http", f"== {VERSION}", False),
-        "gaoxy_http3": ("gaoxy_http3", f"== {VERSION}", True),
-        "plug": ("plug", "== 1.20.3", False),
+        "gaoxy_http": ("gaoxy_http", SIBLING_REQUIREMENT, False),
+        "gaoxy_http3": ("gaoxy_http3", SIBLING_REQUIREMENT, True),
+        "plug": ("plug", "~> 1.20", False),
     },
 }
 
@@ -189,13 +190,13 @@ IO.puts(JSON.encode!(convert.(terms, convert)))
                 for forbidden in ["in_umbrella:", "override:", "path:", "git:", "config_path:", "build_path:", "deps_path:", "lockfile:"]:
                     self.assertNotIn(forbidden, manifest)
                 if name == "gaoxy":
-                    self.assertIn('hell: "~> 1.0.0-rc.4"', manifest)
-                    self.assertIn('abyss: "~> 1.0.0-rc.4"', manifest)
+                    self.assertIn('hell: "~> 1.0.0-rc.14"', manifest)
+                    self.assertIn('abyss: "~> 1.0.0-rc.14"', manifest)
                     self.assertTrue({"abyss_raw", "rustler"}.isdisjoint(
                         entry["name"] for entry in metadata["requirements"]))
                 if name == "gaoxy_http":
                     self.assertIn('hex: :gaoxy_websock_adapter', manifest)
-                    self.assertIn(f'"== {VERSION}"', manifest)
+                    self.assertIn(f'"{SIBLING_REQUIREMENT}"', manifest)
 
     def test_rejects_hell_git_dependency_without_staging_packages(self):
         manifest = self.source / "apps/gaoxy/mix.exs"
@@ -249,7 +250,7 @@ IO.puts(JSON.encode!(convert.(terms, convert)))
         result = self.stage()
         self.assertEqual(result.returncode, 0, result.stdout)
         self.assertIn(
-            f'{{:gaoxy_http3, "== {VERSION}", [optional: true]}}',
+            f'{{:gaoxy_http3, "{SIBLING_REQUIREMENT}", [optional: true]}}',
             (self.output / "gaoxy_test/mix.exs").read_text(),
         )
 
@@ -262,7 +263,7 @@ IO.puts(JSON.encode!(convert.(terms, convert)))
         result = self.stage()
         self.assertEqual(result.returncode, 0, result.stdout)
         staged = (self.output / "gaoxy_proxy/mix.exs").read_text()
-        self.assertIn(f'gaoxy_http3: "== {VERSION}"', staged)
+        self.assertIn(f'gaoxy_http3: "{SIBLING_REQUIREMENT}"', staged)
         self.assertNotIn("optional: true", staged)
 
     def test_rejects_unreviewed_internal_optional_options_before_output(self):
@@ -340,7 +341,7 @@ end
         (self.source / "apps/gaoxy/mix.exs").write_text(f'''defmodule Gaoxy.MixProject do
   use Mix.Project
   def project, do: [app: :gaoxy, version: "{VERSION}", elixir: "~> 1.18",
-    deps: [{{:hex_publish_fixture, "== 1.0.0"}}]]
+    deps: [{{:hex_publish_fixture, "~> 1.0"}}]]
   def application, do: []
 end
 ''')

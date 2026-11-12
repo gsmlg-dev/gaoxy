@@ -145,15 +145,11 @@ defmodule Gaoxy.PlugAdapter do
 
   defp reserve_body(exchange, bytes) do
     next = %{exchange | adapter_body_bytes: bytes}
-
-    case update_body(next) do
-      :ok -> {:ok, next}
-      error -> error
-    end
+    Exchange.reserve_plug_body(next)
   end
 
   defp release_body(exchange) do
-    next = %{exchange | adapter_body_bytes: 0}
+    next = %{exchange | adapter_body_bytes: 0, body_window: nil}
 
     case update_body(next) do
       :ok ->

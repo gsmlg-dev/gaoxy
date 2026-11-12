@@ -11,12 +11,12 @@ Add to `mix.exs`, then run `mix deps.get`:
 ```elixir
 defp deps do
   [
-    {:gaoxy, "~> 0.15.2"}
+    {:gaoxy, "~> 0.16"}
   ]
 end
 ```
 
-Use Elixir 1.18 or newer with Erlang/OTP. Core uses Hex `abyss ~> 1.0.0-rc.4 (locked at 1.0.0-rc.9)`, which
+Use Elixir 1.18 or newer with Erlang/OTP. Core uses Hex `abyss ~> 1.0.0-rc.14 (locked at 1.0.0-rc.14)`, which
 has no bundled DHCP NIF or Rustler build dependency. Neither Rust/Cargo nor
 `abyss_raw` is required for ordinary Gaoxy services.
 

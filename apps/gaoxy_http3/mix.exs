@@ -4,7 +4,7 @@ defmodule GaoxyHttp3.MixProject do
   def project do
     [
       app: :gaoxy_http3,
-      version: "0.15.2",
+      version: "0.16.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -12,7 +12,7 @@ defmodule GaoxyHttp3.MixProject do
       elixir: "~> 1.18",
       deps: [
         {:gaoxy_http, in_umbrella: true},
-        {:elixir_quic_http3, "~> 1.0.0-rc.4"}
+        {:elixir_quic_http3, "~> 1.0.0-rc.14"}
       ]
     ]
   end

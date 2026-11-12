@@ -7,11 +7,16 @@ defmodule GaoxyTestHTTPFetchConsumer.MixProject do
 
   def application, do: [extra_applications: [:logger, :ssl]]
 
+  defp requirement do
+    version = Version.parse!(System.fetch_env!("GAOXY_TEST_VERSION"))
+    "~> #{version.major}.#{version.minor}"
+  end
+
   defp deps do
     fixtures =
       case System.get_env("GAOXY_TEST_PACKAGES") do
         nil ->
-          [{:gaoxy_test, "== " <> System.fetch_env!("GAOXY_TEST_VERSION"), only: :test}]
+          [{:gaoxy_test, requirement(), only: :test}]
 
         directory ->
           [
@@ -23,6 +28,6 @@ defmodule GaoxyTestHTTPFetchConsumer.MixProject do
           ]
       end
 
-    [{:http_fetch, "~> 1.0.0-rc.4", only: :test} | fixtures]
+    [{:http_fetch, "~> 1.0.0-rc.14", only: :test} | fixtures]
   end
 end

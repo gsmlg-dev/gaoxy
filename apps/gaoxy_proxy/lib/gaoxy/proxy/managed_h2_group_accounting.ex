@@ -611,7 +611,9 @@ defmodule Gaoxy.Proxy.ManagedH2GroupAccounting do
 
   defp handle?(v) do
     exact?(v, [:promise, :completion, :stream, :resolved]) and
-      is_struct(v.promise, HTTP.Promise) and exact?(v.promise, [:__struct__, :task, :completion]) and
+      is_struct(v.promise, HTTP.Promise) and
+      exact?(v.promise, [:__struct__, :task, :completion, :callbacks]) and
+      v.promise.callbacks == [] and
       is_struct(v.promise.task, Task) and
       exact?(v.promise.task, [:__struct__, :owner, :pid, :ref, :mfa]) and
       pid?(v.promise.task.owner) and pid?(v.promise.task.pid) and ref?(v.promise.task.ref) and

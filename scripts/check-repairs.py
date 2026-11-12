@@ -53,7 +53,7 @@ SUITES = {
         ('apps/gaoxy_proxy/test/gateway_plan_test.exs', 3),
         ('apps/gaoxy_proxy/test/gateway_config_test.exs', 3),
         ('apps/gaoxy/test/client_certificate_config_test.exs', 4),
-        ('apps/gaoxy_http/test/phoenix_client_certificate_config_test.exs', 2),
+        ('apps/gaoxy_http/test/phoenix_client_certificate_config_test.exs', 3),
         ('apps/gaoxy_http/test/websocket_configured_limits_test.exs', 5),
         ('apps/gaoxy_http/test/websocket_incremental_frame_test.exs', 15),
         ('apps/gaoxy_http/test/websocket_lifecycle_config_test.exs', 3),
@@ -68,6 +68,7 @@ SUITES = {
         ('apps/gaoxy_test/test/server_profile_config_test.exs', 7),
     ],
     'component': [
+        ('apps/gaoxy_http/test/body_accounting_window_test.exs', 13),
         ('apps/gaoxy/test/resource_budget_admission_test.exs', 60),
         ('apps/gaoxy_http/test/resource_budget_phoenix_test.exs', 1),
         ('apps/gaoxy_http3/test/resource_budget_h3_test.exs', 8),
@@ -98,6 +99,7 @@ SUITES = {
         ('apps/gaoxy/test/certificate_fixture_test.exs', 3),
     ],
     'protocol': [
+        ('apps/gaoxy_http/test/body_accounting_window_network_test.exs', 7),
         ('apps/gaoxy/test/resource_budget_stream_network_test.exs', 30),
         ('apps/gaoxy_http3/test/resource_budget_network_test.exs', 2),
         ('apps/gaoxy_http3/test/resource_budget_churn_network_test.exs', 3),

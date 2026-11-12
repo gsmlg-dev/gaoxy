@@ -103,7 +103,8 @@ defmodule Gaoxy.Proxy.ManagedH2ControlProjection do
   def handle(value) do
     exact(value, [:promise, :completion, :stream, :resolved])
     assert %HTTP.Promise{} = value.promise
-    exact(value.promise, [:__struct__, :task, :completion])
+    exact(value.promise, [:__struct__, :task, :completion, :callbacks])
+    assert value.promise.callbacks == []
     assert %Task{} = value.promise.task
     exact(value.promise.task, [:__struct__, :owner, :pid, :ref, :mfa])
     assert value.promise.task.mfa in [nil, {:erlang, :apply, 2}]

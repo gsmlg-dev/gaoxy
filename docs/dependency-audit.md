@@ -1,13 +1,33 @@
+## Current dependency requirements — 0.16.0
+
+Stable dependencies use two-component pessimistic requirements: `~> 1.20` for
+Plug, `~> 0.5` for WebSock while the HTTP/TLS/QUIC cohort and Abyss/Hell require
+`~> 1.0.0-rc.14`. Published sibling packages use `~> 0.16`. Lockfiles fix the
+exact resolved versions; the committed publication source retains the rc.14 cohort.
+Historical audits below describe their original source and requirements.
+
 # Dependency audit
 
-## Current RC selection — 2026-11-08
+## Current RC selection — 2026-11-12
 
 The root and Phoenix example lockfiles select the published HTTP/TLS/QUIC, Abyss
-and Hell **1.0.0-rc.9** cohort. Abyss and Hell use compatible `~> 1.0.0-rc.4`
-requirements, allowing consumers to resolve the refreshed RC without overrides.
-The published Hell library is unchanged from rc.4; Abyss adds optional DATAGRAM
-APIs without changing the APIs Gaoxy uses. This upgrade adds no Gaoxy DATAGRAM
-or WebTransport capability. Core remains free of `abyss_raw` and Rustler.
+and Hell **1.0.0-rc.14** cohort (the 1.0 API freeze). The lower bound is raised
+to rc.14 because Gaoxy depends on its APIs and fixes:
+
+- Hell TLS runs on the ex_ssl server engine: TLS 1.3 only, OTP 28+, OTP-only
+  options rejected. Gaoxy rejects TLS 1.2 listener versions before binding.
+- The `tls_backend` option is removed; ex_ssl is the only TLS engine, so Gaoxy
+  no longer passes it. `HTTP.Response` carries a streamed body's pid in `body`.
+- ex_ssl keeps buffered plaintext readable after a peer `close_notify`
+  ([gsmlg-dev/http_fetch#163](https://github.com/gsmlg-dev/http_fetch/issues/163));
+  rc.12/rc.13 truncated TLS H1 input and are unsupported.
+- `SSL.getopts/2` accepts an `SSL.ListenSocket`
+  ([gsmlg-dev/http_fetch#159](https://github.com/gsmlg-dev/http_fetch/issues/159)).
+- `Abyss.Handler` is deprecated; Gaoxy's UDP datagram bridge uses
+  `Abyss.Endpoint` with `datagram_handler:`.
+
+The `integration/quic_consumer` and `integration/h3_consumer` floor fixtures keep
+their own historical rc.4 locks. Core remains free of `abyss_raw` and Rustler.
 
 Earlier dependency identities and verification outcomes below remain historical.
 

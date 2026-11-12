@@ -22,7 +22,6 @@ defmodule Gaoxy.Proxy.ManagedH1PreparationTest do
              origin: "http://example.test",
              connect_address: {127, 0, 0, 1},
              http_version: :http1,
-             tls_backend: :ex_ssl,
              http2_profile: :native_v1,
              max_requests: 32,
              max_connections: 2,
@@ -670,10 +669,10 @@ defmodule Gaoxy.Proxy.ManagedH1PreparationTest do
              logical_bytes: 50,
              backing_bytes: 50,
              binary_occurrences: 3,
-             cons_cells: 17,
-             tuples: %{2 => 17, 4 => 2},
+             cons_cells: 16,
+             tuples: %{2 => 16, 4 => 2},
              maps: %{7 => 1},
-             atom_occurrences: 31,
+             atom_occurrences: 29,
              integer_occurrences: 17,
              pid_occurrences: 0
            }
@@ -718,7 +717,7 @@ defmodule Gaoxy.Proxy.ManagedH1PreparationTest do
     assert {:ok, _, manifest} = Preparation.prepare_policy(tls_source(["opaque"]))
     # The eight extra cons cells are five SSL pairs, two version values and
     # one certificate; the twelve SNI bytes add twelve more cons cells.
-    assert manifest.owned.cons_cells == 17 + 5 + 2 + 1 + 12
+    assert manifest.owned.cons_cells == 16 + 5 + 2 + 1 + 12
     assert manifest.owned.integer_occurrences == 17 + 1 + 12
     assert {:ok, _, manifest} = Preparation.prepare_request(policy(), %{request() | body: self()})
     assert manifest.source.pid_occurrences == 1
