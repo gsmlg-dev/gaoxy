@@ -444,7 +444,8 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
   def handle_call({:finish, handle, token}, {caller, _}, state) do
     case request_hold(state, handle, token, caller) do
       {:ok, %{completion: nil} = hold} ->
-        {:reply, {:error, :cleanup_unconfirmed}, retire_resource(state, hold.resource)}
+        {:reply, {:error, :cleanup_unconfirmed},
+         quarantine_resource(state, hold.resource, :unbound_finish)}
 
       {:ok, %{abort_helper: helper}} when not is_nil(helper) ->
         {:reply, {:error, :cleanup_pending}, state}
@@ -579,8 +580,13 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
   def handle_info({:custodian_retiring, resource, pid, capability}, state),
     do: update_custodian(state, resource, pid, capability, :retiring)
 
-  def handle_info({:custodian_failed, resource, pid, capability}, state),
-    do: update_custodian(state, resource, pid, capability, :failed)
+  def handle_info({:custodian_failed, resource, pid, capability}, state) do
+    with %{^resource => %{custodian: ^pid, capability: ^capability}} <- state.records,
+         do:
+           Gaoxy.Proxy.Quarantine.report(:custodian, :cleanup_unconfirmed, %{resource: resource})
+
+    update_custodian(state, resource, pid, capability, :failed)
+  end
 
   def handle_info({:custodian_retired, resource, pid, capability}, state) do
     case state.records do
@@ -1144,6 +1150,16 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
     end
   end
 
+  # An unbound request token can never be confirmed, so its transport is closed
+  # for good. Report the first such transition of each resource.
+  defp quarantine_resource(state, resource, reason) do
+    with %{^resource => %{transport_confirmed: false, retirement_requested: false}} <-
+           state.records,
+         do: Gaoxy.Proxy.Quarantine.report(:transport, reason, %{resource: resource})
+
+    retire_resource(state, resource)
+  end
+
   defp retire_resource(state, resource) do
     case state.records do
       %{^resource => %{transport_confirmed: false} = entry} ->
@@ -1270,7 +1286,7 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
 
   defp guardian_down(state, token, %{completion: nil} = hold) do
     state = %{state | tokens: Map.put(state.tokens, token, %{hold | guardian_down: true})}
-    retire_resource(state, hold.resource)
+    quarantine_resource(state, hold.resource, :guardian_exit_before_bind)
   end
 
   defp guardian_down(state, token, %{abort_helper: helper} = hold) when not is_nil(helper),
@@ -1284,7 +1300,7 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
     do: %{state | tokens: Map.put(state.tokens, token, hold)}
 
   defp abort_request(state, _token, %{completion: nil} = hold),
-    do: retire_resource(state, hold.resource)
+    do: quarantine_resource(state, hold.resource, :abort_before_bind)
 
   defp abort_request(state, token, hold) do
     owner = self()

@@ -698,10 +698,31 @@ defmodule Gaoxy.Proxy.UpstreamTransportsTest do
     {:ok, handle, _} = Transports.prepare(owner, policy_source(), self(), deadline())
     {:ok, pins} = Gaoxy.HTTP.Resources.pin_many([handle], self(), :request, deadline())
     {:ok, _, token} = Transports.checkout(handle, pins, self(), deadline())
+    test = self()
+    handler = make_ref()
+
+    :telemetry.attach(
+      handler,
+      [:gaoxy, :upstream_quarantined],
+      # Handlers run in the emitting process; other async tests have other owners.
+      fn _, measurements, metadata, _ ->
+        if self() == owner, do: send(test, {:quarantined, measurements, metadata})
+      end,
+      nil
+    )
+
+    on_exit(fn -> :telemetry.detach(handler) end)
     assert {:error, :cleanup_unconfirmed} = Transports.finish(handle, token)
+
+    # The retirement is permanent, so operators must be able to see it happen.
+    assert_receive {:quarantined, %{count: 1},
+                    %{component: :transport, reason: :unbound_finish, resource: resource}}
+
+    assert is_reference(resource)
     eventually(fn -> match?({:ok, %{reserved_connections: 0}}, Transports.status(owner)) end)
     assert {:ok, %{request_tokens: 1, resources: 1}} = Transports.status(owner)
     assert {:error, :cleanup_unconfirmed} = Transports.finish(handle, token)
+    refute_receive {:quarantined, _, _}, 50
   end
 
   test "settling one retired member retains the grouped baseline and its live member" do

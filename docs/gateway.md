@@ -207,3 +207,19 @@ managed ownership/retirement, but reusable H1 and upstream H2 remain disabled
 pending complete H1 accounting and managed runtime qualification, and H2
 header/control bound [#86](https://github.com/gsmlg-dev/http_fetch/issues/86).
 See the [transport plan](plans/m3-upstream-transport.md).
+
+### Quarantined upstream resources
+
+Some failures close an upstream resource for good instead of guessing at its
+state. Each one emits `[:gaoxy, :upstream_quarantined]` with `%{count: 1}` and
+logs a warning; the metadata is `component`, `reason` and an opaque identifier.
+
+| `component` | `reason` | Effect | Clears on |
+| --- | --- | --- | --- |
+| `:transport` | `:unbound_finish`, `:guardian_exit_before_bind`, `:abort_before_bind` | The transport stops admitting requests; requests already on it are aborted. `resource` identifies it. | Route reload |
+| `:custodian` | `:cleanup_unconfirmed` | The transport's connections could not be confirmed closed; its resource slot stays occupied. | Gateway restart |
+| `:group` | `:holder_exit_before_bind`, `:recovery_unavailable`, `:group_failed` | The group generation answers 503 and is no longer probed. `group` is its configured id. | Route reload |
+| `:group_owner` | `:draining` | The owner accepts no new groups. | Gateway restart |
+
+Alert on any occurrence: these states do not recover on their own.
+

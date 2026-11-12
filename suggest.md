@@ -19,7 +19,10 @@
 | T1(第 1 步) | 已完成 | `forward_http_test.exs`(protocol,8 例)与 `destination_policy_test.exs`(component,8 例)纳入门禁;前者有一个过期用例(TLS listener 默认启用 H2 后 32 MB 预算不足),已将该用例固定为 `protocols: [:http1]` |
 | C10 | 暂不处理 | 复核后发现 `QUICBridge` 在 gate 无法为回调提供资金时同样跳过 `terminate/2`,这是既定设计;StreamBridge 的差别只是以 MatchError 崩溃而不是静默返回 |
 | C1 | 已修复 | 终结重试改为 single-flight;复现测试中 5 个终结项在 150 ms 内触发 155 次全量 sweep,修复后在上限内 |
+| A2(上游部分) | 已完成(未发布) | transport / custodian / group 进入终态隔离时发 `[:gaoxy, :upstream_quarantined]` 并打 warning;`docs/gateway.md` 增加状态表;`upstream_transports_test.exs`(47 例)与 `upstream_groups_test.exs`(8 例)纳入 protocol 门禁。恢复路径(C4/C5/C11)尚未改动 |
 | S1 | 已修复 | 对端在存活流上诱发的重置计入 `control_rate`;新增 `http2_peer_reset_rate_test.exs`(protocol 套件,2 例) |
+
+0.16.3 已于 2026-11-13 发布(GitHub release 与 Hex 包均已确认)。标"未发布"的条目在其后提交。
 
 以上已修复的条目随 0.16.3 发布(见 `docs/releases/0.16.3.md`);修复经过一次独立只读复核,复核提出的 C1 残余放大和四处测试弱点已处理。
 

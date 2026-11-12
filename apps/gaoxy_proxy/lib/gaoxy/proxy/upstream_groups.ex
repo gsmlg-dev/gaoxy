@@ -1295,10 +1295,10 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
           else: put_in(state.probes[token], recovered)
       else
         {:error, _} ->
-          put_in(state.groups[held.key].lifecycle, :failed)
+          quarantine_group(state, held.key, :recovery_unavailable)
       end
     else
-      put_in(state.groups[held.key].lifecycle, :failed)
+      quarantine_group(state, held.key, :holder_exit_before_bind)
     end
   end
 
@@ -1491,12 +1491,28 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
 
   defp fail_group(state, group_key) do
     group = state.groups[group_key]
+    report_group(group, group_key, :group_failed)
 
     case put_group(state, group_key, %{group | lifecycle: :failed}) do
-      {:ok, next} -> next
-      {:error, _} -> %{state | mode: :draining}
+      {:ok, next} ->
+        next
+
+      {:error, _} ->
+        Gaoxy.Proxy.Quarantine.report(:group_owner, :draining)
+        %{state | mode: :draining}
     end
   end
+
+  defp quarantine_group(state, group_key, reason) do
+    report_group(state.groups[group_key], group_key, reason)
+    put_in(state.groups[group_key].lifecycle, :failed)
+  end
+
+  # A failed group answers 503 until the next reload; report it once.
+  defp report_group(%{lifecycle: :failed}, _, _), do: :ok
+
+  defp report_group(_, {id, _generation}, reason),
+    do: Gaoxy.Proxy.Quarantine.report(:group, reason, %{group: id})
 
   defp authentic_h2_pin?(state, public, held) do
     ManagedH2GroupAccounting.validate(:captured_pins, [public]) == :ok and
