@@ -383,7 +383,10 @@ defmodule Gaoxy.Proxy.ManagedH2FixedReleaseOrderTest do
 
     debug = fn held, event, _ ->
       case {held, event} do
-        {false, {:in, {:"$gen_call", {^pump, _}, {:update, ^lease, bytes}}}} ->
+        # Exchange polls account synchronously through update_until/5 or, with
+        # funding, repartition_until/5 (Gaoxy.HTTP.Exchange.update_accounting/3).
+        {false, {:in, {:"$gen_call", {^pump, _}, {call, ^lease, bytes, _operation, _deadline}}}}
+        when call in [:update_until, :repartition_until] ->
           send(caller, {:h2_release_pump_poll_held, pump, lease, bytes})
           await_release(debug_id)
           true
@@ -417,14 +420,21 @@ defmodule Gaoxy.Proxy.ManagedH2FixedReleaseOrderTest do
       end
 
     state = :sys.get_state(gate, @timeout)
+    # A lease charges retained plus temporary bytes (Gaoxy.Admission.Accounting.replace/2).
+    charged = charged_bytes(bytes)
     assert [^lease] = Map.keys(state.leases)
     assert [^token] = Map.keys(state.cleanups)
     assert state.leases[lease].pid == pump
-    assert state.leases[lease].bytes == bytes
+    assert state.leases[lease].bytes == charged
     assert state.cleanups[token].bytes == 9_444_956
     assert state.cleanups[token].receipt == false
-    assert state.bytes == bytes + state.cleanups[token].bytes
+    assert state.bytes == charged + state.cleanups[token].bytes
   end
+
+  defp charged_bytes(bytes) when is_integer(bytes), do: bytes
+
+  defp charged_bytes(%{retained_bytes: retained, temporary_bytes: temporary}),
+    do: retained + temporary
 
   defp safe_resume_pump(pump) do
     :erlang.resume_process(pump)

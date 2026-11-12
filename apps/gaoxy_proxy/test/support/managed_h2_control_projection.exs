@@ -457,13 +457,17 @@ defmodule Gaoxy.Proxy.ManagedH2ControlProjection do
       :max_read_chunk,
       :max_buffer_bytes,
       :request_timeout,
+      :stream_timeout,
       :header_timeout,
       :read_timeout,
       :write_timeout,
       :max_write_chunk
     ])
 
-    Enum.each(value.limits, fn {key, number} ->
+    {stream_timeout, numeric_limits} = Map.pop!(value.limits, :stream_timeout)
+    assert stream_timeout in [:request, :infinity]
+
+    Enum.each(numeric_limits, fn {key, number} ->
       assert is_atom(key)
       unsigned(number)
     end)
