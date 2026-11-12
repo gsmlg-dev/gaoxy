@@ -98,7 +98,7 @@ defmodule Gaoxy.Proxy.HTTPFetchClient do
     {:ok,
      HTTP.fetch(options.url,
        method: options.method,
-       headers: options.headers,
+       headers: placeholder_user_agent(options.headers),
        # Managed 0.21.2 charges normalized inputs and generated fields (#87).
        # Keep URL strings, explicit fields and nil/PID body inputs here.
        body: upload,
@@ -218,4 +218,16 @@ defmodule Gaoxy.Proxy.HTTPFetchClient do
   @impl true
   def cleanup(handle, true), do: RequestCompletion.abort_and_await(handle.completion, 0)
   def cleanup(handle, false), do: RequestCompletion.await(handle.completion, 0)
+
+  # TODO(upstream): gsmlg-dev/http_fetch#171
+  # WORKAROUND(upstream): gsmlg-dev/http_fetch#171
+  # HTTP Fetch adds a User-Agent naming the host's OTP, Elixir and client
+  # versions when none is supplied, even in proxy mode. Send a version-free
+  # placeholder instead, as the managed HTTP/2 path does. Remove this once proxy
+  # mode sends no default User-Agent.
+  defp placeholder_user_agent(headers) do
+    if List.keymember?(headers, "user-agent", 0),
+      do: headers,
+      else: headers ++ [{"user-agent", "gaoxy"}]
+  end
 end

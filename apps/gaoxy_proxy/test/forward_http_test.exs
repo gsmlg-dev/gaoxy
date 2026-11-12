@@ -41,6 +41,9 @@ defmodule Gaoxy.Proxy.ForwardHTTPTest do
     refute upstream =~ "secret"
     # A forward proxy must not disclose its client to the destination.
     refute String.downcase(upstream) =~ "x-forwarded-"
+    # The client sent no User-Agent; the origin must not learn runtime versions.
+    assert String.downcase(upstream) =~ "\r\nuser-agent: gaoxy\r\n"
+    refute String.downcase(upstream) =~ "http_fetch"
     assert_peer(peer)
     restored(server)
   end
