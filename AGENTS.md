@@ -41,6 +41,10 @@ python3 scripts/check-repairs.py protocol   # real network and protocol peers
 python3 scripts/check-tests.py <test file>  # one file, as the gates run it
 ```
 
+The gate scripts set `GAOXY_QUIC_PYTHON` to `.audit/h2peer/bin/python`. Export it
+when running a QUIC or HTTP/3 network test file directly, or the test fails for
+lack of its Python peer rather than for a product reason.
+
 `_build` and `deps` are shared: run one build or test command at a time, including
 across parallel agents.
 
