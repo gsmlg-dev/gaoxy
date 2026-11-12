@@ -504,6 +504,8 @@ HTTP 和 WebSocket 两条路径都总是用 socket 对端地址替换 `X-Forward
 
 **2026-11-13 补充(实测,core)**:`apps/gaoxy` 整套一起跑(453 例)在未改动的代码上有 4–5 例失败:`DatagramDispatcherTest`(1)、`SendOutcomeTest`(2)、`QUICContextTest`(2,单独按门禁方式运行时通过),以及负载下偶发的 `AdmittedSpawnTest`(1,单独运行稳定通过)。说明这些测试对并发运行或共享状态敏感。
 
+**2026-11-13 补充(门禁内的偶发失败)**:已调度的 `apps/gaoxy_http3/test/websocket_network_test.exs`("persistent H3 websocket outlives peer idle")在当天 7 次完整门禁中失败 1 次:服务端 `QUIC.info` 调用退出,连接以 `:native_resources_unavailable` 终止,对端报 idle timeout。用相同环境单独重跑 6 次全过。失败路径在 `apps/gaoxy/lib/gaoxy/quic_bridge.ex` 的 `inspect_native/3`:一次查询失败就终止连接,这与 C2 是同一类问题(把一次调用失败当成资源不可用)。未修复。
+
 **2026-11-13 补充(实测)**:修 S1 时跑了 `apps/gaoxy_http` 的全部 H2 测试文件(含未调度的),在未改动的 `main` 上 163 例中已有 30 例失败,集中在 `http2_integration_test.exs`、`http2_worker_startup_extended_test.exs`、`http2_network_test.exs`、`http2_capacity_test.exs`。未调度的测试确实已经在腐烂;这些失败尚未诊断,不清楚是测试过期还是产品缺陷。
 
 **建议**:
