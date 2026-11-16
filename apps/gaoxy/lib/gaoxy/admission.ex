@@ -1183,7 +1183,11 @@ defmodule Gaoxy.Admission do
   def handle_info({:expired, ref, token}, state) do
     case state.leases[ref] do
       %{token: ^token, pid: pid} = lease ->
-        Telemetry.emit(:timeout, %{count: 1}, state.scope, %{reason: :callback_or_send_timeout})
+        Telemetry.emit(:timeout, %{count: 1}, state.scope, %{
+          reason: :callback_or_send_timeout,
+          owner: pid
+        })
+
         send_outcome(state, lease.send, {:unknown, :watchdog_timeout})
         Process.exit(pid, :kill)
         {:noreply, %{state | leases: Map.put(state.leases, ref, %{lease | send: nil})}}

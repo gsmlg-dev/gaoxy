@@ -3,7 +3,7 @@ defmodule Gaoxy.HTTP.Connection do
   use Hell.Handler
   @behaviour Gaoxy.NativeStreamHandler
   alias Gaoxy.{Admission, Lifecycle}
-  alias Gaoxy.HTTP.{Exchange, Options, ProtocolDetector, WebSocket}
+  alias Gaoxy.HTTP.{Diagnostics, Exchange, Options, ProtocolDetector, WebSocket}
   alias Gaoxy.HTTP.HTTP1.Parser
 
   @impl Gaoxy.NativeStreamHandler
@@ -245,6 +245,7 @@ defmodule Gaoxy.HTTP.Connection do
   end
 
   defp process(socket, %{phase: :idle} = state) do
+    Diagnostics.start(:http1)
     first = state.first_input || Lifecycle.now()
 
     deadline =
@@ -257,6 +258,7 @@ defmodule Gaoxy.HTTP.Connection do
     token = make_ref()
 
     if Lifecycle.remaining(header_deadline) == 0 do
+      Diagnostics.failure(:headers, :header_timeout)
       {:close, state}
     else
       case Admission.begin_request(state.gate, state.lease, byte_size(state.buffer), deadline) do
@@ -295,8 +297,9 @@ defmodule Gaoxy.HTTP.Connection do
           {:close, state}
         end
 
-      {:error, code, _reason} ->
+      {:error, code, reason} ->
         _ = write_error(socket, state, code)
+        Diagnostics.failure(:headers, reason)
         {:close, state}
 
       {:ok, request, rest} ->
@@ -316,6 +319,7 @@ defmodule Gaoxy.HTTP.Connection do
 
         if request.scheme != nil and request.scheme != scheme and not allowed_absolute do
           _ = write_error(socket, state, 400)
+          Diagnostics.failure(:headers, :scheme_mismatch)
           {:close, state}
         else
           case Exchange.new(
@@ -386,6 +390,7 @@ defmodule Gaoxy.HTTP.Connection do
   defp respond(socket, state, exchange) do
     {module, options} = state.spec.handler_options.endpoint
 
+    Diagnostics.stage(:endpoint)
     result = call_endpoint(module, options, exchange)
     committed = flush_sent()
 
@@ -405,8 +410,15 @@ defmodule Gaoxy.HTTP.Connection do
         do: %{exchange | close: true},
         else: finish_response(exchange)
 
+    if match?({:error, _, _}, result) and exchange.response != :unset do
+      {:error, reason, _} = result
+      Diagnostics.failure(:endpoint, Diagnostics.endpoint_reason(reason))
+    end
+
     cond do
       match?({:websocket, _, _, _, _}, exchange.response) ->
+        Diagnostics.finish()
+
         case release_request_credit(state, exchange) do
           {:ok, exchange} -> websocket_result(WebSocket.start(exchange, state.spec.limits), state)
           {:error, _} -> {:close, state}
@@ -414,9 +426,18 @@ defmodule Gaoxy.HTTP.Connection do
 
       exchange.response == :unset ->
         _ = write_error(socket, state, 500)
+
+        reason =
+          case result do
+            {:error, reason, _} -> Diagnostics.endpoint_reason(reason)
+            _ -> :response_not_sent
+          end
+
+        Diagnostics.failure(:endpoint, reason)
         {:close, state}
 
       exchange.close or exchange.body.phase != :done ->
+        Diagnostics.finish()
         {:close, state}
 
       true ->
@@ -427,6 +448,8 @@ defmodule Gaoxy.HTTP.Connection do
                Lifecycle.deadline(50)
              ) do
           :ok ->
+            Diagnostics.finish()
+
             next = %{
               state
               | buffer: exchange.buffer,
@@ -522,17 +545,21 @@ defmodule Gaoxy.HTTP.Connection do
     reason = Plug.Conn.Status.reason_phrase(code)
     bytes = "HTTP/1.1 #{code} #{reason}\r\ncontent-length: 0\r\nconnection: close\r\n\r\n"
 
-    Exchange.send_bytes(
-      %Exchange{
-        socket: socket,
-        gate: state.gate,
-        lease: state.lease,
-        buffer: state.buffer,
-        limits: state.limits,
-        deadline: state.deadline || Lifecycle.deadline(50)
-      },
-      bytes
-    )
+    result =
+      Exchange.send_bytes(
+        %Exchange{
+          socket: socket,
+          gate: state.gate,
+          lease: state.lease,
+          buffer: state.buffer,
+          limits: state.limits,
+          deadline: state.deadline || Lifecycle.deadline(50)
+        },
+        bytes
+      )
+
+    if result == :ok, do: Diagnostics.response(code)
+    result
   end
 
   defp overload(socket, state) do
@@ -554,6 +581,16 @@ defmodule Gaoxy.HTTP.Connection do
         {socket, %{phase: :detecting, detector_token: token} = state}
       )
       when is_reference(token) do
+    Diagnostics.emit(
+      :unknown,
+      :protocol,
+      :header_timeout,
+      nil,
+      false,
+      System.convert_time_unit(state.first_input, :millisecond, :native),
+      %{request_id: token}
+    )
+
     {:stop, :normal, {socket, cancel_detection(state)}}
   end
 
@@ -575,6 +612,7 @@ defmodule Gaoxy.HTTP.Connection do
         {:gaoxy_http_header_timeout, token},
         {socket, %{phase: :header, header_token: token} = state}
       ) do
+    Diagnostics.failure(:headers, :header_timeout)
     {:stop, :normal, {socket, state}}
   end
 

@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parent.parent
 # Each file is checked separately: losing a case or excluding it fails the gate.
 SUITES = {
     'unit': [
+        ('apps/gaoxy_http/test/http_diagnostics_contract_test.exs', 4),
         ('apps/gaoxy_http/test/resource_budget_phoenix_config_test.exs', 11),
         ('apps/gaoxy/test/resource_budget_safety_test.exs', 15),
         ('apps/gaoxy/test/resource_budget_config_test.exs', 14),
@@ -101,6 +102,8 @@ SUITES = {
         ('apps/gaoxy/test/certificate_fixture_test.exs', 3),
     ],
     'protocol': [
+        ('apps/gaoxy_http/test/http_diagnostics_test.exs', 8),
+        ('apps/gaoxy_http/test/http2_diagnostics_test.exs', 9),
         ('apps/gaoxy_http/test/body_accounting_window_network_test.exs', 7),
         ('apps/gaoxy/test/resource_budget_stream_network_test.exs', 30),
         ('apps/gaoxy_http3/test/resource_budget_network_test.exs', 2),

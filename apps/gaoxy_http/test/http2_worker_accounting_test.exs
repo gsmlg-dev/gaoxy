@@ -360,7 +360,10 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccountingTest do
         else: exchange
 
     dispatch = {:h2_dispatch, owner, exchange, s.spec.handler_options.endpoint}
-    done = {:h2_stream_done, worker, r.id, r.token, {:error, :response_failed}}
+
+    done =
+      {:h2_stream_done, worker, r.id, r.token,
+       {:failure, :header_count_limit, {:error, :response_failed}}}
 
     startup = %{
       request: reqid,

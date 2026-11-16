@@ -380,7 +380,9 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
       # A failed final response write must never become a second response.
       # Informational responses still allow the application to send its final head.
       if final?, do: send(self(), Plug.Conn.Adapter.already_sent())
-      Exchange.send_bytes(exchange, head)
+      result = Exchange.send_bytes(exchange, head)
+      if final? and result == :ok, do: Gaoxy.HTTP.Diagnostics.response(status)
+      result
     end
   end
 

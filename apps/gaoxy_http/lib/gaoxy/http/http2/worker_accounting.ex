@@ -291,13 +291,15 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccounting do
 
     dispatch = t([e(:h2_dispatch), o, exchange, endpoint])
 
+    completion = max(e(:ok), t([e(:error), max(e(:endpoint_failed), e(:response_failed))]))
+
     done =
       t([
         e(:h2_stream_done),
         pid,
         id,
         token,
-        max(e(:ok), t([e(:error), max(e(:endpoint_failed), e(:response_failed))]))
+        max(completion, t([e(:failure), Gaoxy.HTTP.Diagnostics.reason_bytes(), completion]))
       ])
 
     plan = t([e(@tag), e(n), e(w)])

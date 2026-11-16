@@ -1,7 +1,7 @@
 defmodule Gaoxy.HTTP.HTTP2.Stream do
   @moduledoc false
   alias Gaoxy.Lifecycle
-  alias Gaoxy.HTTP.Exchange
+  alias Gaoxy.HTTP.{Diagnostics, Exchange}
   alias Gaoxy.HTTP.Response
 
   def run(lease, owner, id, token, gate, protocol_bytes, deadline) do
@@ -64,6 +64,14 @@ defmodule Gaoxy.HTTP.HTTP2.Stream do
                 {:ok, _} -> :ok
                 {:error, :endpoint_failed} -> {:error, :endpoint_failed}
                 _ -> {:error, :response_failed}
+              end
+
+            outcome =
+              case result do
+                {:ok, %{response: :unset}} -> {:failure, :response_not_sent, outcome}
+                {:ok, _} -> outcome
+                {:error, reason, _} -> {:failure, Diagnostics.endpoint_reason(reason), outcome}
+                _ -> {:failure, :endpoint_failure, outcome}
               end
 
             # Request completion does not prove stream/output completion. The

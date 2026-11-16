@@ -2,7 +2,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   @moduledoc false
   alias Gaoxy.{Admission, Lifecycle}
   alias Gaoxy.HTTP.{Exchange, HTTP2.Frame, HTTP2.Headers, HTTP2.Limits, HTTP2.Settings}
-  alias Gaoxy.HTTP.RendererBounds
+  alias Gaoxy.HTTP.{Diagnostics, RendererBounds}
   alias Gaoxy.HTTP.HTTP2.{Stream, Writer, Transport, WorkerAccounting}
   alias Hell.Socket
   alias HTTP.HTTP2.HPACK
@@ -520,7 +520,14 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
             true ->
               %{
                 state
-                | continuation: %{id: id, block: detach(block), ended: ended, error: stream_error}
+                | continuation: %{
+                    id: id,
+                    block: detach(block),
+                    ended: ended,
+                    error: stream_error,
+                    diagnostic_started: System.monotonic_time(),
+                    diagnostic_token: make_ref()
+                  }
               }
           end
         else
@@ -543,7 +550,15 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
       block = cont.block <> payload
 
       if Frame.flag?(flags, 4),
-        do: decode_headers(%{state | continuation: nil}, cont.id, block, cont.ended, cont.error),
+        do:
+          decode_headers(
+            %{state | continuation: nil},
+            cont.id,
+            block,
+            cont.ended,
+            cont.error,
+            cont.diagnostic_started
+          ),
         else: %{state | continuation: %{cont | block: detach(block)}}
     end
   end
@@ -592,12 +607,18 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
 
             cond do
               received > state.limits.max_body_bytes ->
-                credit_connection(reset(state, id, :cancel), size)
+                credit_connection(
+                  reset(diagnostic(state, id, :request, :body_limit), id, :cancel),
+                  size
+                )
 
               match?({:length, _}, stream.request.body) and
                   (received > elem(stream.request.body, 1) or
                      (ended and received != elem(stream.request.body, 1))) ->
-                credit_connection(reset(state, id, :protocol_error), size)
+                credit_connection(
+                  reset(diagnostic(state, id, :request, :malformed_body), id, :protocol_error),
+                  size
+                )
 
               true ->
                 stream = %{
@@ -639,13 +660,15 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   defp priority(_, flags, _) when Bitwise.band(flags, 32) != 0, do: {:error, :frame_size_error}
   defp priority(bytes, _, _), do: {:ok, bytes, nil}
 
-  defp decode_headers(state, id, block, ended, stream_error) do
+  defp decode_headers(state, id, block, ended, stream_error, started \\ nil) do
+    started = started || System.monotonic_time()
+
     if byte_size(block) > state.h2.max_header_block do
       failure(state, :enhance_your_calm)
     else
       case reserve_decode(state, byte_size(block)) do
         {:ok, state} ->
-          decoded = decode_reserved_headers(state, id, block, ended, stream_error)
+          decoded = decode_reserved_headers(state, id, block, ended, stream_error, started)
           # The expanded fields have either moved to bounded retained state or
           # been rejected; the decoder's temporary peak is no longer live.
           case resize_connection(decoded, 0) do
@@ -662,7 +685,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   defp reserve_decode(state, block_bytes),
     do: resize_connection(state, Limits.decode_reservation(state.h2, block_bytes))
 
-  defp decode_reserved_headers(state, id, block, ended, stream_error) do
+  defp decode_reserved_headers(state, id, block, ended, stream_error, started) do
     case HPACK.decode(state.decoder, block) do
       {:ok, decoder, fields} ->
         state = %{state | decoder: decoder}
@@ -678,7 +701,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
             reset(state, id, :stream_closed)
 
           true ->
-            admit(state, id, fields, ended)
+            admit(state, id, fields, ended, started)
         end
 
       {:error, _} ->
@@ -697,11 +720,11 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
          Headers.trailers(fields, state.limits) == :ok do
       deliver(put_in(state.streams[id], %{stream | eof: true, trailers: fields}), id)
     else
-      reset(state, id, :protocol_error)
+      reset(diagnostic(state, id, :request, :malformed_body), id, :protocol_error)
     end
   end
 
-  defp admit(state, id, fields, ended) do
+  defp admit(state, id, fields, ended, started) do
     previous = state.highest
     state = %{state | highest: max(id, state.highest)}
 
@@ -722,11 +745,15 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
                 else: request
 
             if ended and match?({:length, length} when length != 0, request.body) do
-              reset(state, id, :protocol_error)
+              reject_headers(state, id, started)
             else
               stream = %{
                 id: id,
                 token: make_ref(),
+                diagnostic_started: started,
+                diagnostic_emitted: false,
+                response_status: nil,
+                response_sent: false,
                 worker: nil,
                 monitor: nil,
                 lease: nil,
@@ -769,8 +796,37 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
             end
 
           {:error, _, _} ->
-            reset(state, id, :protocol_error)
+            reject_headers(state, id, started)
         end
+    end
+  end
+
+  defp reject_headers(state, id, started) do
+    Diagnostics.emit(:http2, :headers, :malformed_request, nil, false, started, %{
+      request_id: make_ref(),
+      stream_id: id
+    })
+
+    reset(state, id, :protocol_error)
+  end
+
+  defp diagnostic(state, id, stage, reason) do
+    case state.streams[id] do
+      %{diagnostic_emitted: false} = stream ->
+        Diagnostics.emit(
+          :http2,
+          stage,
+          reason,
+          if(stream.response_sent, do: stream.response_status),
+          stream.response_sent,
+          stream.diagnostic_started,
+          %{request_id: stream.token, stream_id: id}
+        )
+
+        put_in(state.streams[id].diagnostic_emitted, true)
+
+      _ ->
+        state
     end
   end
 
@@ -1012,6 +1068,12 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
         reply_error(state, from, :invalid_response_headers)
 
       true ->
+        state =
+          put_in(
+            state.streams[stream.id],
+            Map.put(stream, :response_status, if(status >= 200, do: status))
+          )
+
         encode_headers(
           state,
           stream.id,
@@ -1392,6 +1454,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
       # writer slot. Its actual :expired receipt releases the slot safely.
       {^token, callback} when state.inflight_started ->
         write = state.inflight_write
+        state = response_written(state, callback)
         state = %{state | inflight: nil, inflight_write: nil, inflight_started: false}
 
         if write != nil and Lifecycle.remaining(write.deadline) == 0 do
@@ -1438,6 +1501,18 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   defp message(state, {:h2_stream_ready, _, _, _, _}), do: state
   defp message(state, {:h2_stream_failed, _, _, _, _}), do: state
 
+  defp message(state, {:h2_stream_done, worker, id, token, {:failure, reason, outcome}}) do
+    case state.streams[id] do
+      %{worker: ^worker, token: ^token} ->
+        stage = if reason == :request_timeout, do: :request, else: :endpoint
+        state = diagnostic(state, id, stage, reason)
+        message(state, {:h2_stream_done, worker, id, token, outcome})
+
+      _ ->
+        state
+    end
+  end
+
   defp message(state, {:h2_stream_done, worker, id, token, {:error, :endpoint_failed}}) do
     case state.streams[id] do
       %{worker: ^worker, token: ^token} -> reset(state, id, :cancel)
@@ -1469,7 +1544,12 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
       :close
     else
       case Enum.find(state.streams, fn {_, stream} -> stream.monitor == monitor end) do
-        {id, _} ->
+        {id, stream} ->
+          state =
+            if not stream.websocket and Lifecycle.remaining(stream.deadline) == 0,
+              do: diagnostic(state, id, :request, :request_timeout),
+              else: state
+
           start_next(
             reset(
               %{state | starting: if(state.starting == id, do: nil, else: state.starting)},
@@ -1516,6 +1596,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   defp message(state, {:h2_worker_start_timeout, id, token}) do
     case state.streams[id] do
       %{token: ^token, startup: startup} when not is_nil(startup) ->
+        state = diagnostic(state, id, :request, :request_timeout)
         reset(state, id, :refused_stream)
 
       _ ->
@@ -1530,7 +1611,22 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   end
 
   defp message(state, {:h2_partial_timeout, token}) do
-    if token == state.partial_token, do: failure(state, :protocol_error), else: state
+    if token == state.partial_token and not state.closing do
+      case state.continuation do
+        %{id: id, diagnostic_started: started, diagnostic_token: request_id} ->
+          Diagnostics.emit(:http2, :headers, :header_timeout, nil, false, started, %{
+            request_id: request_id,
+            stream_id: id
+          })
+
+        _ ->
+          :ok
+      end
+
+      failure(state, :protocol_error)
+    else
+      state
+    end
   end
 
   defp message(state, :h2_parse), do: partial_timer(parse(state, state.h2.control_turn))
@@ -1651,6 +1747,18 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   end
 
   defp cancel_start(_, _), do: :ok
+
+  defp response_written(state, {:headers, id, _}) do
+    case state.streams[id] do
+      %{response_status: status} = stream when is_integer(status) ->
+        put_in(state.streams[id], Map.put(stream, :response_sent, true))
+
+      _ ->
+        state
+    end
+  end
+
+  defp response_written(state, _), do: state
 
   defp written(state, nil, _), do: state
   defp written(state, {:header_fragment, _id}, _), do: state
