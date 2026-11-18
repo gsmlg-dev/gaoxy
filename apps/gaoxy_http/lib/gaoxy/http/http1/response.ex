@@ -130,7 +130,14 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
     end
   end
 
-  defp fields(headers), do: Enum.map(headers, fn {key, value} -> [key, ": ", value, "\r\n"] end)
+  defp fields(headers),
+    do: Enum.map(headers, fn {key, value} -> [compact(key), ": ", compact(value), "\r\n"] end)
+
+  defp compact(bytes) do
+    if :binary.referenced_byte_size(bytes) > byte_size(bytes),
+      do: :binary.copy(bytes),
+      else: bytes
+  end
 
   def chunk(%{response: mode} = exchange, data) when mode in [:chunked, :close_stream] do
     size = IO.iodata_length(data)

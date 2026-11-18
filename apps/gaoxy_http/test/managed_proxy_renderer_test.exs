@@ -66,6 +66,40 @@ defmodule Gaoxy.HTTP.ManagedProxyRendererTest do
              apply(@bounds, :fields, [[{"x", binary_part(backing, 0, 100)}], 256, 65_536])
   end
 
+  test "small shared field slices pass the same bounds as compact fields" do
+    parent = :binary.copy("v", 8_700)
+    fields = for n <- 1..4, do: {"x-test-#{n}", binary_part(parent, n * 100, 100)}
+    compact = for {name, value} <- fields, do: {name, :binary.copy(value)}
+
+    assert fields == compact
+    assert :binary.referenced_byte_size(elem(hd(fields), 1)) == 8_700
+    assert :ok = @bounds.fields(fields, 100, 32_768)
+    assert :ok = @bounds.fields(compact, 100, 32_768)
+  end
+
+  test "shared field normalization does not relax framed or generic retained limits" do
+    parent = :binary.copy("v", 8_700)
+    fields = for n <- 1..8, do: {"x-test-#{n}", binary_part(parent, n * 100, 100)}
+    compact = for {name, value} <- fields, do: {name, :binary.copy(value)}
+
+    assert :ok = @bounds.fields(fields, 100, 32_768)
+    assert {:error, :invalid_response_headers} = @bounds.response_fields(fields, 100, 32_768)
+    assert {:error, :invalid_response_trailers} = @bounds.trailer_fields(fields, 100, 32_768)
+    assert :ok = @bounds.response_fields(compact, 100, 32_768)
+    assert :ok = @bounds.trailer_fields(compact, 100, 32_768)
+    assert {:error, :renderer_limit} = @bounds.iodata(Enum.map(fields, &elem(&1, 1)), 81_920)
+  end
+
+  test "both field names and values retain individual backing and logical limits" do
+    parent = :binary.copy("a", 32_769)
+    short = binary_part(parent, 0, 100)
+    assert {:error, :renderer_limit} = @bounds.fields([{short, "v"}], 100, 32_768)
+    assert {:error, :renderer_limit} = @bounds.fields([{"x", short}], 100, 32_768)
+
+    assert {:error, :renderer_limit} =
+             @bounds.fields([{"x", :binary.copy("v", 32_768)}], 100, 32_768)
+  end
+
   test "H2 compact header block produces at most four bounded queue frames" do
     block = :binary.copy("b", 65_536)
     from = {self(), make_ref()}

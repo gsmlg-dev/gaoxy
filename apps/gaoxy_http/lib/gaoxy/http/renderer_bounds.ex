@@ -24,14 +24,23 @@ defmodule Gaoxy.HTTP.RendererBounds do
 
   def fields(fields, max_count, max_bytes)
       when is_integer(max_count) and max_count > 0 and is_integer(max_bytes) and max_bytes > 0,
-      do: pairs(fields, min(max_count, @nodes), min(max_bytes, @bytes), 0, 0)
+      do: pairs(fields, min(max_count, @nodes), min(max_bytes, @bytes), 0, 0, :individual)
 
   def fields(_, _, _), do: {:error, :invalid_renderer_fields}
+
+  # H1 compacts validated field leaves before rendering. Count their retained
+  # backing individually here: repeated slices may share a bounded parent.
+  # Framed validators do not compact, so retain their aggregate backing bound.
+  defp retained_fields(fields, max_count, max_bytes)
+       when is_integer(max_count) and max_count > 0 and is_integer(max_bytes) and max_bytes > 0,
+       do: pairs(fields, min(max_count, @nodes), min(max_bytes, @bytes), 0, 0, :aggregate)
+
+  defp retained_fields(_, _, _), do: {:error, :invalid_renderer_fields}
 
   # Preserve H2's existing semantic overhead and grammar without constructing a
   # byte list or normalized copy during validation.
   def response_fields(fields, max_count, max_bytes) do
-    with :ok <- fields(fields, max_count, max_bytes),
+    with :ok <- retained_fields(fields, max_count, max_bytes),
          true <- semantic_fields?(fields, max_bytes, false) do
       :ok
     else
@@ -40,7 +49,7 @@ defmodule Gaoxy.HTTP.RendererBounds do
   end
 
   def trailer_fields(fields, max_count, max_bytes) do
-    with :ok <- fields(fields, max_count, max_bytes),
+    with :ok <- retained_fields(fields, max_count, max_bytes),
          true <- semantic_fields?(fields, max_bytes, true) do
       :ok
     else
@@ -154,12 +163,12 @@ defmodule Gaoxy.HTTP.RendererBounds do
 
   defp bounded(_), do: {:error, :renderer_limit}
 
-  defp pairs(_, _, limit, logical, backing) when logical > limit or backing > limit,
+  defp pairs(_, _, limit, logical, backing, _) when logical > limit or backing > limit,
     do: {:error, :renderer_limit}
 
-  defp pairs([], _, _, _, _), do: :ok
+  defp pairs([], _, _, _, _, _), do: :ok
 
-  defp pairs([{name, value} | tail], remaining, limit, logical, backing)
+  defp pairs([{name, value} | tail], remaining, limit, logical, backing, mode)
        when is_binary(name) and is_binary(value) do
     if remaining == 0 do
       {:error, :renderer_limit}
@@ -169,10 +178,18 @@ defmodule Gaoxy.HTTP.RendererBounds do
         remaining - 1,
         limit,
         logical + byte_size(name) + byte_size(value),
-        backing + :binary.referenced_byte_size(name) + :binary.referenced_byte_size(value)
+        field_backing(mode, backing, name, value),
+        mode
       )
     end
   end
 
-  defp pairs(_, _, _, _, _), do: {:error, :invalid_renderer_fields}
+  defp pairs(_, _, _, _, _, _), do: {:error, :invalid_renderer_fields}
+
+  defp field_backing(:individual, previous, name, value),
+    do:
+      max(previous, max(:binary.referenced_byte_size(name), :binary.referenced_byte_size(value)))
+
+  defp field_backing(:aggregate, previous, name, value),
+    do: previous + :binary.referenced_byte_size(name) + :binary.referenced_byte_size(value)
 end
