@@ -137,6 +137,12 @@ defmodule StageHexPackages do
 
   defp dependency({app, requirement, options} = original, sibling_requirement, package_app) do
     cond do
+      package_app == :websock_adapter and app == :plug and requirement == "~> 1.14" and
+          options == [] ->
+        # The published distribution has a security floor; keep the vendored
+        # upstream snapshot and its provenance hashes unchanged.
+        {app, "~> 1.14 and >= 1.20.4"}
+
       package_app == :gaoxy_test and app == :gaoxy_http3 and options == [in_umbrella: true] ->
         {app, sibling_requirement, optional: true}
 

@@ -32,7 +32,7 @@ ENV = {**os.environ, "ELIXIR_ERL_OPTIONS": "+S 2:2", "MIX_ENV": "prod"}
 REQUIREMENTS = {
     "gaoxy_websock_adapter": {
         "websock": ("websock", "~> 0.5", False),
-        "plug": ("plug", "~> 1.14", False),
+        "plug": ("plug", "~> 1.14 and >= 1.20.4", False),
         "bandit": ("bandit", ">= 0.6.0", True),
         "plug_cowboy": ("plug_cowboy", "~> 2.6", True),
     },
@@ -43,7 +43,7 @@ REQUIREMENTS = {
     },
     "gaoxy_http": {
         "gaoxy": ("gaoxy", SIBLING_REQUIREMENT, False),
-        "plug": ("plug", "~> 1.20", False),
+        "plug": ("plug", "~> 1.20 and >= 1.20.4", False),
         "http_core": ("http_core", "~> 1.0.0-rc.16", False),
         "websock": ("websock", "~> 0.5", False),
         "gaoxy_websock_adapter": ("websock_adapter", SIBLING_REQUIREMENT, False),
@@ -61,7 +61,7 @@ REQUIREMENTS = {
     "gaoxy_test": {
         "gaoxy_http": ("gaoxy_http", SIBLING_REQUIREMENT, False),
         "gaoxy_http3": ("gaoxy_http3", SIBLING_REQUIREMENT, True),
-        "plug": ("plug", "~> 1.20", False),
+        "plug": ("plug", "~> 1.20 and >= 1.20.4", False),
     },
 }
 
